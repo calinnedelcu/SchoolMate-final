@@ -7,6 +7,8 @@ import 'admin_store.dart';
 import 'admin_classes_page.dart';
 import 'admin_students_page.dart';
 import 'admin_teachers_page.dart';
+import 'admin_admins_page.dart';
+import 'admin_turnstiles_page.dart';
 
 class SecretariatRawPage extends StatefulWidget {
   const SecretariatRawPage({super.key});
@@ -130,30 +132,63 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
               },
               child: const Text("Vezi clase + elevi"),
             ),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AdminStudentsPage(),
-                      ),
-                    );
-                  },
-                  child: const Text("Toti elevii"),
+                Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AdminStudentsPage(),
+                          ),
+                        );
+                      },
+                      child: const Text("Toti elevii"),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AdminTeachersPage(),
+                          ),
+                        );
+                      },
+                      child: const Text("Toti profesorii"),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AdminTeachersPage(),
-                      ),
-                    );
-                  },
-                  child: const Text("Toti profesorii"),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AdminAdminsPage(),
+                          ),
+                        );
+                      },
+                      child: const Text("Toti administratorii"),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AdminTurnstilesPage(),
+                          ),
+                        );
+                      },
+                      child: const Text("Turnichete"),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -242,7 +277,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                   onPressed: () async {
                     try {
                       final res = await api.resetPassword(
-                        uid: targetUserC.text,
+                        username: targetUserC.text,
                       );
                       final newPass = res['password'];
                       _log("RESET OK: newPass=$newPass");
@@ -261,7 +296,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                   onPressed: () async {
                     try {
                       await api.setDisabled(
-                        uid: targetUserC.text,
+                        username: targetUserC.text,
                         disabled: true,
                       );
                       _log("DISABLE OK");
@@ -276,7 +311,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                   onPressed: () async {
                     try {
                       await api.setDisabled(
-                        uid: targetUserC.text,
+                        username: targetUserC.text,
                         disabled: false,
                       );
                       _log("ENABLE OK");
@@ -296,7 +331,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
               onPressed: () async {
                 try {
                   await api.moveStudentClass(
-                    uid: targetUserC.text,
+                    username: targetUserC.text,
                     newClassId: moveClassC.text,
                   );
                   _log("MOVE OK");
@@ -335,7 +370,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
             ElevatedButton(
               onPressed: () async {
                 try {
-                  await store.setClassNoExitSchedule(
+                  await api.setClassNoExitSchedule(
                     classId: scheduleClassC.text,
                     startHHmm: noExitStartC.text,
                     endHHmm: noExitEndC.text,
@@ -352,7 +387,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
             ElevatedButton(
               onPressed: () async {
                 try {
-                  await store.createClass(classId: newClassC.text);
+                  await api.createClass(name: newClassC.text);
                   _log("CLASS OK: ${newClassC.text}");
                 } catch (e) {
                   _log("CLASS ERROR: $e");
@@ -363,7 +398,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
             ElevatedButton(
               onPressed: () async {
                 try {
-                  await store.deleteClassCascade(newClassC.text);
+                  await api.deleteClassCascade(classId: newClassC.text);
                   _log("DELETE CLASS OK: ${newClassC.text}");
                 } catch (e) {
                   _log("DELETE CLASS ERROR: $e");
@@ -381,3 +416,5 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     );
   }
 }
+
+//sa fie totul inregula
