@@ -51,12 +51,14 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                   .where('role', isEqualTo: 'teacher')
                   .snapshots(),
               builder: (context, snap) {
-                if (snap.hasError)
+                if (snap.hasError) {
                   return Center(
                     child: SelectableText("Eroare:\n${snap.error}"),
                   );
-                if (!snap.hasData)
+                }
+                if (!snap.hasData) {
                   return const Center(child: CircularProgressIndicator());
+                }
 
                 final docs = [...snap.data!.docs];
                 docs.sort((a, b) {
@@ -72,10 +74,9 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                 final filtered = docs.where((d) {
                   if (q.isEmpty) return true;
                   final data = d.data() as Map<String, dynamic>;
-                  final username = d.id.toLowerCase();
-                  final fullName = (data['fullName'] ?? '')
-                      .toString()
-                      .toLowerCase();
+                  final uid = d.id;
+                  final username = (data['username'] ?? uid).toString();
+                  final fullName = (data['fullName'] ?? username).toString();
                   final classId = (data['classId'] ?? '')
                       .toString()
                       .toLowerCase();
@@ -84,15 +85,17 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                       classId.contains(q);
                 }).toList();
 
-                if (filtered.isEmpty)
+                if (filtered.isEmpty) {
                   return const Center(child: Text("Nu exista rezultate"));
+                }
 
                 return ListView.builder(
                   itemCount: filtered.length,
                   itemBuilder: (_, i) {
                     final d = filtered[i];
                     final data = d.data() as Map<String, dynamic>;
-                    final username = d.id;
+                    final uid = d.id;
+                    final username = (data['username'] ?? uid).toString();
                     final fullName = (data['fullName'] ?? username).toString();
                     final classId = (data['classId'] ?? '').toString();
                     final status = (data['status'] ?? 'active').toString();

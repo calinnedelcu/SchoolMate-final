@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import '../session.dart';
 import 'admin_store.dart';
 
-class AdminStudentsPage extends StatefulWidget {
-  const AdminStudentsPage({super.key});
+class AdminTurnstilesPage extends StatefulWidget {
+  const AdminTurnstilesPage({super.key});
 
   @override
-  State<AdminStudentsPage> createState() => _AdminStudentsPageState();
+  State<AdminTurnstilesPage> createState() => _AdminTurnstilesPageState();
 }
 
-class _AdminStudentsPageState extends State<AdminStudentsPage> {
+class _AdminTurnstilesPageState extends State<AdminTurnstilesPage> {
   final store = AdminStore();
   final searchC = TextEditingController();
   String q = "";
@@ -30,7 +30,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Admin: Toti elevii")),
+      appBar: AppBar(title: const Text("Admin: Toate turnichetele")),
       body: Column(
         children: [
           Padding(
@@ -38,7 +38,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
             child: TextField(
               controller: searchC,
               decoration: const InputDecoration(
-                labelText: "Search (username / nume / clasa)",
+                labelText: "Search (username / nume / uid)",
               ),
               onChanged: (v) => setState(() => q = v.trim().toLowerCase()),
             ),
@@ -48,7 +48,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('users')
-                  .where('role', isEqualTo: 'student')
+                  .where('role', isEqualTo: 'gate')
                   .snapshots(),
               builder: (context, snap) {
                 if (snap.hasError) {
@@ -62,7 +62,6 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
 
                 final docs = [...snap.data!.docs];
 
-                // sort local by fullName
                 docs.sort((a, b) {
                   final an = ((a.data() as Map)['fullName'] ?? '')
                       .toString()
@@ -73,19 +72,20 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                   return an.compareTo(bn);
                 });
 
-                // filter local
                 final filtered = docs.where((d) {
                   if (q.isEmpty) return true;
                   final data = d.data() as Map<String, dynamic>;
-                  final uid = d.id;
-                  final username = (data['username'] ?? uid).toString();
-                  final fullName = (data['fullName'] ?? username).toString();
-                  final classId = (data['classId'] ?? '')
+                  final uid = d.id.toLowerCase();
+                  final username = (data['username'] ?? '')
                       .toString()
                       .toLowerCase();
-                  return username.contains(q) ||
-                      fullName.contains(q) ||
-                      classId.contains(q);
+                  final fullName = (data['fullName'] ?? '')
+                      .toString()
+                      .toLowerCase();
+
+                  return uid.contains(q) ||
+                      username.contains(q) ||
+                      fullName.contains(q);
                 }).toList();
 
                 if (filtered.isEmpty) {
@@ -98,21 +98,20 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                     final d = filtered[i];
                     final data = d.data() as Map<String, dynamic>;
                     final uid = d.id;
-                    final username = (data['username'] ?? uid).toString();
+                    final username = (data['username'] ?? '').toString();
                     final fullName = (data['fullName'] ?? username).toString();
-                    final classId = (data['classId'] ?? '').toString();
                     final status = (data['status'] ?? 'active').toString();
 
                     return ListTile(
                       title: Text(fullName),
                       subtitle: Text(
-                        "user: $username | clasa: $classId | $status",
+                        "username: $username | uid: $uid | $status",
                       ),
-                      onTap: () => _openStudentDialog(
+                      onTap: () => _openGateDialog(
                         context,
+                        uid: uid,
                         username: username,
                         fullName: fullName,
-                        classId: classId,
                         status: status,
                       ),
                     );
@@ -126,11 +125,11 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
     );
   }
 
-  Future<void> _openStudentDialog(
+  Future<void> _openGateDialog(
     BuildContext context, {
+    required String uid,
     required String username,
     required String fullName,
-    required String classId,
     required String status,
   }) async {
     await showDialog(
@@ -138,7 +137,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
       builder: (_) => AlertDialog(
         title: Text(fullName),
         content: SelectableText(
-          "username: $username\nclassId: $classId\nstatus: $status",
+          "username: $username\nuid: $uid\nstatus: $status\nrole: gate",
         ),
         actions: [
           TextButton(
@@ -158,7 +157,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                 context: context,
                 builder: (_) => AlertDialog(
                   title: const Text("Delete user?"),
-                  content: Text("Stergi elevul: $username ?"),
+                  content: Text("Stergi turnichetul: $username ?"),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
@@ -171,6 +170,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                   ],
                 ),
               );
+
               if (ok == true) {
                 await store.deleteUser(username);
                 if (mounted) Navigator.pop(context);
