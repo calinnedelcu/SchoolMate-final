@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,23 +44,32 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
   }
 
   Future<void> _bootstrap() async {
-    final flags = await SecurityFlagsService.getOnce();
-    if (!mounted) return;
+    try {
+      final flags = await SecurityFlagsService.getOnce();
+      if (!mounted) return;
 
-    if (!flags.twoFactorEnabled) {
-      AppSession.twoFactorVerified = true;
-      return;
+      if (!flags.twoFactorEnabled) {
+        AppSession.twoFactorVerified = true;
+        return;
+      }
+
+      // On web, localStorage is shared across all tabs. If the user already
+      // verified 2FA in another tab within the same session, skip the challenge
+      // to avoid invalidating the other tab's active code.
+      if (await _isAlreadyVerifiedInBrowser()) {
+        AppSession.twoFactorVerified = true;
+        return;
+      }
+
+      await _startChallenge();
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _sending = false;
+          _error = 'Eroare la initializarea verificarii. Incearca din nou.';
+        });
+      }
     }
-
-    // On web, localStorage is shared across all tabs. If the user already
-    // verified 2FA in another tab within the same session, skip the challenge
-    // to avoid invalidating the other tab's active code.
-    if (await _isAlreadyVerifiedInBrowser()) {
-      AppSession.twoFactorVerified = true;
-      return;
-    }
-
-    await _startChallenge();
   }
 
   static String _prefKey(String uid) => 'tf_verified_$uid';
@@ -90,6 +100,9 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
           .add(const Duration(hours: 8))
           .millisecondsSinceEpoch;
       await prefs.setInt(_prefKey(widget.uid), expiry);
+      await FirebaseFirestore.instance.collection('users').doc(widget.uid).set({
+        'twoFactorVerifiedUntil': Timestamp.fromMillisecondsSinceEpoch(expiry),
+      }, SetOptions(merge: true));
     } catch (_) {}
   }
 
@@ -225,6 +238,22 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_sending && _maskedEmail.isEmpty && _error.isEmpty) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.6,
+              color: Color(0xFF7AAF5B),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -265,140 +294,133 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
                   width: 1.5,
                 ),
               ),
-              child: _sending
-                  ? const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(color: Color(0xFF7AAF5B)),
-                        SizedBox(height: 16),
-                        Text(
-                          'Trimitem codul...',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.shield_outlined,
-                          size: 52,
-                          color: Color(0xFF7AAF5B),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Verificare in doi pasi',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Am trimis un cod de 6 cifre la\n${_maskedEmail.isNotEmpty ? _maskedEmail : "emailul tau"}.',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.black54,
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        TextField(
-                          controller: _codeController,
-                          keyboardType: TextInputType.number,
-                          maxLength: 6,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 28,
-                            letterSpacing: 8,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          decoration: InputDecoration(
-                            counterText: '',
-                            hintText: '------',
-                            hintStyle: const TextStyle(
-                              letterSpacing: 4,
-                              color: Colors.black26,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF7AAF5B),
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                          onChanged: (_) {
-                            if (_error.isNotEmpty) {
-                              setState(() => _error = '');
-                            }
-                          },
-                          onSubmitted: (_) => _verify(),
-                        ),
-                        if (_error.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            _error,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: _loading ? null : _verify,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF7AAF5B),
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: const Color(
-                                0xFF7AAF5B,
-                              ).withOpacity(0.6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: _loading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text(
-                                    'Verifica',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: (_resendCooldown > 0 || _sending)
-                              ? null
-                              : _resend,
-                          child: Text(
-                            _resendCooldown > 0
-                                ? 'Retrimite in ${_resendCooldown}s'
-                                : 'Nu ai primit codul? Retrimite',
-                            style: TextStyle(
-                              color: _resendCooldown > 0
-                                  ? Colors.grey
-                                  : const Color(0xFF7AAF5B),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.shield_outlined,
+                    size: 52,
+                    color: Color(0xFF7AAF5B),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Verificare in doi pasi',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _sending
+                        ? 'Pregatim trimiterea codului catre\n${_maskedEmail.isNotEmpty ? _maskedEmail : "emailul tau"}.'
+                        : 'Am trimis un cod de 6 cifre la\n${_maskedEmail.isNotEmpty ? _maskedEmail : "emailul tau"}.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.black54, height: 1.4),
+                  ),
+                  if (_sending) ...[
+                    const SizedBox(height: 18),
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        color: Color(0xFF7AAF5B),
+                      ),
                     ),
+                  ],
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: _codeController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    enabled: !_sending,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      letterSpacing: 8,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: InputDecoration(
+                      counterText: '',
+                      hintText: '------',
+                      hintStyle: const TextStyle(
+                        letterSpacing: 4,
+                        color: Colors.black26,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF7AAF5B),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    onChanged: (_) {
+                      if (_error.isNotEmpty) {
+                        setState(() => _error = '');
+                      }
+                    },
+                    onSubmitted: (_) => _verify(),
+                  ),
+                  if (_error.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _error,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.red, fontSize: 13),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: (_loading || _sending) ? null : _verify,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF7AAF5B),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: const Color(
+                          0xFF7AAF5B,
+                        ).withOpacity(0.6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _loading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Verifica',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: (_resendCooldown > 0 || _sending)
+                        ? null
+                        : _resend,
+                    child: Text(
+                      _resendCooldown > 0
+                          ? 'Retrimite in ${_resendCooldown}s'
+                          : 'Nu ai primit codul? Retrimite',
+                      style: TextStyle(
+                        color: _resendCooldown > 0
+                            ? Colors.grey
+                            : const Color(0xFF7AAF5B),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

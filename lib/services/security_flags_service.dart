@@ -11,19 +11,20 @@ class SecurityFlags {
 
   static const defaults = SecurityFlags(
     onboardingEnabled: true,
-    twoFactorEnabled: true,
+    twoFactorEnabled: false,
   );
 
   factory SecurityFlags.fromMap(Map<String, dynamic>? map) {
     return SecurityFlags(
       onboardingEnabled: map?['onboardingEnabled'] as bool? ?? true,
-      twoFactorEnabled: map?['twoFactorEnabled'] as bool? ?? true,
+      twoFactorEnabled: map?['twoFactorEnabled'] as bool? ?? false,
     );
   }
 }
 
 class SecurityFlagsService {
   SecurityFlagsService._();
+  static const Duration _requestTimeout = Duration(seconds: 12);
 
   static final _docRef = FirebaseFirestore.instance
       .collection('app_settings')
@@ -41,7 +42,7 @@ class SecurityFlagsService {
   }
 
   static Future<SecurityFlags> getOnce() async {
-    final snapshot = await _docRef.get();
+    final snapshot = await _docRef.get().timeout(_requestTimeout);
     return SecurityFlags.fromMap(snapshot.data());
   }
 

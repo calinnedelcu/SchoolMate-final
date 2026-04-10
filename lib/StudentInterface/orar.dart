@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firster/StudentInterface/logout_dialog.dart';
 import 'package:firster/session.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +24,7 @@ class OrarScreen extends StatefulWidget {
 
 class _OrarScreenState extends State<OrarScreen> {
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _userDocStream;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _lastScanStream;
 
   @override
   void initState() {
@@ -35,9 +37,25 @@ class _OrarScreenState extends State<OrarScreen> {
         .collection('users')
         .doc(uid)
         .snapshots();
+    _lastScanStream = FirebaseFirestore.instance
+      .collection('accessEvents')
+      .where('userId', isEqualTo: uid)
+      .orderBy('timestamp', descending: true)
+      .limit(1)
+      .snapshots();
   }
 
   Future<void> _logout() async {
+    final shouldLogout = await showStudentLogoutDialog(
+      context,
+      accentColor: _primary,
+      surfaceColor: _surface,
+      softSurfaceColor: _surfaceContainerHigh,
+      titleColor: _onSurface,
+      messageColor: _outline,
+      dangerColor: const Color(0xFF8E3557),
+    );
+    if (!shouldLogout) return;
     await FirebaseAuth.instance.signOut();
     AppSession.clear();
   }
@@ -48,6 +66,27 @@ class _OrarScreenState extends State<OrarScreen> {
       return;
     }
     Navigator.of(context).maybePop();
+  }
+
+  String _formatLastScan(dynamic rawValue) {
+    DateTime? lastScanTime;
+
+    if (rawValue is Timestamp) {
+      lastScanTime = rawValue.toDate();
+    } else if (rawValue is String) {
+      lastScanTime = DateTime.tryParse(rawValue);
+    }
+
+    if (lastScanTime == null) {
+      return '--';
+    }
+
+    final day = lastScanTime.day.toString().padLeft(2, '0');
+    final month = lastScanTime.month.toString().padLeft(2, '0');
+    final year = lastScanTime.year;
+    final hour = lastScanTime.hour.toString().padLeft(2, '0');
+    final minute = lastScanTime.minute.toString().padLeft(2, '0');
+    return '$day.$month.$year $hour:$minute';
   }
 
   @override
@@ -66,33 +105,11 @@ class _OrarScreenState extends State<OrarScreen> {
             final fullName = (userData['fullName'] ?? '').toString().trim();
             final classId = (userData['classId'] ?? '').toString().trim();
             final className = (userData['className'] ?? '').toString().trim();
-            final lastScanRaw = userData['lastScan'] != null
-                ? userData['lastScan'] as dynamic
-                : null;
             final displayName = fullName.isNotEmpty ? fullName : fallbackName;
 
             final resolvedClassName = className.isNotEmpty
                 ? className
                 : (classId.isNotEmpty ? classId : 'Clasa necunoscută');
-
-            String lastScanDisplay = '--';
-            if (lastScanRaw != null) {
-              try {
-                final lastScanTime = lastScanRaw is Timestamp
-                    ? lastScanRaw.toDate()
-                    : (lastScanRaw is String
-                        ? DateTime.parse(lastScanRaw)
-                        : null);
-                if (lastScanTime != null) {
-                  final day = lastScanTime.day.toString().padLeft(2, '0');
-                  final month = lastScanTime.month.toString().padLeft(2, '0');
-                  final year = lastScanTime.year;
-                  final hour = lastScanTime.hour.toString().padLeft(2, '0');
-                  final minute = lastScanTime.minute.toString().padLeft(2, '0');
-                  lastScanDisplay = '$day.$month.$year $hour:$minute';
-                }
-              } catch (_) {}
-            }
 
             final classStream = classId.isNotEmpty
                 ? FirebaseFirestore.instance
@@ -122,105 +139,73 @@ class _OrarScreenState extends State<OrarScreen> {
                         onBack: _goBack,
                         onLogout: _logout,
                       ),
-                      Transform.translate(
-                        offset: const Offset(0, -48),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Container(
-                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-                            decoration: BoxDecoration(
-                              color: _surfaceLowest,
-                              borderRadius: BorderRadius.circular(34),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x140B7A20),
-                                  blurRadius: 34,
-                                  offset: Offset(0, 16),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Name aligned left
-                                Text(
-                                  displayName,
-                                  style: const TextStyle(
-                                    color: _onSurface,
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w800,
-                                    height: 1.05,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                // Class info
-                                Text(
-                                  'Clasa $resolvedClassName',
-                                  style: const TextStyle(
-                                    color: _outline,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                // DIRIGINTE section
-                                _PersonInfoBox(
-                                  label: 'DIRIGINTE',
-                                  icon: Icons.school,
-                                  teacherUid: teacherUid,
-                                  teacherUsername: teacherUsername,
-                                ),
-                                const SizedBox(height: 12),
-                                // PÂRINTE section
-                                _ParentInfoBox(),
-                                const SizedBox(height: 20),
-                              ],
-                            ),
-                          ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                        child: _ProfileIdentityCard(
+                          displayName: displayName,
+                          className: resolvedClassName,
+                          teacherUid: teacherUid,
+                          teacherUsername: teacherUsername,
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 38,
-                          vertical: 20,
+                          vertical: 8,
                         ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.qr_code_2_rounded,
-                                color: _primary,
-                                size: 22,
+                        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                          stream: _lastScanStream,
+                          builder: (context, lastScanSnapshot) {
+                            final lastScanData =
+                                lastScanSnapshot.data?.docs.isNotEmpty == true
+                                ? lastScanSnapshot.data!.docs.first.data()
+                                : null;
+                            final lastScanDisplay = _formatLastScan(
+                              lastScanData?['timestamp'],
+                            );
+
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 16,
                               ),
-                              const SizedBox(width: 12),
-                              const Text(
-                                'Ultima Scanare',
-                                style: TextStyle(
-                                  color: _outline,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                              decoration: BoxDecoration(
+                                color: _surfaceContainerLow,
+                                borderRadius: BorderRadius.circular(18),
                               ),
-                              const SizedBox(width: 10),
-                              Text(
-                                lastScanDisplay,
-                                style: const TextStyle(
-                                  color: _onSurface,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.qr_code_2_rounded,
+                                    color: _primary,
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    'Ultima Scanare',
+                                    style: TextStyle(
+                                      color: _outline,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Flexible(
+                                    child: Text(
+                                      lastScanDisplay,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: _onSurface,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ),
                       Padding(
@@ -275,10 +260,6 @@ class _OrarScreenState extends State<OrarScreen> {
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-                        child: _LogoutActionButton(onTap: _logout),
-                      ),
                     ],
                   ),
                 );
@@ -302,59 +283,66 @@ class _OrarHeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 390;
+    final headerHeight = compact ? 138.0 : 146.0;
+    final titleSize = compact ? 29.0 : 33.0;
+
     return ClipRRect(
       borderRadius: const BorderRadius.only(
         bottomLeft: Radius.circular(52),
         bottomRight: Radius.circular(52),
       ),
       child: Container(
-        height: 180,
+        height: headerHeight,
         color: _primary,
         child: Stack(
           children: [
             Positioned(
-              right: -80,
-              top: -90,
-              child: _Circle(size: 300, opacity: 0.08),
+              top: -72,
+              right: -52,
+              child: _Circle(size: 220, opacity: 0.08),
             ),
             Positioned(
-              right: 40,
-              top: 58,
-              child: _Circle(size: 84, opacity: 0.07),
+              top: 44,
+              right: 34,
+              child: _Circle(size: 72, opacity: 0.07),
             ),
             Positioned(
-              left: -62,
-              bottom: -48,
-              child: _Circle(size: 188, opacity: 0.08),
+              left: 156,
+              bottom: -28,
+              child: _Circle(size: 82, opacity: 0.08),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      _HeaderIconButton(
-                        icon: Icons.arrow_back_ios_new_rounded,
-                        onTap: onBack,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Center(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _HeaderIconButton(
+                      icon: Icons.arrow_back_rounded,
+                      onTap: onBack,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                      'Profil',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.6,
                       ),
-                      const SizedBox(width: 16),
-                      const Text(
-                        'Profil',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.6,
-                        ),
-                      ),
-                      const Spacer(),
-                      _HeaderMenuButton(
-                        onLogout: onLogout,
-                        onProfil: () {},
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                    ),
+                    const SizedBox(width: 16),
+                    _HeaderMenuButton(
+                      onLogout: onLogout,
+                      onProfil: () {},
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -446,17 +434,17 @@ class _HeaderMenuButton extends StatelessWidget {
         ),
       ],
       child: Container(
-        width: 62,
-        height: 62,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
           color: const Color(0x337DE38D),
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: const Color(0x6DC7F4CE),
-            width: 1.4,
+            width: 1,
           ),
         ),
-        child: const Icon(Icons.person, color: Colors.white, size: 28),
+        child: const Icon(Icons.person, color: Colors.white, size: 22),
       ),
     );
   }
@@ -472,18 +460,17 @@ class _HeaderIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 46,
-        height: 46,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.20),
-            width: 1,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 34,
+        height: 34,
+        child: Center(
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: 32,
           ),
         ),
-        child: Icon(icon, color: Colors.white, size: 19),
       ),
     );
   }
@@ -508,49 +495,161 @@ class _Circle extends StatelessWidget {
   }
 }
 
-class _LogoutActionButton extends StatelessWidget {
-  final Future<void> Function() onTap;
+class _ProfileIdentityCard extends StatelessWidget {
+  final String displayName;
+  final String className;
+  final String teacherUid;
+  final String teacherUsername;
 
-  const _LogoutActionButton({required this.onTap});
+  const _ProfileIdentityCard({
+    required this.displayName,
+    required this.className,
+    required this.teacherUid,
+    required this.teacherUsername,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(26),
-      onTap: () async {
-        await onTap();
-      },
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(38),
       child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
         decoration: BoxDecoration(
           color: _surfaceLowest,
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: _primary.withValues(alpha: 0.24), width: 2),
+          borderRadius: BorderRadius.circular(38),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x0D0B7A20),
-              blurRadius: 18,
-              offset: Offset(0, 8),
+              color: Color(0x120B7A20),
+              blurRadius: 28,
+              offset: Offset(0, 12),
             ),
           ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.logout_rounded, color: _primary, size: 24),
-            SizedBox(width: 12),
-            Text(
-              'Deconectare',
-              style: TextStyle(
-                color: _primary,
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                width: 168,
+                height: 160,
+                decoration: BoxDecoration(
+                  color: _surfaceContainerLow.withValues(alpha: 0.82),
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(38),
+                    bottomLeft: Radius.circular(78),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 112),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayName,
+                          style: const TextStyle(
+                            color: _onSurface,
+                            fontSize: 31,
+                            fontWeight: FontWeight.w800,
+                            height: 1.05,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Clasa $className',
+                          style: const TextStyle(
+                            color: _outline,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 26),
+                  Container(
+                    height: 1,
+                    color: const Color(0xFFF0F1EA),
+                  ),
+                  const SizedBox(height: 22),
+                  _PersonInfoBox(
+                    label: 'DIRIGINTE',
+                    icon: Icons.school,
+                    teacherUid: teacherUid,
+                    teacherUsername: teacherUsername,
+                  ),
+                  const SizedBox(height: 12),
+                  const _ParentInfoBox(),
+                ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ProfileDetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _ProfileDetailRow({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: _primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Icon(icon, color: _primary, size: 28),
+        ),
+        const SizedBox(width: 18),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  color: _outline,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: _onSurface,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -571,50 +670,10 @@ class _PersonInfoBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (teacherUid.isEmpty && teacherUsername.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: _surfaceContainerLow,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: _primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: _primary, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: _outline,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Nedefinit',
-                    style: TextStyle(
-                      color: _onSurface,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      return _ProfileDetailRow(
+        label: label,
+        value: 'Nedefinit',
+        icon: icon,
       );
     }
 
@@ -661,52 +720,10 @@ class _PersonInfoBox extends StatelessWidget {
   Widget _buildInfoCard(String name) {
     final displayName = name.trim().isEmpty ? 'Nedefinit' : name.trim();
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: _primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: _primary, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: _outline,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  displayName,
-                  style: const TextStyle(
-                    color: _onSurface,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return _ProfileDetailRow(
+      label: label,
+      value: displayName,
+      icon: icon,
     );
   }
 }
@@ -719,50 +736,10 @@ class _ParentInfoBox extends StatelessWidget {
     final uid = FirebaseAuth.instance.currentUser?.uid;
 
     if (uid == null || uid.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: _surfaceContainerLow,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: _primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.family_restroom, color: _primary, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'PÂRINTE / TUTORE',
-                    style: TextStyle(
-                      color: _outline,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Nedefinit',
-                    style: TextStyle(
-                      color: _onSurface,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      return const _ProfileDetailRow(
+        label: 'PÂRINTE / TUTORE',
+        value: 'Nedefinit',
+        icon: Icons.family_restroom,
       );
     }
 
@@ -779,51 +756,10 @@ class _ParentInfoBox extends StatelessWidget {
         final parentId = parentIds.isNotEmpty ? parentIds.first : legacyParentId;
 
         if (parentId.isEmpty) {
-          return Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _surfaceContainerLow,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: _primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.family_restroom,
-                      color: _primary, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'PÂRINTE / TUTORE',
-                        style: TextStyle(
-                          color: _outline,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        'Nedefinit',
-                        style: TextStyle(
-                          color: _onSurface,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          return const _ProfileDetailRow(
+            label: 'PÂRINTE / TUTORE',
+            value: 'Nedefinit',
+            icon: Icons.family_restroom,
           );
         }
 
@@ -841,53 +777,10 @@ class _ParentInfoBox extends StatelessWidget {
               fallback: parentId,
             );
 
-            return Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _surfaceContainerLow,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: _primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.family_restroom,
-                        color: _primary, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'PÂRINTE / TUTORE',
-                          style: TextStyle(
-                            color: _outline,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          displayName,
-                          style: const TextStyle(
-                            color: _onSurface,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            return _ProfileDetailRow(
+              label: 'PÂRINTE / TUTORE',
+              value: displayName,
+              icon: Icons.family_restroom,
             );
           },
         );

@@ -34,6 +34,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  if (kIsWeb) {
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: false,
+      webExperimentalForceLongPolling: true,
+    );
+  }
+
   if (!kIsWeb) {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -96,22 +103,36 @@ Future<void> _saveFcmToken(String uid) async {
   } catch (_) {}
 }
 
-Future<void> _cleanupAuthState() async {
+Future<void> _cleanupAuthState({bool clearPersistedTwoFactor = true}) async {
+  final uidToClear = AppSession.uid;
   await _tokenRefreshSub?.cancel();
   _tokenRefreshSub = null;
   _tokenBoundUid = null;
-  // Clear the persisted 2FA verified flag so the next login (or a different
-  // user on the same machine) must verify again.
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final keysToRemove = prefs
-        .getKeys()
-        .where((k) => k.startsWith('tf_verified_'))
-        .toList();
-    for (final k in keysToRemove) {
-      await prefs.remove(k);
+  if (clearPersistedTwoFactor) {
+    // Clear the persisted 2FA verified flag so the next login (or a different
+    // user on the same machine) must verify again.
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keysToRemove = prefs
+          .getKeys()
+          .where((k) => k.startsWith('tf_verified_'))
+          .toList();
+      for (final k in keysToRemove) {
+        await prefs.remove(k);
+      }
+    } catch (_) {}
+
+    if (uidToClear != null && uidToClear.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uidToClear)
+            .set({
+              'twoFactorVerifiedUntil': FieldValue.delete(),
+            }, SetOptions(merge: true));
+      } catch (_) {}
     }
-  } catch (_) {}
+  }
   AppSession.clear();
 }
 
@@ -130,6 +151,42 @@ class _MyAppState extends State<MyApp> {
   late final Stream<SecurityFlags> _flagsStream;
   String? _cachedUid;
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _userDocStream;
+  bool _hadAuthenticatedUser = false;
+
+  // Cached so that StreamBuilder rebuilds do not recreate the Future,
+  // which would reset the FutureBuilder to ConnectionState.waiting.
+  String? _twoFactorPersistedUid;
+  Future<bool>? _twoFactorPersistedFuture;
+
+  Future<bool> _getOrCreateTwoFactorFuture(String uid) {
+    if (_twoFactorPersistedUid != uid || _twoFactorPersistedFuture == null) {
+      _twoFactorPersistedUid = uid;
+      _twoFactorPersistedFuture = _loadPersistedTwoFactorState(uid);
+    }
+    return _twoFactorPersistedFuture!;
+  }
+
+  Future<bool> _loadPersistedTwoFactorState(String uid) async {
+    if (AppSession.twoFactorVerified) {
+      return true;
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'tf_verified_$uid';
+      final expiry = prefs.getInt(key);
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (expiry != null && now < expiry) {
+        AppSession.twoFactorVerified = true;
+        return true;
+      }
+      if (expiry != null) {
+        await prefs.remove(key);
+      }
+    } catch (_) {}
+
+    return false;
+  }
 
   @override
   void initState() {
@@ -151,6 +208,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Aegis',
       theme: ThemeData(
         useMaterial3: true,
@@ -167,32 +225,54 @@ class _MyAppState extends State<MyApp> {
 
           final user = snapshot.data;
           if (user == null) {
-            unawaited(_cleanupAuthState());
+            unawaited(
+              _cleanupAuthState(clearPersistedTwoFactor: _hadAuthenticatedUser),
+            );
             return const LoginPageFirestore();
           }
+
+          _hadAuthenticatedUser = true;
 
           return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
             stream: _getUserDocStream(user.uid),
             builder: (context, userDocSnap) {
-              if (userDocSnap.connectionState == ConnectionState.waiting) {
+              final bootstrapData = AppSession.uid == user.uid
+                  ? AppSession.bootstrapUserData
+                  : null;
+              final userDoc = userDocSnap.data;
+              final resolvedData = userDoc?.data() ?? bootstrapData;
+
+              if (userDocSnap.connectionState == ConnectionState.waiting &&
+                  resolvedData == null) {
                 return const Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 );
               }
 
-              final userDoc = userDocSnap.data;
-              if (userDoc == null || !userDoc.exists) {
+              if (userDocSnap.hasError && resolvedData == null) {
                 unawaited(_cleanupAuthState());
                 unawaited(FirebaseAuth.instance.signOut());
                 return const LoginPageFirestore();
               }
 
-              final data = userDoc.data() ?? <String, dynamic>{};
+              if (userDoc != null && !userDoc.exists) {
+                unawaited(_cleanupAuthState());
+                unawaited(FirebaseAuth.instance.signOut());
+                return const LoginPageFirestore();
+              }
+
+              if (resolvedData == null) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              final data = resolvedData;
               final status = (data['status'] ?? 'active').toString();
               if (status == 'disabled') {
                 // A cached snapshot may still contain the previous disabled
                 // state right after an admin re-enables the account.
-                if (userDoc.metadata.isFromCache) {
+                if (userDoc != null && userDoc.metadata.isFromCache) {
                   return const Scaffold(
                     body: Center(child: CircularProgressIndicator()),
                   );
@@ -208,6 +288,14 @@ class _MyAppState extends State<MyApp> {
               final emailVerified = data['emailVerified'] == true;
               final onboardingComplete = data['onboardingComplete'] == true;
               final role = (data['role'] ?? '').toString();
+              final twoFactorVerifiedUntil =
+                  (data['twoFactorVerifiedUntil'] as Timestamp?)?.toDate();
+              final hasRemoteTwoFactorSession =
+                  twoFactorVerifiedUntil != null &&
+                  twoFactorVerifiedUntil.isAfter(DateTime.now());
+              if (hasRemoteTwoFactorSession && !AppSession.twoFactorVerified) {
+                AppSession.twoFactorVerified = true;
+              }
 
               // Backward compatibility: for old documents that already satisfy
               // onboarding conditions, persist onboardingComplete once.
@@ -242,14 +330,9 @@ class _MyAppState extends State<MyApp> {
 
               return StreamBuilder<SecurityFlags>(
                 stream: _flagsStream,
+                initialData: SecurityFlags.defaults,
                 builder: (context, settingsSnap) {
-                  if (!settingsSnap.hasData) {
-                    return const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-
-                  final flags = settingsSnap.data!;
+                  final flags = settingsSnap.data ?? SecurityFlags.defaults;
 
                   if (role != 'gate' &&
                       flags.onboardingEnabled &&
@@ -257,52 +340,70 @@ class _MyAppState extends State<MyApp> {
                     return OnboardingPage(user: user, userData: data);
                   }
 
-                  // 2FA gate — uses ValueListenableBuilder so it rebuilds
-                  // reactively when AppSession.twoFactorVerified changes.
-                  return ValueListenableBuilder<bool>(
-                    valueListenable: AppSession.twoFactorNotifier,
-                    builder: (context, twoFaVerified, _) {
-                      if (role != 'gate' &&
-                          flags.twoFactorEnabled &&
-                          effectivelyOnboarded &&
-                          !twoFaVerified) {
-                        final username = (data['username'] ?? '').toString();
-                        return TwoFactorVerifyPage(
-                          uid: user.uid,
-                          role: role,
-                          username: username,
-                          fullName: (data['fullName'] ?? '').toString(),
-                          classId: (data['classId'] ?? '').toString(),
+                  final requiresTwoFactor =
+                      role != 'gate' &&
+                      flags.twoFactorEnabled &&
+                      effectivelyOnboarded &&
+                      !hasRemoteTwoFactorSession;
+
+                  return FutureBuilder<bool>(
+                    future: requiresTwoFactor
+                        ? _getOrCreateTwoFactorFuture(user.uid)
+                        : Future<bool>.value(false),
+                    builder: (context, persistedTwoFaSnap) {
+                      if (requiresTwoFactor &&
+                          !AppSession.twoFactorVerified &&
+                          persistedTwoFaSnap.connectionState ==
+                              ConnectionState.waiting) {
+                        return const Scaffold(
+                          body: Center(child: CircularProgressIndicator()),
                         );
                       }
 
-                      final username = (data['username'] ?? '').toString();
+                      return ValueListenableBuilder<bool>(
+                        valueListenable: AppSession.twoFactorNotifier,
+                        builder: (context, twoFaVerified, _) {
+                          if (requiresTwoFactor && !twoFaVerified) {
+                            final username = (data['username'] ?? '')
+                                .toString();
+                            return TwoFactorVerifyPage(
+                              uid: user.uid,
+                              role: role,
+                              username: username,
+                              fullName: (data['fullName'] ?? '').toString(),
+                              classId: (data['classId'] ?? '').toString(),
+                            );
+                          }
 
-                      AppSession.setUser(
-                        uidValue: user.uid,
-                        usernameValue: username,
-                        roleValue: role,
-                        fullNameValue: (data['fullName'] ?? '').toString(),
-                        classIdValue: (data['classId'] ?? '').toString(),
+                          final username = (data['username'] ?? '').toString();
+
+                          AppSession.setUser(
+                            uidValue: user.uid,
+                            usernameValue: username,
+                            roleValue: role,
+                            fullNameValue: (data['fullName'] ?? '').toString(),
+                            classIdValue: (data['classId'] ?? '').toString(),
+                          );
+
+                          unawaited(_saveFcmToken(user.uid));
+
+                          if (role == 'student') {
+                            return const AppShell();
+                          } else if (role == 'gate') {
+                            return const GateScanPage();
+                          } else if (role == 'admin') {
+                            return const SecretariatRawPage();
+                          } else if (role == 'teacher') {
+                            return const TeacherDashboardPage();
+                          } else if (role == 'parent') {
+                            return const ParentHomePage();
+                          }
+
+                          unawaited(_cleanupAuthState());
+                          unawaited(FirebaseAuth.instance.signOut());
+                          return const LoginPageFirestore();
+                        },
                       );
-
-                      unawaited(_saveFcmToken(user.uid));
-
-                      if (role == 'student') {
-                        return const AppShell();
-                      } else if (role == 'gate') {
-                        return const GateScanPage();
-                      } else if (role == 'admin') {
-                        return const SecretariatRawPage();
-                      } else if (role == 'teacher') {
-                        return const TeacherDashboardPage();
-                      } else if (role == 'parent') {
-                        return const ParentHomePage();
-                      }
-
-                      unawaited(_cleanupAuthState());
-                      unawaited(FirebaseAuth.instance.signOut());
-                      return const LoginPageFirestore();
                     },
                   );
                 },
