@@ -2,19 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firster/admin/services/admin_api.dart';
+import 'package:firster/common/accessibility_settings_page.dart';
+import 'package:firster/common/language_picker.dart';
 import 'package:firster/student/logout_dialog.dart';
 import 'package:firster/core/session.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-const _primary = Color(0xFF0D631B);
-const _surface = Color(0xFFF7F9F0);
+const _primary = Color(0xFF1F8BE7);
+const _surface = Color(0xFFEFF5FA);
 const _surfaceLowest = Color(0xFFFFFFFF);
-const _surfaceContainerLow = Color(0xFFF0F4E9);
-const _surfaceContainerHigh = Color(0xFFE7EDE1);
+const _surfaceContainerLow = Color(0xFFE7F0F6);
+const _surfaceContainerHigh = Color(0xFFDEE8F0);
 const _outline = Color(0xFF717B6E);
-const _outlineVariant = Color(0xFFC8D1C2);
-const _onSurface = Color(0xFF151A14);
+const _outlineVariant = Color(0xFFBACCD9);
+const _onSurface = Color(0xFF587F9E);
 
 class OrarScreen extends StatefulWidget {
   final VoidCallback? onBackToHome;
@@ -353,7 +355,7 @@ class _ProfileIdentityCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(38),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x120D631B),
+              color: Color(0x121F8BE7),
               blurRadius: 28,
               offset: Offset(0, 12),
             ),
@@ -598,6 +600,28 @@ class _SettingsSheet extends StatelessWidget {
             onTap: () {
               Navigator.pop(ctx);
               _showEditProfileSheet(ctx);
+            },
+          ),
+          const SizedBox(height: 10),
+          _SettingsTile(
+            icon: Icons.accessibility_new_rounded,
+            label: 'Accesibilitate',
+            onTap: () {
+              Navigator.pop(ctx);
+              Navigator.of(ctx).push(
+                MaterialPageRoute(
+                  builder: (_) => const AccessibilitySettingsPage(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          _SettingsTile(
+            icon: Icons.language_rounded,
+            label: 'Limbă',
+            onTap: () {
+              Navigator.pop(ctx);
+              showLanguagePickerSheet(ctx);
             },
           ),
           const SizedBox(height: 10),
@@ -1540,14 +1564,14 @@ class _ReauthDialogState extends State<_ReauthDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(
-                    color: Color(0xFFCED8C8),
+                    color: Color(0xFFC1D2DF),
                     width: 1.2,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(
-                    color: Color(0xFFCED8C8),
+                    color: Color(0xFFC1D2DF),
                     width: 1.2,
                   ),
                 ),

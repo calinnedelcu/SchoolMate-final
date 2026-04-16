@@ -17,7 +17,10 @@ import 'admin_parents_page.dart';
 import 'admin_turnstiles_page.dart';
 import 'admin_vacante.dart' as admin_vacante;
 import 'admin_voluntariat_page.dart';
+import 'admin_post_composer_page.dart';
 // import 'secretariat_global_messages_page.dart'; // unused after menu cleanup
+import '../common/accessibility_settings_page.dart';
+import '../common/language_picker.dart';
 import '../services/security_flags_service.dart';
 import '../core/session.dart';
 
@@ -377,7 +380,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
   }
 
   Future<void> _showLogoutDialog() async {
-    const Color primaryGreen = Color(0xFF5A9641);
+    const Color primaryGreen = Color(0xFF6AA2CE);
 
     showDialog(
       context: context,
@@ -493,8 +496,8 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryGreen = Color(0xFF7AAF5B);
-    const Color surfaceColor = Color(0xFFF8FFF5);
+    const Color primaryGreen = Color(0xFF84B0D2);
+    const Color surfaceColor = Color(0xFFF5FBFF);
 
     return Scaffold(
       body: Row(
@@ -506,7 +509,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: ColoredBox(color: const Color(0xFF0A6B1C)),
+                    child: ColoredBox(color: const Color(0xFF1A8CEE)),
                   ),
                   Positioned(left: -45, top: -45, child: _bubble(160, 0.09)),
                   Positioned(right: -60, bottom: 60, child: _bubble(200, 0.06)),
@@ -598,6 +601,32 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                                       }),
                                     ),
                                     _buildSidebarItem(
+                                      icon: Icons.dynamic_feed_rounded,
+                                      label: "Post\u0103ri",
+                                      onTap: () => setState(() {
+                                        activeSidebarLabel = 'Post\u0103ri';
+                                      }),
+                                    ),
+                                    _buildSidebarItem(
+                                      icon:
+                                          Icons.accessibility_new_rounded,
+                                      label: "Accesibilitate",
+                                      onTap: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const AccessibilitySettingsPage(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    _buildSidebarItem(
+                                      icon: Icons.language_rounded,
+                                      label: "Limbă",
+                                      onTap: () =>
+                                          showLanguagePickerSheet(context),
+                                    ),
+                                    _buildSidebarItem(
                                       icon: Icons.code_rounded,
                                       label: "Development",
                                       onTap: () => setState(() {
@@ -664,7 +693,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                     child: Stack(
                       children: [
                         Positioned.fill(
-                          child: ColoredBox(color: const Color(0xFF0A6B1C)),
+                          child: ColoredBox(color: const Color(0xFF1A8CEE)),
                         ),
                         Positioned(
                           right: -25,
@@ -3319,26 +3348,26 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
 
   // ── Clean Meniu create-user card ────────────────────────────────────────────
   Widget _buildCleanCreateUserCard() {
-    const Color green = Color(0xFF3A7A40);
-    const Color darkGreen = Color(0xFF0A6B1C);
+    const Color green = Color(0xFF5E96C5);
+    const Color darkGreen = Color(0xFF1A8CEE);
 
     InputDecoration fieldDeco(String hint) => InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: Color(0xFF374151), fontSize: 14),
+      hintStyle: const TextStyle(color: Color(0xFF5E88AF), fontSize: 14),
       filled: true,
-      fillColor: const Color(0xFFF8FFF5),
+      fillColor: const Color(0xFFF5FBFF),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+        borderSide: const BorderSide(color: Color(0xFFCBD7E1)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+        borderSide: const BorderSide(color: Color(0xFFCBD7E1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF7AAF5B), width: 2),
+        borderSide: const BorderSide(color: Color(0xFF84B0D2), width: 2),
       ),
     );
 
@@ -3349,7 +3378,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
         style: const TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF4B5563),
+          color: Color(0xFF6F92B0),
           letterSpacing: 0.8,
         ),
       ),
@@ -3364,9 +3393,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
       width: double.infinity,
       height: 46,
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FFF5),
+        color: const Color(0xFFF5FBFF),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFD1D5DB)),
+        border: Border.all(color: const Color(0xFFCBD7E1)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: DropdownButtonHideUnderline(
@@ -3376,11 +3405,11 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Color(0xFF374151),
+            color: Color(0xFF5E88AF),
           ),
           hint: Text(
             hint,
-            style: const TextStyle(color: Color(0xFF374151), fontSize: 14),
+            style: const TextStyle(color: Color(0xFF5E88AF), fontSize: 14),
           ),
           items: items,
           onChanged: onChanged,
@@ -3615,14 +3644,14 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     required Widget child,
     bool hasBorder = false,
   }) {
-    const Color darkGreen = Color(0xFF5A9641);
+    const Color darkGreen = Color(0xFF6AA2CE);
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: hasBorder ? const Color(0xFFD1D5DB) : const Color(0xFFE5E7EB),
+          color: hasBorder ? const Color(0xFFCBD7E1) : const Color(0xFFE1E8EF),
           width: 1,
         ),
         boxShadow: [
@@ -3639,7 +3668,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ColoredBox(
-              color: const Color(0xFFF3F7F3),
+              color: const Color(0xFFF2F5F8),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(22, 22, 22, 14),
                 child: Row(
@@ -3648,7 +3677,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                       width: 4,
                       height: 22,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0A6B1C),
+                        color: const Color(0xFF1A8CEE),
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -3667,7 +3696,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                 ),
               ),
             ),
-            const Divider(color: Color(0xFFE5E7EB), height: 1, thickness: 1),
+            const Divider(color: Color(0xFFE1E8EF), height: 1, thickness: 1),
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
               child: child,
@@ -3686,20 +3715,20 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF5A8040)),
+        labelStyle: const TextStyle(color: Color(0xFF659BC5)),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.green.withValues(alpha: 0.30)),
+          borderSide: BorderSide(color: Colors.blue.withValues(alpha: 0.30)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.green.withValues(alpha: 0.30)),
+          borderSide: BorderSide(color: Colors.blue.withValues(alpha: 0.30)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFF7AAF5B), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF84B0D2), width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -3755,6 +3784,11 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
         return const admin_vacante.AdminClassesPage(embedded: true);
       case 'Voluntariat':
         return const AdminVoluntariatPage();
+      case 'Postări':
+        return const AdminPostComposerPage(
+          embedded: true,
+          mode: PostComposerMode.secretariat,
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -3910,9 +3944,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
             return Container(
               padding: const EdgeInsets.fromLTRB(30, 12, 30, 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F7F3),
+                color: const Color(0xFFF2F5F8),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: const Color(0xFFE1E8EF)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -3922,7 +3956,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1A2E1A),
+                      color: Color(0xFF4B83B2),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -3932,7 +3966,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                       child: Text(
                         'Se încarcă...',
                         style: TextStyle(
-                          color: Color(0xFF6B7280),
+                          color: Color(0xFF8AA2B9),
                           fontSize: 12,
                         ),
                       ),
@@ -3943,7 +3977,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                       child: Text(
                         'Nu există clase.',
                         style: TextStyle(
-                          color: Color(0xFF6B7280),
+                          color: Color(0xFF8AA2B9),
                           fontSize: 12,
                         ),
                       ),
@@ -3966,7 +4000,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF2F3C2F),
+                                      color: Color(0xFF6086A5),
                                     ),
                                   ),
                                 ),
@@ -3975,7 +4009,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF2F3C2F),
+                                    color: Color(0xFF6086A5),
                                   ),
                                 ),
                               ],
@@ -3986,9 +4020,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                               child: LinearProgressIndicator(
                                 minHeight: 8,
                                 value: progress,
-                                backgroundColor: const Color(0xFFD9DDD6),
+                                backgroundColor: const Color(0xFFD0DBE3),
                                 valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Color(0xFF0A6B1C),
+                                  Color(0xFF1A8CEE),
                                 ),
                               ),
                             ),
@@ -4039,12 +4073,12 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFD1D5DB)),
+          border: Border.all(color: const Color(0xFFCBD7E1)),
         ),
         child: Icon(
           icon,
           size: 18,
-          color: enabled ? const Color(0xFF374151) : const Color(0xFFD1D5DB),
+          color: enabled ? const Color(0xFF5E88AF) : const Color(0xFFCBD7E1),
         ),
       ),
     );
@@ -4063,7 +4097,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
               padding: EdgeInsets.symmetric(horizontal: 2),
               child: Text(
                 '...',
-                style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                style: TextStyle(fontSize: 12, color: Color(0xFF8AA2B9)),
               ),
             ),
           );
@@ -4084,7 +4118,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
               border: Border.all(
                 color: selected
                     ? const Color(0xFF2D2D2D)
-                    : const Color(0xFFD1D5DB),
+                    : const Color(0xFFCBD7E1),
               ),
             ),
             alignment: Alignment.center,
@@ -4093,7 +4127,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : const Color(0xFF374151),
+                color: selected ? Colors.white : const Color(0xFF5E88AF),
               ),
             ),
           ),
@@ -4179,7 +4213,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
   Widget _buildGlobalMessagingCard() {
     return _buildCard(
       title: 'Mesagerie Globală',
-      primaryGreen: const Color(0xFF3A7A40),
+      primaryGreen: const Color(0xFF5E96C5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -4188,7 +4222,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF4B5563),
+              color: Color(0xFF6F92B0),
               letterSpacing: 0.8,
             ),
           ),
@@ -4200,24 +4234,24 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
             decoration: InputDecoration(
               hintText: 'Scrie mesajul ce va apărea în inbox...',
               hintStyle: const TextStyle(
-                color: Color(0xFF374151),
+                color: Color(0xFF5E88AF),
                 fontSize: 14,
               ),
               filled: true,
-              fillColor: const Color(0xFFF8FFF5),
+              fillColor: const Color(0xFFF5FBFF),
               contentPadding: const EdgeInsets.all(14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                borderSide: const BorderSide(color: Color(0xFFCBD7E1)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                borderSide: const BorderSide(color: Color(0xFFCBD7E1)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(
-                  color: Color(0xFF7AAF5B),
+                  color: Color(0xFF84B0D2),
                   width: 2,
                 ),
               ),
@@ -4229,7 +4263,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF4B5563),
+              color: Color(0xFF6F92B0),
               letterSpacing: 0.8,
             ),
           ),
@@ -4290,9 +4324,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                     : const Icon(Icons.send_rounded),
                 label: const Text('Trimite Mesaj'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0A6B1C),
+                  backgroundColor: const Color(0xFF1A8CEE),
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: const Color(0xFF0A6B1C),
+                  disabledBackgroundColor: const Color(0xFF1A8CEE),
                   disabledForegroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 48,
@@ -4321,14 +4355,14 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     ValueChanged<bool?> onChanged,
   ) {
     final Color bg = selected
-        ? const Color(0xFFE8F5E9)
-        : const Color(0xFFF8FFF5);
+        ? const Color(0xFFE6EFF7)
+        : const Color(0xFFF5FBFF);
     final Color border = selected
-        ? const Color(0xFF7AAF5B)
-        : const Color(0xFFD1D5DB);
+        ? const Color(0xFF84B0D2)
+        : const Color(0xFFCBD7E1);
     final Color textColor = selected
-        ? const Color(0xFF0A6B1C)
-        : const Color(0xFF6B7280);
+        ? const Color(0xFF1A8CEE)
+        : const Color(0xFF8AA2B9);
 
     return GestureDetector(
       onTap: () => onChanged(!selected),
@@ -4358,7 +4392,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
               const Icon(
                 Icons.check_circle,
                 size: 16,
-                color: Color(0xFF0A6B1C),
+                color: Color(0xFF1A8CEE),
               ),
             ],
           ],
@@ -4387,7 +4421,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: const Color(0xFFE1E8EF)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -4403,17 +4437,17 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F7F3),
+                color: const Color(0xFFF2F5F8),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, size: 20, color: const Color(0xFF3A7A40)),
+              child: Icon(icon, size: 20, color: const Color(0xFF5E96C5)),
             ),
             const SizedBox(height: 14),
             Text(
               label,
               style: const TextStyle(
                 fontSize: 14,
-                color: Color(0xFF374151),
+                color: Color(0xFF5E88AF),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -4423,7 +4457,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
               style: const TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFF1A2E1A),
+                color: Color(0xFF4B83B2),
               ),
             ),
           ],
@@ -4498,9 +4532,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFF7FFF1),
+            color: const Color(0xFFF1F9FF),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFCDE8B0)),
+            border: Border.all(color: const Color(0xFFACD0EC)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -4509,13 +4543,13 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                 'Setari globale securitate',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF3A5C24),
+                  color: Color(0xFF448EC7),
                 ),
               ),
               const SizedBox(height: 6),
               const Text(
                 'ON/OFF pentru onboarding si 2FA la nivelul intregii aplicatii.',
-                style: TextStyle(color: Color(0xFF5A8040), fontSize: 12),
+                style: TextStyle(color: Color(0xFF659BC5), fontSize: 12),
               ),
               const SizedBox(height: 12),
               Row(
@@ -4530,7 +4564,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                           style: TextStyle(
                             fontSize: 12,
                             color: flags.onboardingEnabled
-                                ? const Color(0xFF2F5F2B)
+                                ? const Color(0xFF4C8DC1)
                                 : const Color(0xFF7C3A3A),
                           ),
                         ),
@@ -4538,7 +4572,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                     ),
                   ),
                   Switch.adaptive(
-                    activeTrackColor: const Color(0xFF5A9641),
+                    activeTrackColor: const Color(0xFF6AA2CE),
                     value: flags.onboardingEnabled,
                     onChanged: _isActionBusy('toggle-onboarding-global')
                         ? null
@@ -4566,7 +4600,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                   ),
                 ],
               ),
-              const Divider(height: 8, color: Color(0xFFD9EDBB)),
+              const Divider(height: 8, color: Color(0xFFB8D8F0)),
               Row(
                 children: [
                   Expanded(
@@ -4579,7 +4613,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                           style: TextStyle(
                             fontSize: 12,
                             color: flags.twoFactorEnabled
-                                ? const Color(0xFF2F5F2B)
+                                ? const Color(0xFF4C8DC1)
                                 : const Color(0xFF7C3A3A),
                           ),
                         ),
@@ -4587,7 +4621,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                     ),
                   ),
                   Switch.adaptive(
-                    activeTrackColor: const Color(0xFF5A9641),
+                    activeTrackColor: const Color(0xFF6AA2CE),
                     value: flags.twoFactorEnabled,
                     onChanged: _isActionBusy('toggle-2fa-global')
                         ? null

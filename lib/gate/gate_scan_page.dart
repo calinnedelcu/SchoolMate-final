@@ -152,7 +152,7 @@ class _GateScanPageState extends State<GateScanPage> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            color: _isAllowed ? Colors.green : Colors.red,
+            color: _isAllowed ? Colors.blue : Colors.red,
             child: Text(
               _status,
               style: const TextStyle(color: Colors.white, fontSize: 18),

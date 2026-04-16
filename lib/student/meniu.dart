@@ -3,9 +3,11 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firster/core/session.dart';
+import 'package:firster/l10n/app_localizations.dart';
 import 'package:firster/student/cereri.dart';
 import 'package:firster/student/inbox.dart';
-import 'package:firster/core/session.dart';
+import 'package:firster/student/tutoring_page.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -19,15 +21,14 @@ class _DampedScrollPhysics extends ScrollPhysics {
       super.applyPhysicsToUserOffset(position, offset) * 0.55;
 }
 
-const _primary = Color(0xFF0D631B);
-const _surface = Color(0xFFF7F9F0);
-const _surfaceContainerLow = Color(0xFFF0F4E9);
-const _surfaceContainerHigh = Color(0xFFE7EDE1);
+const _primary = Color(0xFF1F8BE7);
+const _surface = Color(0xFFEFF5FA);
+const _surfaceContainerLow = Color(0xFFE7F0F6);
+const _surfaceContainerHigh = Color(0xFFDEE8F0);
 const _surfaceLowest = Color(0xFFFFFFFF);
 const _outline = Color(0xFF717B6E);
-const _outlineVariant = Color(0xFFC8D1C2);
-const _onSurface = Color(0xFF151A14);
-const _tertiary = Color(0xFF8E3557);
+const _outlineVariant = Color(0xFFBACCD9);
+const _onSurface = Color(0xFF587F9E);
 
 class MeniuScreen extends StatefulWidget {
   final ValueChanged<int>? onNavigateTab;
@@ -45,7 +46,6 @@ class MeniuScreen extends StatefulWidget {
 
 class _MeniuScreenState extends State<MeniuScreen> {
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _userDocStream;
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _lastScanStream;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _leaveActiveStream;
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _classDocStream;
 
@@ -58,13 +58,6 @@ class _MeniuScreenState extends State<MeniuScreen> {
     _userDocStream = FirebaseFirestore.instance
         .collection('users')
         .doc(currentUser.uid)
-        .snapshots();
-
-    _lastScanStream = FirebaseFirestore.instance
-        .collection('accessEvents')
-        .where('userId', isEqualTo: currentUser.uid)
-        .orderBy('timestamp', descending: true)
-        .limit(1)
         .snapshots();
 
     _leaveActiveStream = FirebaseFirestore.instance
@@ -82,14 +75,16 @@ class _MeniuScreenState extends State<MeniuScreen> {
     }
   }
 
-  bool _isWithinSchedule(Map<String, dynamic> classData) {
+  /// Returns parsed schedule for today: {start, end} as minutes-of-day, or null.
+  ({int startMin, int endMin, String startText, String endText})?
+  _todaySchedule(Map<String, dynamic> classData) {
     final now = DateTime.now();
     final weekday = now.weekday;
-    if (weekday > 5) return false;
+    if (weekday > 5) return null;
 
     final schedule = (classData['schedule'] as Map?) ?? {};
     final daySchedule = schedule[weekday.toString()] as Map?;
-    if (daySchedule == null) return false;
+    if (daySchedule == null) return null;
 
     int parseMinutes(String value) {
       final parts = value.split(':');
@@ -100,12 +95,17 @@ class _MeniuScreenState extends State<MeniuScreen> {
       return hour * 60 + minute;
     }
 
-    final start = parseMinutes('${daySchedule['start'] ?? ''}');
-    final end = parseMinutes('${daySchedule['end'] ?? ''}');
-    if (start < 0 || end < 0) return false;
-
-    final nowMinutes = now.hour * 60 + now.minute;
-    return nowMinutes >= start && nowMinutes <= end;
+    final startText = (daySchedule['start'] ?? '').toString();
+    final endText = (daySchedule['end'] ?? '').toString();
+    final startMin = parseMinutes(startText);
+    final endMin = parseMinutes(endText);
+    if (startMin < 0 || endMin < 0) return null;
+    return (
+      startMin: startMin,
+      endMin: endMin,
+      startText: startText,
+      endText: endText,
+    );
   }
 
   String _formatClassLabel(String rawValue) {
@@ -128,7 +128,7 @@ class _MeniuScreenState extends State<MeniuScreen> {
     return 'Clasa a $grade-a $letter';
   }
 
-  void _openCereri(BuildContext context) {
+  void _openCereri() {
     if (widget.onNavigateTab != null) {
       widget.onNavigateTab!(2);
       return;
@@ -138,7 +138,7 @@ class _MeniuScreenState extends State<MeniuScreen> {
     ).push(MaterialPageRoute(builder: (_) => const CereriScreen()));
   }
 
-  Future<void> _openMesaje(BuildContext context) async {
+  Future<void> _openInbox() async {
     if (widget.onNavigateTab != null) {
       widget.onNavigateTab!(3);
       return;
@@ -152,10 +152,34 @@ class _MeniuScreenState extends State<MeniuScreen> {
       }, SetOptions(merge: true));
     }
 
-    if (!context.mounted) return;
+    if (!mounted) return;
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const InboxScreen()));
+  }
+
+  void _openSchedule() {
+    if (widget.onNavigateTab != null) {
+      widget.onNavigateTab!(1);
+    }
+  }
+
+  void _openTutoring() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            TutoringPage(onBack: () => Navigator.of(context).maybePop()),
+      ),
+    );
+  }
+
+  Future<void> _showQrSheet(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _QrBottomSheet(),
+    );
   }
 
   @override
@@ -201,6 +225,7 @@ class _MeniuScreenState extends State<MeniuScreen> {
                           ? classDocName
                           : (classId.isNotEmpty ? classId : 'Clasa nealocata'));
                 final resolvedClassName = _formatClassLabel(rawClassName);
+                final todaySchedule = _todaySchedule(classData);
 
                 return Stack(
                   fit: StackFit.expand,
@@ -225,51 +250,29 @@ class _MeniuScreenState extends State<MeniuScreen> {
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                         child: Column(
                           children: [
-                            _AccessHubCard(
-                              inSchool: (data['inSchool'] as bool?) ?? false,
-                              lastInAt: data['lastInAt'],
-                              lastScanStream: _lastScanStream,
+                            _AziCard(
+                              schedule: todaySchedule,
+                              onViewSchedule: _openSchedule,
                             ),
                             const SizedBox(height: 14),
-                            IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(
-                                    child: _CereriCard(
-                                      onTap: () => _openCereri(context),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: _MesajeCard(
-                                      studentUid:
-                                          FirebaseAuth
-                                              .instance
-                                              .currentUser
-                                              ?.uid ??
-                                          '',
-                                      inboxLastOpenedAt: inboxLastOpenedAt,
-                                      onTap: () => _openMesaje(context),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            _CerereInvoireCard(
+                              leaveStream: _leaveActiveStream,
+                              onCreateNew: _openCereri,
+                              onShowQr: () => _showQrSheet(context),
+                              onPendingTap: widget.onNavigateToActiveLeave,
                             ),
                             const SizedBox(height: 14),
-                            _LeaveStatusCard(
-                              classDocStream: classStream,
-                              leaveActiveStream: _leaveActiveStream,
-                              isWithinSchedule: _isWithinSchedule,
-                              onActiveTap: widget.onNavigateToActiveLeave,
+                            _InboxPreviewCard(
+                              studentUid:
+                                  FirebaseAuth.instance.currentUser?.uid ?? '',
+                              inboxLastOpenedAt: inboxLastOpenedAt,
+                              onTap: _openInbox,
                             ),
                             const SizedBox(height: 14),
-                            _VoluntariatCard(
-                              onTap: () {
-                                if (widget.onNavigateTab != null) {
-                                  widget.onNavigateTab!(4);
-                                }
-                              },
+                            _QuickActionsRow(
+                              onTutoring: _openTutoring,
+                              onSchedule: _openSchedule,
+                              onMessages: _openInbox,
                             ),
                           ],
                         ),
@@ -298,6 +301,7 @@ class _TopHeroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
+    final l = AppLocalizations.of(context);
     return ClipRRect(
       borderRadius: const BorderRadius.only(
         bottomLeft: Radius.circular(52),
@@ -334,16 +338,16 @@ class _TopHeroHeader extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Bine ai venit,\n$displayName',
+                          l.homeGreeting(displayName),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 34,
+                            fontSize: 32,
                             height: 1.20,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.0,
                           ),
                         ),
-                        const SizedBox(height: 0),
+                        const SizedBox(height: 2),
                         Text(
                           className,
                           style: TextStyle(
@@ -385,24 +389,479 @@ class _Circle extends StatelessWidget {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// ACCESS HUB CARD
+// AZI CARD
 // ────────────────────────────────────────────────────────────────────────────
-class _AccessHubCard extends StatefulWidget {
-  final bool inSchool;
-  final dynamic lastInAt;
-  final Stream<QuerySnapshot<Map<String, dynamic>>>? lastScanStream;
+class _AziCard extends StatelessWidget {
+  final ({int startMin, int endMin, String startText, String endText})?
+  schedule;
+  final VoidCallback onViewSchedule;
 
-  const _AccessHubCard({
-    required this.inSchool,
-    required this.lastInAt,
-    required this.lastScanStream,
+  const _AziCard({required this.schedule, required this.onViewSchedule});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final now = DateTime.now();
+    final dateText = MaterialLocalizations.of(
+      context,
+    ).formatFullDate(now).replaceAll(', ${now.year}', '');
+
+    String statusText;
+    Color statusColor;
+    IconData statusIcon;
+    String? intervalText;
+
+    if (schedule == null) {
+      statusText = l.homeTodayNoSchedule;
+      statusColor = _outline;
+      statusIcon = Icons.event_busy_rounded;
+    } else {
+      final nowMin = now.hour * 60 + now.minute;
+      intervalText = l.homeTodayInterval(schedule!.startText, schedule!.endText);
+      if (nowMin < schedule!.startMin) {
+        statusText = l.homeTodayUpcoming(schedule!.startText);
+        statusColor = _primary;
+        statusIcon = Icons.access_time_rounded;
+      } else if (nowMin <= schedule!.endMin) {
+        statusText = l.homeTodayInProgress;
+        statusColor = _primary;
+        statusIcon = Icons.school_rounded;
+      } else {
+        statusText = l.homeTodayFinished;
+        statusColor = _outline;
+        statusIcon = Icons.check_circle_outline_rounded;
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      decoration: BoxDecoration(
+        color: _surfaceLowest,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x141F8BE7),
+            blurRadius: 22,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: _primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.today_rounded,
+                  color: _primary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l.homeTodayCardTitle,
+                      style: const TextStyle(
+                        color: _outline,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _capitalize(dateText),
+                      style: const TextStyle(
+                        color: _onSurface,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Icon(statusIcon, color: statusColor, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  statusText,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (intervalText != null) ...[
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.only(left: 26),
+              child: Text(
+                intervalText,
+                style: TextStyle(
+                  color: _outline.withValues(alpha: 0.95),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          GestureDetector(
+            onTap: onViewSchedule,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: _surfaceContainerLow,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: _outlineVariant.withValues(alpha: 0.45),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.calendar_view_week_rounded,
+                    color: _primary,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l.homeTodayViewFull,
+                      style: const TextStyle(
+                        color: _onSurface,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: _outline,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _capitalize(String value) {
+    if (value.isEmpty) return value;
+    return value[0].toUpperCase() + value.substring(1);
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// CERERE DE ÎNVOIRE CARD
+// ────────────────────────────────────────────────────────────────────────────
+class _CerereInvoireCard extends StatelessWidget {
+  final Stream<QuerySnapshot<Map<String, dynamic>>>? leaveStream;
+  final VoidCallback onCreateNew;
+  final VoidCallback onShowQr;
+  final void Function(String docId)? onPendingTap;
+
+  const _CerereInvoireCard({
+    required this.leaveStream,
+    required this.onCreateNew,
+    required this.onShowQr,
+    required this.onPendingTap,
   });
 
   @override
-  State<_AccessHubCard> createState() => _AccessHubCardState();
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: leaveStream,
+      builder: (context, snapshot) {
+        final docs = snapshot.data?.docs ?? const [];
+        final now = DateTime.now();
+        final todayMidnight = DateTime(now.year, now.month, now.day);
+
+        bool isExpired(Map<String, dynamic> data) {
+          final forDate = (data['requestedForDate'] as Timestamp?)?.toDate();
+          if (forDate == null) return false;
+          return forDate.isBefore(todayMidnight);
+        }
+
+        QueryDocumentSnapshot<Map<String, dynamic>>? activeDoc;
+        QueryDocumentSnapshot<Map<String, dynamic>>? pendingDoc;
+        for (final d in docs) {
+          final data = d.data();
+          if (isExpired(data)) continue;
+          final status = data['status'];
+          if (status == 'approved' || status == 'active') {
+            activeDoc ??= d;
+          } else if (status == 'pending') {
+            pendingDoc ??= d;
+          }
+        }
+
+        if (activeDoc != null) {
+          return _LeaveCardShell(
+            chipText: l.homeRequestActiveChip,
+            chipColor: _primary,
+            iconColor: _primary,
+            backgroundColor: _surfaceLowest,
+            iconBackground: _primary.withValues(alpha: 0.10),
+            title: l.homeRequestCardTitle,
+            subtitle: l.homeRequestActiveSubtitle,
+            buttonLabel: l.homeRequestActiveCta,
+            buttonIcon: Icons.qr_code_2_rounded,
+            buttonGradient: const [Color(0xFF1F8BE7), Color(0xFF328FDF)],
+            buttonForeground: Colors.white,
+            onButton: onShowQr,
+            onCardTap: onPendingTap == null
+                ? null
+                : () => onPendingTap!(activeDoc!.id),
+          );
+        }
+
+        if (pendingDoc != null) {
+          return _LeaveCardShell(
+            chipText: l.homeRequestPendingChip,
+            chipColor: const Color(0xFF8A6A1D),
+            iconColor: const Color(0xFF8A6A1D),
+            backgroundColor: _surfaceLowest,
+            iconBackground: const Color(0xFFF6F0D9),
+            title: l.homeRequestCardTitle,
+            subtitle: l.homeRequestPendingSubtitle,
+            buttonLabel: null,
+            buttonIcon: null,
+            buttonGradient: null,
+            buttonForeground: null,
+            onButton: null,
+            onCardTap: onPendingTap == null
+                ? null
+                : () => onPendingTap!(pendingDoc!.id),
+          );
+        }
+
+        return _LeaveCardShell(
+          chipText: null,
+          chipColor: _outline,
+          iconColor: _primary,
+          backgroundColor: _surfaceLowest,
+          iconBackground: _primary.withValues(alpha: 0.10),
+          title: l.homeRequestCardTitle,
+          subtitle: l.homeRequestNoneSubtitle,
+          buttonLabel: l.homeRequestNoneCta,
+          buttonIcon: Icons.add_rounded,
+          buttonGradient: const [Color(0xFF1F8BE7), Color(0xFF328FDF)],
+          buttonForeground: Colors.white,
+          onButton: onCreateNew,
+          onCardTap: null,
+        );
+      },
+    );
+  }
 }
 
-class _AccessHubCardState extends State<_AccessHubCard> {
+class _LeaveCardShell extends StatelessWidget {
+  final String? chipText;
+  final Color chipColor;
+  final Color iconColor;
+  final Color iconBackground;
+  final Color backgroundColor;
+  final String title;
+  final String subtitle;
+  final String? buttonLabel;
+  final IconData? buttonIcon;
+  final List<Color>? buttonGradient;
+  final Color? buttonForeground;
+  final VoidCallback? onButton;
+  final VoidCallback? onCardTap;
+
+  const _LeaveCardShell({
+    required this.chipText,
+    required this.chipColor,
+    required this.iconColor,
+    required this.iconBackground,
+    required this.backgroundColor,
+    required this.title,
+    required this.subtitle,
+    required this.buttonLabel,
+    required this.buttonIcon,
+    required this.buttonGradient,
+    required this.buttonForeground,
+    required this.onButton,
+    required this.onCardTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final card = Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _outlineVariant.withValues(alpha: 0.36)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: iconBackground,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(
+                  Icons.description_rounded,
+                  color: iconColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: _onSurface,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: _outline.withValues(alpha: 0.95),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (chipText != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: chipColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    chipText!.toUpperCase(),
+                    style: TextStyle(
+                      color: chipColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if (buttonLabel != null) ...[
+            const SizedBox(height: 14),
+            GestureDetector(
+              onTap: onButton,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  gradient: buttonGradient == null
+                      ? null
+                      : LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: buttonGradient!,
+                        ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x351F8BE7),
+                      blurRadius: 14,
+                      offset: Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (buttonIcon != null) ...[
+                      Icon(buttonIcon, color: buttonForeground, size: 18),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      buttonLabel!,
+                      style: TextStyle(
+                        color: buttonForeground,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    if (onCardTap != null && buttonLabel == null) {
+      return GestureDetector(onTap: onCardTap, child: card);
+    }
+    return card;
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// QR BOTTOM SHEET — token regenerated every 15 seconds, scanned by portar
+// ────────────────────────────────────────────────────────────────────────────
+class _QrBottomSheet extends StatefulWidget {
+  const _QrBottomSheet();
+
+  @override
+  State<_QrBottomSheet> createState() => _QrBottomSheetState();
+}
+
+class _QrBottomSheetState extends State<_QrBottomSheet> {
   static const int _renewIntervalSeconds = 15;
   Timer? _regenTimer;
   Timer? _countdownTimer;
@@ -459,366 +918,182 @@ class _AccessHubCardState extends State<_AccessHubCard> {
     }
   }
 
-  String get _timerText {
-    final m = (_secondsLeft ~/ 60).toString().padLeft(2, '0');
-    final s = (_secondsLeft % 60).toString().padLeft(2, '0');
-    return '$m:$s SEC';
-  }
-
-  DateTime? _readDateTime(dynamic rawValue) {
-    if (rawValue is Timestamp) {
-      return rawValue.toDate();
-    }
-    if (rawValue is DateTime) {
-      return rawValue;
-    }
-    if (rawValue is String) {
-      return DateTime.tryParse(rawValue);
-    }
-    return null;
-  }
-
-  String _formatClockTime(DateTime? value) {
-    if (value == null) {
-      return '--:--';
-    }
-    final hour = value.hour.toString().padLeft(2, '0');
-    final minute = value.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-      decoration: BoxDecoration(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        MediaQuery.of(context).padding.bottom + 20,
+      ),
+      decoration: const BoxDecoration(
         color: _surfaceLowest,
-        borderRadius: BorderRadius.circular(34),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x180D631B),
-            blurRadius: 32,
-            offset: Offset(0, 14),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          const Text(
-            'Acces Campus',
-            style: TextStyle(
-              fontSize: 31,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.7,
-              color: _onSurface,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // QR + timer badge
-          Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: _surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Container(
-                  width: 176,
-                  height: 176,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (_token.isNotEmpty)
-                        QrImageView(
-                          data: _token,
-                          backgroundColor: Colors.white,
-                          eyeStyle: const QrEyeStyle(
-                            eyeShape: QrEyeShape.square,
-                            color: _primary,
-                          ),
-                          dataModuleStyle: const QrDataModuleStyle(
-                            dataModuleShape: QrDataModuleShape.square,
-                            color: _primary,
-                          ),
-                        )
-                      else
-                        const Icon(
-                          Icons.qr_code_2_rounded,
-                          color: _primary,
-                          size: 96,
-                        ),
-                      if (_loading)
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.75),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              color: _primary,
-                              strokeWidth: 2.2,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: -10,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _primary,
-                    borderRadius: BorderRadius.circular(999),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x25000000),
-                        blurRadius: 12,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 9,
-                        height: 9,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.80),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 9),
-                      Text(
-                        _timerText,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 28),
-
-          // ── STATUS + INTRARE centrate ────────────────────────────
-          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: widget.lastScanStream,
-            builder: (context, snapshot) {
-              final docs = snapshot.data?.docs ?? [];
-              final latestDoc = docs.isNotEmpty ? docs.first.data() : null;
-              final latestType = (latestDoc?['type'] ?? '').toString().trim();
-              final latestTimestamp = _readDateTime(latestDoc?['timestamp']);
-              final lastInAt = _readDateTime(widget.lastInAt);
-
-              final statusFromUser = widget.inSchool;
-              final fallbackStatusFromEvent = latestType == 'exit'
-                  ? false
-                  : true;
-              final resolvedInSchool = lastInAt != null || latestDoc == null
-                  ? statusFromUser
-                  : fallbackStatusFromEvent;
-
-              final statusText = resolvedInSchool ? 'Intrat' : 'Ieșit';
-              final statusColor = resolvedInSchool ? _primary : _tertiary;
-              final timeText = _formatClockTime(lastInAt ?? latestTimestamp);
-
-              return Row(
-                children: [
-                  Expanded(
-                    child: _StatCard(
-                      label: 'Status',
-                      value: statusText,
-                      valueColor: statusColor,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: _StatCard(
-                      label: 'Scanare',
-                      value: timeText,
-                      valueColor: _onSurface,
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// STAT CARD
-// ────────────────────────────────────────────────────────────────────────────
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color valueColor;
-
-  const _StatCard({
-    required this.label,
-    required this.value,
-    required this.valueColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: _surfaceContainerLow,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: _outline,
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: valueColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// CERERI CARD
-// ────────────────────────────────────────────────────────────────────────────
-class _CereriCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _CereriCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 184,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0D631B), Color(0xFF19802E)],
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x350D631B),
-              blurRadius: 20,
-              offset: Offset(0, 10),
-            ),
-          ],
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 52,
-              height: 52,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 48,
+            height: 5,
+            decoration: BoxDecoration(
+              color: _outlineVariant.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            l.qrSheetTitle,
+            style: const TextStyle(
+              color: _onSurface,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              l.qrSheetSubtitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: _outline.withValues(alpha: 0.95),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                height: 1.35,
+              ),
+            ),
+          ),
+          const SizedBox(height: 22),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: _surfaceContainerLow,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Container(
+              width: 220,
+              height: 220,
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.18),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (_token.isNotEmpty)
+                    QrImageView(
+                      data: _token,
+                      backgroundColor: Colors.white,
+                      eyeStyle: const QrEyeStyle(
+                        eyeShape: QrEyeShape.square,
+                        color: _primary,
+                      ),
+                      dataModuleStyle: const QrDataModuleStyle(
+                        dataModuleShape: QrDataModuleShape.square,
+                        color: _primary,
+                      ),
+                    )
+                  else
+                    const Icon(
+                      Icons.qr_code_2_rounded,
+                      color: _primary,
+                      size: 120,
+                    ),
+                  if (_loading)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: _primary,
+                          strokeWidth: 2.2,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: _primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.refresh_rounded, color: _primary, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  l.qrSheetExpiresIn(_secondsLeft),
+                  style: const TextStyle(
+                    color: _primary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          GestureDetector(
+            onTap: () => Navigator.of(context).maybePop(),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: _surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
-                Icons.description_rounded,
-                color: Colors.white,
-                size: 24,
+              child: Center(
+                child: Text(
+                  l.qrSheetClose,
+                  style: const TextStyle(
+                    color: _onSurface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
             ),
-            const Spacer(),
-            const Text(
-              'Cererile de\nînvoire',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                height: 1.18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Creează o cerere nouă',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.74),
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// MESAJE CARD
+// INBOX PREVIEW CARD
 // ────────────────────────────────────────────────────────────────────────────
-class _MesajeCard extends StatelessWidget {
+class _InboxPreviewCard extends StatelessWidget {
   final String studentUid;
   final DateTime? inboxLastOpenedAt;
   final VoidCallback onTap;
-  const _MesajeCard({
+
+  const _InboxPreviewCard({
     required this.studentUid,
     required this.inboxLastOpenedAt,
     required this.onTap,
   });
 
   DateTime? _readDateTime(dynamic value) {
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-    if (value is DateTime) {
-      return value;
-    }
-    if (value is String) {
-      return DateTime.tryParse(value);
-    }
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value);
     return null;
-  }
-
-  DateTime? _leaveMessageTime(Map<String, dynamic> data) {
-    return _readDateTime(data['reviewedAt']) ??
-        _readDateTime(data['requestedAt']);
   }
 
   bool _isVisibleLeaveMessage(Map<String, dynamic> data) {
@@ -826,37 +1101,15 @@ class _MesajeCard extends StatelessWidget {
     return source != 'secretariat';
   }
 
-  int _countUnread(
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> leaveDocs,
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> secretariatDocs,
-  ) {
-    final lastViewed = inboxLastOpenedAt;
-    if (lastViewed == null) {
-      return leaveDocs
-              .where((doc) => _isVisibleLeaveMessage(doc.data()))
-              .length +
-          secretariatDocs.length;
-    }
-
-    final leaveUnread = leaveDocs.where((doc) {
-      final data = doc.data();
-      if (!_isVisibleLeaveMessage(data)) {
-        return false;
-      }
-      final when = _leaveMessageTime(data);
-      return when != null && when.isAfter(lastViewed);
-    }).length;
-
-    final secretariatUnread = secretariatDocs.where((doc) {
-      final when = _readDateTime(doc.data()['createdAt']);
-      return when != null && when.isAfter(lastViewed);
-    }).length;
-
-    return leaveUnread + secretariatUnread;
+  DateTime? _leaveMessageTime(Map<String, dynamic> data) {
+    return _readDateTime(data['reviewedAt']) ??
+        _readDateTime(data['requestedAt']);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+
     return GestureDetector(
       onTap: onTap,
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -866,7 +1119,7 @@ class _MesajeCard extends StatelessWidget {
                   .collection('leaveRequests')
                   .where('studentUid', isEqualTo: studentUid)
                   .orderBy('requestedAt', descending: true)
-                  .limit(50)
+                  .limit(20)
                   .snapshots(),
         builder: (context, leaveSnapshot) {
           return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -876,7 +1129,7 @@ class _MesajeCard extends StatelessWidget {
                       .collection('secretariatMessages')
                       .where('recipientUid', isEqualTo: studentUid)
                       .where('recipientRole', isEqualTo: 'student')
-                      .limit(50)
+                      .limit(20)
                       .snapshots(),
             builder: (context, secretariatSnapshot) {
               return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -886,69 +1139,145 @@ class _MesajeCard extends StatelessWidget {
                           .collection('secretariatMessages')
                           .where('recipientUid', isEqualTo: '')
                           .where('recipientRole', isEqualTo: 'student')
-                          .limit(50)
+                          .limit(20)
                           .snapshots(),
-                builder: (context, globalSecretariatSnapshot) {
-                  final unreadCount =
-                      _countUnread(leaveSnapshot.data?.docs ?? const [], [
-                        ...(secretariatSnapshot.data?.docs ?? const []),
-                        ...(globalSecretariatSnapshot.data?.docs ?? const []),
-                      ]);
+                builder: (context, globalSnapshot) {
+                  final leaveDocs = leaveSnapshot.data?.docs ?? const [];
+                  final secretariatDocs =
+                      secretariatSnapshot.data?.docs ?? const [];
+                  final globalDocs = globalSnapshot.data?.docs ?? const [];
+
+                  // Build a unified list of preview entries
+                  final entries = <_PreviewEntry>[];
+                  for (final doc in leaveDocs) {
+                    final data = doc.data();
+                    if (!_isVisibleLeaveMessage(data)) continue;
+                    final when = _leaveMessageTime(data);
+                    if (when == null) continue;
+                    final status = (data['status'] ?? 'pending').toString();
+                    final message = (data['message'] ?? '').toString().trim();
+                    entries.add(
+                      _PreviewEntry(
+                        when: when,
+                        title: 'Cerere învoire',
+                        snippet: message.isEmpty
+                            ? _leaveStatusSnippet(status)
+                            : message,
+                        icon: Icons.description_rounded,
+                      ),
+                    );
+                  }
+                  for (final doc in [...secretariatDocs, ...globalDocs]) {
+                    final data = doc.data();
+                    final when = _readDateTime(data['createdAt']);
+                    if (when == null) continue;
+                    final message = (data['message'] ?? '').toString().trim();
+                    final senderName =
+                        (data['senderName'] ?? 'Secretariat')
+                            .toString()
+                            .trim();
+                    entries.add(
+                      _PreviewEntry(
+                        when: when,
+                        title: senderName.isEmpty ? 'Secretariat' : senderName,
+                        snippet: message,
+                        icon: Icons.campaign_rounded,
+                      ),
+                    );
+                  }
+
+                  entries.sort((a, b) => b.when.compareTo(a.when));
+
+                  int unread;
+                  if (inboxLastOpenedAt == null) {
+                    unread = entries.length;
+                  } else {
+                    unread = entries
+                        .where((e) => e.when.isAfter(inboxLastOpenedAt!))
+                        .length;
+                  }
+
+                  final preview = entries.take(2).toList();
 
                   return Container(
-                    height: 184,
-                    padding: const EdgeInsets.all(16),
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
                     decoration: BoxDecoration(
-                      color: _surfaceContainerHigh,
+                      color: _surfaceLowest,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: _outlineVariant.withValues(alpha: 0.36),
-                        width: 1.1,
                       ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x0F000000),
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: _primary.withValues(alpha: 0.10),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.forum_rounded,
-                            color: _primary,
-                            size: 24,
-                          ),
-                        ),
-                        const Spacer(),
-                        const Text(
-                          'Mesaje',
-                          style: TextStyle(
-                            color: _onSurface,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.circle, size: 12, color: _primary),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                '$unreadCount mesaje noi',
-                                style: const TextStyle(
-                                  color: _outline,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: _primary.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(14),
                               ),
+                              child: const Icon(
+                                Icons.forum_rounded,
+                                color: _primary,
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l.homeInboxPreviewTitle,
+                                    style: const TextStyle(
+                                      color: _onSurface,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    unread == 0
+                                        ? l.homeInboxNoMessages
+                                        : l.homeInboxUnreadCount(unread),
+                                    style: TextStyle(
+                                      color: unread > 0
+                                          ? _primary
+                                          : _outline.withValues(alpha: 0.95),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: _outline,
+                              size: 22,
                             ),
                           ],
                         ),
+                        if (preview.isNotEmpty) ...[
+                          const SizedBox(height: 14),
+                          for (var i = 0; i < preview.length; i++) ...[
+                            _PreviewLine(entry: preview[i]),
+                            if (i < preview.length - 1)
+                              const SizedBox(height: 8),
+                          ],
+                        ],
                       ],
                     ),
                   );
@@ -960,243 +1289,197 @@ class _MesajeCard extends StatelessWidget {
       ),
     );
   }
+
+  String _leaveStatusSnippet(String status) {
+    switch (status) {
+      case 'approved':
+        return 'Cererea ta a fost aprobată.';
+      case 'rejected':
+        return 'Cererea ta a fost respinsă.';
+      case 'expired':
+        return 'Cererea a expirat.';
+      default:
+        return 'Cererea este în așteptare.';
+    }
+  }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// LEAVE STATUS CARD
-// ────────────────────────────────────────────────────────────────────────────
-class _LeaveStatusCard extends StatelessWidget {
-  final Stream<DocumentSnapshot<Map<String, dynamic>>>? classDocStream;
-  final Stream<QuerySnapshot<Map<String, dynamic>>>? leaveActiveStream;
-  final bool Function(Map<String, dynamic>) isWithinSchedule;
-  final void Function(String docId)? onActiveTap;
+class _PreviewEntry {
+  final DateTime when;
+  final String title;
+  final String snippet;
+  final IconData icon;
 
-  const _LeaveStatusCard({
-    required this.classDocStream,
-    required this.leaveActiveStream,
-    required this.isWithinSchedule,
-    this.onActiveTap,
+  const _PreviewEntry({
+    required this.when,
+    required this.title,
+    required this.snippet,
+    required this.icon,
   });
+}
+
+class _PreviewLine extends StatelessWidget {
+  final _PreviewEntry entry;
+  const _PreviewLine({required this.entry});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: classDocStream,
-      builder: (context, classSnapshot) {
-        final classData =
-            classSnapshot.data?.data() ?? const <String, dynamic>{};
-        final inSchedule = isWithinSchedule(classData);
-
-        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: leaveActiveStream,
-          builder: (context, snapshot) {
-            final docs = snapshot.data?.docs ?? [];
-
-            // Client-side: filter out requests whose date has passed
-            final now = DateTime.now();
-            final todayMidnight = DateTime(now.year, now.month, now.day);
-            bool isExpiredLocally(Map<String, dynamic> data) {
-              final forDate = (data['requestedForDate'] as Timestamp?)
-                  ?.toDate();
-              if (forDate == null) return false;
-              return forDate.isBefore(todayMidnight);
-            }
-
-            final activeDoc = inSchedule
-                ? docs
-                      .cast<QueryDocumentSnapshot<Map<String, dynamic>>>()
-                      .where((doc) {
-                        final d = doc.data();
-                        return d['status'] == 'approved' &&
-                            !isExpiredLocally(d);
-                      })
-                      .firstOrNull
-                : null;
-            final pendingDoc = docs
-                .cast<QueryDocumentSnapshot<Map<String, dynamic>>>()
-                .where((doc) {
-                  final d = doc.data();
-                  return ['active', 'pending'].contains(d['status']) &&
-                      !isExpiredLocally(d);
-                })
-                .firstOrNull;
-            final hasActive = activeDoc != null;
-            final hasPending = pendingDoc != null;
-            final tapDoc = activeDoc ?? pendingDoc;
-
-            final statusText = hasActive
-                ? 'Activă'
-                : hasPending
-                ? 'În așteptare'
-                : 'Inactivă';
-            final statusColor = (hasActive || hasPending) ? _primary : _outline;
-
-            final card = Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              decoration: BoxDecoration(
-                color: _surfaceLowest,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: _outlineVariant.withValues(alpha: 0.18),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          entry.icon,
+          color: _outline.withValues(alpha: 0.7),
+          size: 14,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: RichText(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            text: TextSpan(
+              style: const TextStyle(
+                color: _onSurface,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              children: [
+                TextSpan(
+                  text: '${entry.title}: ',
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x09000000),
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
+                TextSpan(
+                  text: entry.snippet.isEmpty
+                      ? '—'
+                      : entry.snippet,
+                  style: TextStyle(
+                    color: _outline.withValues(alpha: 0.95),
                   ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: _surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(
-                      Icons.description_rounded,
-                      color: _primary,
-                      size: 26,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Cerere Învoire',
-                      style: TextStyle(
-                        color: _onSurface,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _primary.withValues(alpha: 0.09),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 9,
-                          height: 9,
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          statusText.toUpperCase(),
-                          style: TextStyle(
-                            color: statusColor,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-
-            if (tapDoc != null && onActiveTap != null) {
-              return GestureDetector(
-                onTap: () => onActiveTap!(tapDoc.id),
-                child: card,
-              );
-            }
-            return card;
-          },
-        );
-      },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// VOLUNTARIAT CARD
+// QUICK ACTIONS ROW
 // ────────────────────────────────────────────────────────────────────────────
-class _VoluntariatCard extends StatelessWidget {
+class _QuickActionsRow extends StatelessWidget {
+  final VoidCallback onTutoring;
+  final VoidCallback onSchedule;
+  final VoidCallback onMessages;
+
+  const _QuickActionsRow({
+    required this.onTutoring,
+    required this.onSchedule,
+    required this.onMessages,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            l.homeQuickActionsTitle.toUpperCase(),
+            style: TextStyle(
+              color: _outline.withValues(alpha: 0.95),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickActionTile(
+                icon: Icons.school_rounded,
+                label: l.homeQuickActionTutoring,
+                onTap: onTutoring,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _QuickActionTile(
+                icon: Icons.calendar_view_week_rounded,
+                label: l.homeQuickActionSchedule,
+                onTap: onSchedule,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _QuickActionTile(
+                icon: Icons.forum_rounded,
+                label: l.homeQuickActionMessages,
+                onTap: onMessages,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _QuickActionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
   final VoidCallback onTap;
-  const _VoluntariatCard({required this.onTap});
+
+  const _QuickActionTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0D631B), Color(0xFF19802E)],
-          ),
-          borderRadius: BorderRadius.circular(24),
+          color: _surfaceLowest,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: _outlineVariant.withValues(alpha: 0.36)),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x350D631B),
-              blurRadius: 20,
-              offset: Offset(0, 10),
+              color: Color(0x0A000000),
+              blurRadius: 8,
+              offset: Offset(0, 3),
             ),
           ],
         ),
-        child: Row(
+        child: Column(
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(16),
+                color: _primary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
-                Icons.volunteer_activism_rounded,
-                color: Colors.white,
-                size: 26,
-              ),
+              child: Icon(icon, color: _primary, size: 20),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Voluntariat',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Implica-te in comunitate',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.74),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 8),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: _onSurface,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
               ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: Colors.white.withValues(alpha: 0.6),
-              size: 24,
             ),
           ],
         ),

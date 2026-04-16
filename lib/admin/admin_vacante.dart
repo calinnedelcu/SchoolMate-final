@@ -136,7 +136,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     }
 
     final content = Container(
-      color: const Color(0xFFF8FFF5),
+      color: const Color(0xFFF5FBFF),
       child: Column(
         children: [
           if (!widget.embedded) const _TopBar(),
@@ -154,7 +154,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
               : 'Secretariat');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FFF5),
+      backgroundColor: const Color(0xFFF5FBFF),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
@@ -219,7 +219,7 @@ class _Sidebar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF0B7A21), Color(0xFF0C651D)],
+          colors: [Color(0xFF1D8EEF), Color(0xFF1D8CE9)],
         ),
       ),
       child: Column(
@@ -280,7 +280,7 @@ class _Sidebar extends StatelessWidget {
               width: double.infinity,
               child: FilledButton.icon(
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF0A4A16),
+                  backgroundColor: const Color(0xFF1988E6),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
@@ -335,7 +335,7 @@ class _Sidebar extends StatelessWidget {
                       const Text(
                         'Liceul Central',
                         style: TextStyle(
-                          color: Color(0xFFC9E6CE),
+                          color: Color(0xFFC4D9EB),
                           fontSize: 11,
                         ),
                       ),
@@ -383,12 +383,12 @@ class _SidebarTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFFCEF0D8), size: 18),
+                Icon(icon, color: const Color(0xFFCBE0F3), size: 18),
                 const SizedBox(width: 10),
                 Text(
                   label,
                   style: const TextStyle(
-                    color: Color(0xFFE6F6EA),
+                    color: Color(0xFFE4EFF8),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -414,7 +414,7 @@ class _TopBar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0A7A21), Color(0xFF07681C)],
+          colors: [Color(0xFF1C8EF0), Color(0xFF178BEF)],
         ),
       ),
       child: Row(
@@ -435,19 +435,19 @@ class _TopBar extends StatelessWidget {
                 child: Container(
                   height: 38,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF228A37),
+                    color: const Color(0xFF4395DB),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: const Row(
                     children: [
-                      Icon(Icons.search, color: Color(0xFF9FDCAD), size: 18),
+                      Icon(Icons.search, color: Color(0xFFA9CAE7), size: 18),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Cauta inregistrari...',
                           style: TextStyle(
-                            color: Color(0xFF9FDCAD),
+                            color: Color(0xFFA9CAE7),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -705,7 +705,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF1A2E1A),
+                                      color: Color(0xFF4B83B2),
                                     ),
                                   ),
                                   SizedBox(height: 6),
@@ -714,7 +714,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                     style: TextStyle(
                                       fontSize: 13,
                                       height: 1.4,
-                                      color: Color(0xFF7B8A77),
+                                      color: Color(0xFF93ABBD),
                                     ),
                                   ),
                                 ],
@@ -727,9 +727,9 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FBF6),
+                            color: const Color(0xFFF5F9FC),
                             borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: const Color(0xFFE1ECDB)),
+                            border: Border.all(color: const Color(0xFFD8E5EF)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -740,7 +740,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1,
-                                  color: Color(0xFF6D7B6A),
+                                  color: Color(0xFF89A2B7),
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -776,7 +776,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                     vertical: 16,
                                   ),
                                   side: const BorderSide(
-                                    color: Color(0xFFD7E5D2),
+                                    color: Color(0xFFCDDDEA),
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
@@ -830,13 +830,13 @@ class _VacanciesContentState extends State<_VacanciesContent> {
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1A2E1A),
+              color: Color(0xFF4B83B2),
             ),
           ),
           const SizedBox(height: 6),
           const Text(
             'Configureaza perioadele de repaus si gestioneaza vacantele scolare.',
-            style: TextStyle(fontSize: 13, color: Color(0xFF5A8040)),
+            style: TextStyle(fontSize: 13, color: Color(0xFF659BC5)),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -868,7 +868,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2EBDD)),
+        border: Border.all(color: const Color(0xFFD9E5EF)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -888,7 +888,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF1B2819),
+                color: Color(0xFF4F82AC),
               ),
             ),
           ),
@@ -905,7 +905,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                   : 'Completeaza campurile si salveaza vacanta noua.',
               style: const TextStyle(
                 fontSize: 12,
-                color: Color(0xFF6B7868),
+                color: Color(0xFF87A1B6),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -925,7 +925,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                   icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
                   label: const Text('Creeaza vacanta'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F7422),
+                    backgroundColor: const Color(0xFF238DE8),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -969,7 +969,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                           : 'Detalii vacanta selectata',
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF6D7B6A),
+                        color: Color(0xFF89A2B7),
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.5,
                       ),
@@ -992,7 +992,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                 ],
               ),
             ),
-            const Divider(height: 16, thickness: 1, color: Color(0xFFE2EBDD)),
+            const Divider(height: 16, thickness: 1, color: Color(0xFFD9E5EF)),
             Expanded(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1009,7 +1009,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1,
-                              color: Color(0xFF2A5C30),
+                              color: Color(0xFF4B8BC1),
                             ),
                           ),
                         ),
@@ -1035,7 +1035,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                 borderSide: BorderSide.none,
                               ),
                               filled: true,
-                              fillColor: const Color(0xFFF4F9F3),
+                              fillColor: const Color(0xFFF2F6FA),
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                                 vertical: 14,
@@ -1058,7 +1058,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 1,
-                                        color: Color(0xFF2A5C30),
+                                        color: Color(0xFF4B8BC1),
                                       ),
                                     ),
                                     const SizedBox(height: 6),
@@ -1094,7 +1094,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                             },
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFF4F9F3),
+                                          color: const Color(0xFFF2F6FA),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -1122,7 +1122,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                             const Icon(
                                               Icons.calendar_today_outlined,
                                               size: 16,
-                                              color: Color(0xFF7A9070),
+                                              color: Color(0xFF8FABC1),
                                             ),
                                           ],
                                         ),
@@ -1142,7 +1142,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 1,
-                                        color: Color(0xFF2A5C30),
+                                        color: Color(0xFF4B8BC1),
                                       ),
                                     ),
                                     const SizedBox(height: 6),
@@ -1174,7 +1174,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                             },
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFF4F9F3),
+                                          color: const Color(0xFFF2F6FA),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -1202,7 +1202,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                             const Icon(
                                               Icons.calendar_today_outlined,
                                               size: 16,
-                                              color: Color(0xFF7A9070),
+                                              color: Color(0xFF8FABC1),
                                             ),
                                           ],
                                         ),
@@ -1221,10 +1221,10 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                             width: double.infinity,
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF6FAF4),
+                              color: const Color(0xFFF3F7FB),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: const Color(0xFFE2EBDD),
+                                color: const Color(0xFFD9E5EF),
                               ),
                             ),
                             child: Column(
@@ -1236,7 +1236,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 0.5,
-                                    color: Color(0xFF6D7B6A),
+                                    color: Color(0xFF89A2B7),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -1245,7 +1245,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF1B2819),
+                                    color: Color(0xFF4F82AC),
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -1255,7 +1255,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                       : 'Selecteaza intervalul din calendar.',
                                   style: const TextStyle(
                                     fontSize: 12,
-                                    color: Color(0xFF667466),
+                                    color: Color(0xFF869FB4),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -1296,7 +1296,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                       ),
                                       style: FilledButton.styleFrom(
                                         backgroundColor: const Color(
-                                          0xFF0F7422,
+                                          0xFF238DE8,
                                         ),
                                         foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
@@ -1338,7 +1338,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                 '* Previzualizare: $displayedName',
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF2E7D32),
+                                  color: Color(0xFF5094CD),
                                   fontStyle: FontStyle.italic,
                                 ),
                                 textAlign: TextAlign.center,
@@ -1384,8 +1384,8 @@ class _VacanciesContentState extends State<_VacanciesContent> {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F7EE),
-        border: Border.all(color: const Color(0xFFDDE7D7), width: 1),
+        color: const Color(0xFFEDF3F8),
+        border: Border.all(color: const Color(0xFFD3E0EB), width: 1),
         borderRadius: BorderRadius.circular(8),
       ),
       padding: const EdgeInsets.all(12),
@@ -1411,7 +1411,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF37513B),
+                  color: Color(0xFF5E89AF),
                 ),
               ),
               IconButton(
@@ -1439,7 +1439,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF7FA593),
+                        color: Color(0xFF7C9EBC),
                       ),
                     ),
                   ),
@@ -1543,9 +1543,9 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: isStart || isEnd
-                                        ? const Color(0xFF2E7D32)
+                                        ? const Color(0xFF5094CD)
                                         : isBetween
-                                        ? const Color(0xFFC8E6C9)
+                                        ? const Color(0xFFC3D9EB)
                                         : Colors.transparent,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
@@ -1582,7 +1582,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2EBDD)),
+        border: Border.all(color: const Color(0xFFD9E5EF)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -1660,7 +1660,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF223624),
+                  color: Color(0xFF5284AF),
                 ),
               ),
               const SizedBox(height: 4),
@@ -1811,11 +1811,11 @@ class _VacanciesContentState extends State<_VacanciesContent> {
     final Border? border;
 
     if (isSelected) {
-      cardColor = const Color(0xFF0A7A21);
+      cardColor = const Color(0xFF1C8EF0);
       nameColor = Colors.white;
       iconColor = Colors.white;
       dateColor = Colors.white.withValues(alpha: 0.85);
-      border = Border.all(color: const Color(0xFF07681C), width: 2);
+      border = Border.all(color: const Color(0xFF178BEF), width: 2);
     } else if (isFinished) {
       cardColor = const Color(0xFFF0F0F0);
       nameColor = const Color(0xFF888888);
@@ -1823,17 +1823,17 @@ class _VacanciesContentState extends State<_VacanciesContent> {
       dateColor = const Color(0xFFAAAAAA);
       border = Border.all(color: const Color(0xFFDDDDDD), width: 1);
     } else if (isFirst) {
-      cardColor = const Color(0xFF2E7D32);
+      cardColor = const Color(0xFF5094CD);
       nameColor = Colors.white;
       iconColor = Colors.white;
       dateColor = Colors.white;
       border = null;
     } else {
-      cardColor = const Color(0xFFE8F5E9);
-      nameColor = const Color(0xFF2E7D32);
+      cardColor = const Color(0xFFE6EFF7);
+      nameColor = const Color(0xFF5094CD);
       iconColor = const Color(0xFFD32F2F);
       dateColor = const Color(0xFF666666);
-      border = Border.all(color: const Color(0xFFC8E6C9), width: 1);
+      border = Border.all(color: const Color(0xFFC3D9EB), width: 1);
     }
 
     return GestureDetector(

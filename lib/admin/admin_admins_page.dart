@@ -24,7 +24,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryGreen = Color(0xFF7AAF5B);
+    const Color primaryGreen = Color(0xFF84B0D2);
 
     if (!AppSession.isAdmin) {
       return const Scaffold(
@@ -33,12 +33,12 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FFF5),
+      backgroundColor: const Color(0xFFF5FBFF),
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF7AAF5B), Color(0xFF5A9641)],
+              colors: [Color(0xFF84B0D2), Color(0xFF6AA2CE)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -107,25 +107,25 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
               controller: searchC,
               decoration: InputDecoration(
                 hintText: "Caută admin (utilizator / nume)...",
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF7AAF5B)),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF84B0D2)),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(
-                    color: Colors.green.withValues(alpha: 0.30),
+                    color: Colors.blue.withValues(alpha: 0.30),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(
-                    color: Colors.green.withValues(alpha: 0.30),
+                    color: Colors.blue.withValues(alpha: 0.30),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: const BorderSide(
-                    color: Color(0xFF7AAF5B),
+                    color: Color(0xFF84B0D2),
                     width: 2,
                   ),
                 ),
@@ -134,7 +134,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
             ),
           ),
 
-          const Divider(height: 1, color: Color(0xFFCDE8B0)),
+          const Divider(height: 1, color: Color(0xFFACD0EC)),
 
           /// ADMINS LIST
           Expanded(
@@ -195,7 +195,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: const Color(0xFFCDE8B0)),
+                        border: Border.all(color: const Color(0xFFACD0EC)),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.04),
@@ -250,7 +250,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
             label,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF5F6771),
+              color: Color(0xFF809CB3),
               fontSize: 13,
             ),
           ),
@@ -259,7 +259,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
             value,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              color: Color(0xFF2E3B4E),
+              color: Color(0xFF5588B5),
               fontSize: 15,
             ),
           ),
@@ -301,7 +301,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                     padding: const EdgeInsets.all(20),
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF7AAF5B), Color(0xFF5A9641)],
+                        colors: [Color(0xFF84B0D2), Color(0xFF6AA2CE)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -349,7 +349,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: status == 'disabled'
-                                      ? const Color(0xFF4CAF50)
+                                      ? const Color(0xFF7AABD3)
                                       : Colors.orangeAccent,
                                   foregroundColor: Colors.white,
                                   elevation: 0,
@@ -470,7 +470,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                               backgroundColor: Colors.grey.withValues(
                                 alpha: 0.1,
                               ),
-                              foregroundColor: const Color(0xFF2E3B4E),
+                              foregroundColor: const Color(0xFF5588B5),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../core/session.dart';
 
-const _kHeaderGreen = Color(0xFF0D6F1C);
-const _kPageBg = Color(0xFFF1F5EC);
+const _kHeaderGreen = Color(0xFF208DEA);
+const _kPageBg = Color(0xFFEAF1F7);
 
 class ParentRequestsPage extends StatefulWidget {
   const ParentRequestsPage({super.key});
@@ -49,7 +49,7 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(approved ? 'Cerere aprobata!' : 'Cerere respinsa.'),
-          backgroundColor: approved ? Colors.green : const Color(0xFFAD3765),
+          backgroundColor: approved ? Colors.blue : const Color(0xFFAD3765),
         ),
       );
     } catch (e) {
@@ -382,7 +382,7 @@ class _RequestCard extends StatelessWidget {
                     width: 64,
                     height: 64,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFD0DFD0),
+                      color: Color(0xFFCAD9E5),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -391,7 +391,7 @@ class _RequestCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF07731F),
+                        color: Color(0xFF188DF1),
                         height: 1,
                       ),
                     ),
@@ -407,7 +407,7 @@ class _RequestCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 20,
-                            color: Color(0xFF111512),
+                            color: Color(0xFF5A7E9B),
                             fontWeight: FontWeight.w800,
                             height: 1.18,
                           ),
@@ -419,7 +419,7 @@ class _RequestCard extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFDDE9DE),
+                            color: const Color(0xFFD9E4ED),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Text(
@@ -428,7 +428,7 @@ class _RequestCard extends StatelessWidget {
                               fontSize: 12,
                               letterSpacing: 1.2,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF126D24),
+                              color: Color(0xFF288DE3),
                               height: 1,
                             ),
                           ),
@@ -453,7 +453,7 @@ class _RequestCard extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F4EA),
+                  color: const Color(0xFFE8F0F6),
                   borderRadius: BorderRadius.circular(22),
                 ),
                 child: Row(
@@ -464,7 +464,7 @@ class _RequestCard extends StatelessWidget {
                       child: Icon(
                         Icons.description_rounded,
                         size: 28,
-                        color: Color(0xFF0C6A20),
+                        color: Color(0xFF1E8CEA),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -477,7 +477,7 @@ class _RequestCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF364037),
+                              color: Color(0xFF6586A3),
                               letterSpacing: 0.6,
                             ),
                           ),
@@ -487,7 +487,7 @@ class _RequestCard extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 14,
                               fontStyle: FontStyle.italic,
-                              color: Color(0xFF1D231D),
+                              color: Color(0xFF5D819D),
                               height: 1.3,
                             ),
                           ),
@@ -508,7 +508,7 @@ class _RequestCard extends StatelessWidget {
                         icon: const Icon(Icons.check_rounded, size: 18),
                         label: const Text('Acceptă'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0D631B),
+                          backgroundColor: const Color(0xFF1F8BE7),
                           foregroundColor: Colors.white,
                           elevation: 2,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -578,14 +578,14 @@ class _InfoLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF0A7221)),
+        Icon(icon, size: 20, color: const Color(0xFF1B8DEF)),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             text,
             style: const TextStyle(
               fontSize: 15,
-              color: Color(0xFF303730),
+              color: Color(0xFF6584A0),
               fontWeight: FontWeight.w600,
               height: 1.2,
             ),

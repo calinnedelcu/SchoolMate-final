@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../core/session.dart';
 
-const _kHeaderGreen = Color(0xFF0D631B);
-const _kPageBg = Color(0xFFF7F9F0);
+const _kHeaderGreen = Color(0xFF1F8BE7);
+const _kPageBg = Color(0xFFEFF5FA);
 
 class ParentStudentViewData {
   final String uid;
@@ -297,12 +297,12 @@ class _StudentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final avatarBg = _avatarBackgroundColor(avatarSeed);
     final statusText = inSchool ? 'ÎN INCINTĂ' : 'ÎN AFARA INCINTEI';
-    final pillBg = inSchool ? const Color(0xFFE2EFE6) : const Color(0xFFF1E4EC);
+    final pillBg = inSchool ? const Color(0xFFDFE9F2) : const Color(0xFFF1E4EC);
     final pillBorder = inSchool
-        ? const Color(0xFFA6C8B0)
+        ? const Color(0xFFAAC3D8)
         : const Color(0xFFDCB1C5);
     final pillText = inSchool
-        ? const Color(0xFF0D6D1E)
+        ? const Color(0xFF1F8DEA)
         : const Color(0xFF922255);
 
     return Container(
@@ -365,7 +365,7 @@ class _StudentCard extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: Color(0xFF101310),
+                            color: Color(0xFF5B7A98),
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
                             height: 1.15,
@@ -419,7 +419,7 @@ class _StudentCard extends StatelessWidget {
                   height: 44,
                   margin: const EdgeInsets.only(top: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFECEFE6),
+                    color: const Color(0xFFE3ECF2),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -432,7 +432,7 @@ class _StudentCard extends StatelessWidget {
                   child: const Icon(
                     Icons.chevron_right_rounded,
                     size: 26,
-                    color: Color(0xFF1B231A),
+                    color: Color(0xFF5780A3),
                   ),
                 ),
               ],
@@ -445,14 +445,14 @@ class _StudentCard extends StatelessWidget {
 
   Color _avatarBackgroundColor(String seed) {
     const palette = [
-      Color(0xFF4F8CFF),
-      Color(0xFF00A896),
+      Color(0xFF63B3FF),
+      Color(0xFF1C90FF),
       Color(0xFFF4A261),
       Color(0xFFE76F51),
       Color(0xFF7B61FF),
-      Color(0xFF2A9D8F),
+      Color(0xFF5398DB),
       Color(0xFFC04D83),
-      Color(0xFF6C8A3B),
+      Color(0xFF619ECC),
     ];
     final normalized = seed.trim();
     final index = normalized.isEmpty
@@ -521,7 +521,7 @@ class _StudentDetailPage extends StatelessWidget {
     final headerHeight = compact ? 138.0 : 146.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9F0),
+      backgroundColor: const Color(0xFFEFF5FA),
       body: SafeArea(
         top: false,
         bottom: false,
@@ -658,7 +658,7 @@ class _StudentDetailPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(38),
                             boxShadow: const [
                               BoxShadow(
-                                color: Color(0x120D631B),
+                                color: Color(0x121F8BE7),
                                 blurRadius: 28,
                                 offset: Offset(0, 12),
                               ),
@@ -685,7 +685,7 @@ class _StudentDetailPage extends StatelessWidget {
                                           style: const TextStyle(
                                             fontSize: 26,
                                             fontWeight: FontWeight.w800,
-                                            color: Color(0xFF111811),
+                                            color: Color(0xFF537DA2),
                                             height: 1.1,
                                           ),
                                         ),
@@ -696,7 +696,7 @@ class _StudentDetailPage extends StatelessWidget {
                                             style: const TextStyle(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w700,
-                                              color: Color(0xFF0D631B),
+                                              color: Color(0xFF1F8BE7),
                                             ),
                                           ),
                                         ],
@@ -735,6 +735,9 @@ class _StudentDetailPage extends StatelessWidget {
                         // ── Voluntariat card ──
                         _VoluntariatSection(studentUid: avatarSeed),
                         const SizedBox(height: 18),
+                        // ── Tutoring card ──
+                        _TutoringSection(studentUid: avatarSeed),
+                        const SizedBox(height: 18),
                         // ── Orar card ──
                         Container(
                           width: double.infinity,
@@ -744,7 +747,7 @@ class _StudentDetailPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(30),
                             border: Border.all(
                               color: const Color(
-                                0xFFC8D1C2,
+                                0xFFBACCD9,
                               ).withValues(alpha: 0.18),
                             ),
                           ),
@@ -756,7 +759,7 @@ class _StudentDetailPage extends StatelessWidget {
                                     ? 'Orar Clasa $classId'
                                     : 'Orar',
                                 style: const TextStyle(
-                                  color: Color(0xFF151A14),
+                                  color: Color(0xFF587F9E),
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -769,7 +772,7 @@ class _StudentDetailPage extends StatelessWidget {
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(14),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF0F4E9),
+                                    color: const Color(0xFFE7F0F6),
                                     borderRadius: BorderRadius.circular(18),
                                   ),
                                   child: const Text(
@@ -828,7 +831,7 @@ class _OrarRow extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F4E9),
+        color: const Color(0xFFE7F0F6),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -838,7 +841,7 @@ class _OrarRow extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF111811),
+              color: Color(0xFF537DA2),
               height: 1,
             ),
           ),
@@ -848,7 +851,7 @@ class _OrarRow extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF0D631B),
+              color: Color(0xFF1F8BE7),
               height: 1,
             ),
           ),
@@ -897,14 +900,14 @@ class _DetailAvatarFallback extends StatelessWidget {
 
 Color _detailAvatarColor(String seed) {
   const palette = [
-    Color(0xFF4F8CFF),
-    Color(0xFF00A896),
+    Color(0xFF63B3FF),
+    Color(0xFF1C90FF),
     Color(0xFFF4A261),
     Color(0xFFE76F51),
     Color(0xFF7B61FF),
-    Color(0xFF2A9D8F),
+    Color(0xFF5398DB),
     Color(0xFFC04D83),
-    Color(0xFF6C8A3B),
+    Color(0xFF619ECC),
   ];
   final normalized = seed.trim();
   final index = normalized.isEmpty
@@ -925,12 +928,12 @@ class _StatusMetaRow extends StatelessWidget {
     final inSchool =
         normalized.contains('incinta') && !normalized.contains('afara');
     final label = inSchool ? 'ÎN INCINTĂ' : 'ÎN AFARA INCINTEI';
-    final pillBg = inSchool ? const Color(0xFFE2EFE6) : const Color(0xFFF1E4EC);
+    final pillBg = inSchool ? const Color(0xFFDFE9F2) : const Color(0xFFF1E4EC);
     final pillBorder = inSchool
-        ? const Color(0xFFA6C8B0)
+        ? const Color(0xFFAAC3D8)
         : const Color(0xFFDCB1C5);
     final pillText = inSchool
-        ? const Color(0xFF0D6D1E)
+        ? const Color(0xFF1F8DEA)
         : const Color(0xFF922255);
 
     return Align(
@@ -989,10 +992,10 @@ class _PersonMetaRow extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F2E8),
+            color: const Color(0xFFE6EEF4),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: const Color(0xFF0D631B), size: 24),
+          child: Icon(icon, color: const Color(0xFF1F8BE7), size: 24),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -1016,7 +1019,7 @@ class _PersonMetaRow extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF111811),
+                  color: Color(0xFF537DA2),
                 ),
               ),
             ],
@@ -1056,7 +1059,7 @@ class _VoluntariatSection extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: const Color(0xFFC8D1C2).withValues(alpha: 0.18),
+              color: const Color(0xFFBACCD9).withValues(alpha: 0.18),
             ),
           ),
           child: Column(
@@ -1068,7 +1071,7 @@ class _VoluntariatSection extends StatelessWidget {
                     child: Text(
                       'Voluntariat',
                       style: TextStyle(
-                        color: Color(0xFF151A14),
+                        color: Color(0xFF587F9E),
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                       ),
@@ -1106,7 +1109,7 @@ class _VoluntariatSection extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF0F4E9),
+                    color: const Color(0xFFE7F0F6),
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: const Text(
@@ -1131,7 +1134,7 @@ class _VoluntariatSection extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF0F4E9),
+                        color: const Color(0xFFE7F0F6),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
@@ -1145,7 +1148,7 @@ class _VoluntariatSection extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF111811),
+                                color: Color(0xFF537DA2),
                               ),
                             ),
                           ),
@@ -1166,6 +1169,246 @@ class _VoluntariatSection extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// TUTORING SECTION (parent child detail)
+// ────────────────────────────────────────────────────────────────────────────
+class _TutoringSection extends StatelessWidget {
+  final String studentUid;
+  const _TutoringSection({required this.studentUid});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('tutoringSessions')
+          .where('tutorUid', isEqualTo: studentUid)
+          .where('status', isEqualTo: 'completed')
+          .snapshots(),
+      builder: (context, tutorSnap) {
+        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('tutoringSessions')
+              .where('learnerUid', isEqualTo: studentUid)
+              .where('status', isEqualTo: 'completed')
+              .snapshots(),
+          builder: (context, learnerSnap) {
+            final tutorDocs = tutorSnap.data?.docs ?? [];
+            final learnerDocs = learnerSnap.data?.docs ?? [];
+
+            int totalHours = 0;
+            for (final doc in tutorDocs) {
+              totalHours += (doc.data()['hoursLogged'] as num?)?.toInt() ?? 0;
+            }
+
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: const Color(0xFFBACCD9).withValues(alpha: 0.18),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Peer Tutoring',
+                          style: TextStyle(
+                            color: Color(0xFF587F9E),
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _kHeaderGreen.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.access_time_rounded,
+                                color: _kHeaderGreen, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$totalHours ore',
+                              style: const TextStyle(
+                                color: _kHeaderGreen,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _TutoringStat(
+                          icon: Icons.menu_book_rounded,
+                          value: '${tutorDocs.length}',
+                          label: 'predate',
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _TutoringStat(
+                          icon: Icons.lightbulb_rounded,
+                          value: '${learnerDocs.length}',
+                          label: 'invatate',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  if (tutorDocs.isEmpty && learnerDocs.isEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE7F0F6),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: const Text(
+                        'Nicio sesiune de peer tutoring inca.',
+                        style: TextStyle(
+                          color: Color(0xFF717B6E),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    )
+                  else
+                    ...[...tutorDocs, ...learnerDocs].map((doc) {
+                      final d = doc.data();
+                      final subject = (d['subject'] ?? 'Materie').toString();
+                      final isTutor = d['tutorUid'] == studentUid;
+                      final otherName = isTutor
+                          ? (d['learnerName'] ?? '').toString()
+                          : (d['tutorName'] ?? '').toString();
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE7F0F6),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                isTutor
+                                    ? Icons.menu_book_rounded
+                                    : Icons.lightbulb_rounded,
+                                color: _kHeaderGreen,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      subject,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF537DA2),
+                                      ),
+                                    ),
+                                    Text(
+                                      isTutor
+                                          ? 'Tutor pentru $otherName'
+                                          : 'Elev cu $otherName',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF717B6E),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _TutoringStat extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+
+  const _TutoringStat({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE7F0F6),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: _kHeaderGreen, size: 20),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: const TextStyle(
+                  color: _kHeaderGreen,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
+              ),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF717B6E),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

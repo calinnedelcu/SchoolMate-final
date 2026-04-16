@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 import '../core/session.dart';
 
-const _kHeaderGreen = Color(0xFF0D6F1C);
-const _kPageBg = Color(0xFFF1F5EC);
+const _kHeaderGreen = Color(0xFF208DEA);
+const _kPageBg = Color(0xFFEAF1F7);
 const _kCardBg = Color(0xFFF8F8F8);
-const _kTextPrimary = Color(0xFF121512);
+const _kTextPrimary = Color(0xFF5C7B98);
 const _kTextMuted = Color(0xFF616962);
 
 enum UnifiedInboxRole { student, parent, teacher }
@@ -860,9 +860,9 @@ _CardScheme _cardScheme(_MessageState state) {
       return const _CardScheme(
         badgeLabel: 'Aprobată',
         badgeIcon: Icons.check_circle_rounded,
-        accent: Color(0xFF10762A),
-        pillBg: Color(0xFFDCE9DC),
-        pillFg: Color(0xFF0F6D25),
+        accent: Color(0xFF258DE7),
+        pillBg: Color(0xFFD8E3ED),
+        pillFg: Color(0xFF238CE7),
       );
     case _MessageState.rejected:
       return const _CardScheme(
@@ -876,9 +876,9 @@ _CardScheme _cardScheme(_MessageState state) {
       return const _CardScheme(
         badgeLabel: 'Sistem',
         badgeIcon: Icons.campaign_rounded,
-        accent: Color(0xFF1565C0),
-        pillBg: Color(0xFFDCEEFB),
-        pillFg: Color(0xFF0B57A4),
+        accent: Color(0xFF48A3EF),
+        pillBg: Color(0xFFDBEEFC),
+        pillFg: Color(0xFF2F9BF1),
       );
   }
 }

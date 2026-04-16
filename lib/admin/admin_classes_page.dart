@@ -58,10 +58,10 @@ Widget _buildDialogStatusBanner(String message, bool isError) {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: isError ? const Color(0xFFFFEBEB) : const Color(0xFFE8F5E0),
+        color: isError ? const Color(0xFFFFEBEB) : const Color(0xFFDEECF7),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: isError ? const Color(0xFFE57373) : const Color(0xFF81C784),
+          color: isError ? const Color(0xFFE57373) : const Color(0xFF86B2D6),
         ),
       ),
       child: Row(
@@ -69,7 +69,7 @@ Widget _buildDialogStatusBanner(String message, bool isError) {
           Icon(
             isError ? Icons.error_outline : Icons.check_circle_outline,
             size: 16,
-            color: isError ? const Color(0xFFE53935) : const Color(0xFF388E3C),
+            color: isError ? const Color(0xFFE53935) : const Color(0xFF5F9CCF),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -80,7 +80,7 @@ Widget _buildDialogStatusBanner(String message, bool isError) {
                 fontWeight: FontWeight.w600,
                 color: isError
                     ? const Color(0xFFB71C1C)
-                    : const Color(0xFF1B5E20),
+                    : const Color(0xFF378BD2),
               ),
             ),
           ),
@@ -173,7 +173,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF1A2E1A),
+                                  color: Color(0xFF4B83B2),
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -182,7 +182,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                                 style: const TextStyle(
                                   fontSize: 13,
                                   height: 1.4,
-                                  color: Color(0xFF7B8A77),
+                                  color: Color(0xFF93ABBD),
                                 ),
                               ),
                             ],
@@ -195,9 +195,9 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FBF6),
+                        color: const Color(0xFFF5F9FC),
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: const Color(0xFFE1ECDB)),
+                        border: Border.all(color: const Color(0xFFD8E5EF)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +208,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1,
-                              color: Color(0xFF6D7B6A),
+                              color: Color(0xFF89A2B7),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -235,7 +235,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                             selectedSubtitle,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF667466),
+                              color: Color(0xFF869FB4),
                               height: 1.4,
                             ),
                           ),
@@ -250,7 +250,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                             onPressed: () => Navigator.of(context).pop(false),
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              side: const BorderSide(color: Color(0xFFD7E5D2)),
+                              side: const BorderSide(color: Color(0xFFCDDDEA)),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
@@ -392,14 +392,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
 
   Color _avatarColor(String name) {
     const colors = [
-      Color(0xFF7986CB),
-      Color(0xFF4DB6AC),
+      Color(0xFF7FA8D9),
+      Color(0xFF7CAAD6),
       Color(0xFFFF8A65),
-      Color(0xFFA5D6A7),
+      Color(0xFFADCAE3),
       Color(0xFFCE93D8),
       Color(0xFF80DEEA),
       Color(0xFFFFCC80),
-      Color(0xFF90A4AE),
+      Color(0xFF8FAFC4),
     ];
     return colors[name.hashCode.abs() % colors.length];
   }
@@ -500,12 +500,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               width: 52,
                               height: 52,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE8F5E9),
+                                color: const Color(0xFFE6EFF7),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Icon(
                                 Icons.logout_rounded,
-                                color: Color(0xFF1F7A36),
+                                color: Color(0xFF398ED8),
                                 size: 26,
                               ),
                             ),
@@ -519,7 +519,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF1A2E1A),
+                                      color: Color(0xFF4B83B2),
                                     ),
                                   ),
                                   SizedBox(height: 6),
@@ -528,7 +528,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     style: TextStyle(
                                       fontSize: 13,
                                       height: 1.4,
-                                      color: Color(0xFF7B8A77),
+                                      color: Color(0xFF93ABBD),
                                     ),
                                   ),
                                 ],
@@ -541,9 +541,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FBF6),
+                            color: const Color(0xFFF5F9FC),
                             borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: const Color(0xFFE1ECDB)),
+                            border: Border.all(color: const Color(0xFFD8E5EF)),
                           ),
                           child: const Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -554,7 +554,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1,
-                                  color: Color(0xFF6D7B6A),
+                                  color: Color(0xFF89A2B7),
                                 ),
                               ),
                               SizedBox(height: 10),
@@ -563,7 +563,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF213321),
+                                  color: Color(0xFF5384AD),
                                 ),
                               ),
                               SizedBox(height: 8),
@@ -571,7 +571,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 'Actiunea va inchide sesiunea curenta si te va duce inapoi la ecranul principal de autentificare.',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF667466),
+                                  color: Color(0xFF869FB4),
                                   height: 1.4,
                                 ),
                               ),
@@ -591,7 +591,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     vertical: 16,
                                   ),
                                   side: const BorderSide(
-                                    color: Color(0xFFD7E5D2),
+                                    color: Color(0xFFCDDDEA),
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
@@ -614,7 +614,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         ).popUntil((route) => route.isFirst);
                                       },
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0F7422),
+                                  backgroundColor: const Color(0xFF238DE8),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
@@ -771,12 +771,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             width: 52,
                             height: 52,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE8F5E9),
+                              color: const Color(0xFFE6EFF7),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(
                               Icons.add_business_rounded,
-                              color: Color(0xFF1B5E20),
+                              color: Color(0xFF378BD2),
                               size: 26,
                             ),
                           ),
@@ -790,7 +790,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF1A2E1A),
+                                    color: Color(0xFF4B83B2),
                                   ),
                                 ),
                                 SizedBox(height: 6),
@@ -799,7 +799,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   style: TextStyle(
                                     fontSize: 13,
                                     height: 1.4,
-                                    color: Color(0xFF7B8A77),
+                                    color: Color(0xFF93ABBD),
                                   ),
                                 ),
                               ],
@@ -817,27 +817,27 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           hintText: 'Ex: 9A, 10B, 11 INFO',
                           errorText: errorText,
                           filled: true,
-                          fillColor: const Color(0xFFF4F9F3),
+                          fillColor: const Color(0xFFF2F6FA),
                           prefixIcon: const Icon(
                             Icons.class_outlined,
-                            color: Color(0xFF6B8E62),
+                            color: Color(0xFF85A7C2),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: const BorderSide(
-                              color: Color(0xFFD8E7D3),
+                              color: Color(0xFFCFDFEB),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: const BorderSide(
-                              color: Color(0xFFD8E7D3),
+                              color: Color(0xFFCFDFEB),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: const BorderSide(
-                              color: Color(0xFF5C8B42),
+                              color: Color(0xFF699FC9),
                               width: 1.5,
                             ),
                           ),
@@ -863,7 +863,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   vertical: 16,
                                 ),
                                 side: const BorderSide(
-                                  color: Color(0xFFD7E5D2),
+                                  color: Color(0xFFCDDDEA),
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
@@ -913,7 +913,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       }
                                     },
                               style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFF0F7422),
+                                backgroundColor: const Color(0xFF238DE8),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
@@ -1156,14 +1156,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               style: TextStyle(
                                 fontSize: 27,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF1A2E1A),
+                                color: Color(0xFF4B83B2),
                               ),
                             ),
                             const Spacer(),
                             TextButton(
                               onPressed: busy ? null : () => Navigator.pop(ctx),
                               style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFF5F6771),
+                                foregroundColor: const Color(0xFF809CB3),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20,
                                   vertical: 14,
@@ -1222,7 +1222,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       if (ctx.mounted) Navigator.pop(ctx);
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2E6B2E),
+                                backgroundColor: const Color(0xFF4C8EC5),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(
@@ -1276,7 +1276,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w800,
-                                                  color: Color(0xFF1A2E1A),
+                                                  color: Color(0xFF4B83B2),
                                                 ),
                                               ),
                                               const Spacer(),
@@ -1288,12 +1288,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: onboardingComplete
-                                                      ? const Color(0xFFE6EFE8)
+                                                      ? const Color(0xFFE3EBF2)
                                                       : const Color(0xFFFFEBEB),
                                                   border: Border.all(
                                                     color: onboardingComplete
                                                         ? const Color(
-                                                            0xFFC6DAC9,
+                                                            0xFFBFD1E1,
                                                           )
                                                         : const Color(
                                                             0xFFE8AAAA,
@@ -1318,7 +1318,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                         color:
                                                             onboardingComplete
                                                             ? const Color(
-                                                                0xFF2E793A,
+                                                                0xFF4F92CC,
                                                               )
                                                             : const Color(
                                                                 0xFFC0392B,
@@ -1330,10 +1330,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     if (onboardingComplete)
                                                       _PulsingDot(
                                                         colorA: const Color(
-                                                          0xFFC6DAC9,
+                                                          0xFFBFD1E1,
                                                         ),
                                                         colorB: const Color(
-                                                          0xFF2E793A,
+                                                          0xFF4F92CC,
                                                         ),
                                                       )
                                                     else
@@ -1357,7 +1357,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF2A5C30),
+                                              color: Color(0xFF4B8BC1),
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -1369,7 +1369,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFEBEFE5),
+                                              color: const Color(0xFFE2EBF2),
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -1459,7 +1459,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
                                                         color: Color(
-                                                          0xFF2A5C30,
+                                                          0xFF4B8BC1,
                                                         ),
                                                       ),
                                                     ),
@@ -1474,7 +1474,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
-                                                          0xFFF7F9F3,
+                                                          0xFFF2F6FA,
                                                         ),
                                                         borderRadius:
                                                             BorderRadius.circular(
@@ -1508,7 +1508,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
                                                         color: Color(
-                                                          0xFF2A5C30,
+                                                          0xFF4B8BC1,
                                                         ),
                                                       ),
                                                     ),
@@ -1523,7 +1523,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
-                                                          0xFFF7F9F3,
+                                                          0xFFF2F6FA,
                                                         ),
                                                         borderRadius:
                                                             BorderRadius.circular(
@@ -1739,7 +1739,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                             ),
                                                         decoration: BoxDecoration(
                                                           color: const Color(
-                                                            0xFFEBEFE5,
+                                                            0xFFE2EBF2,
                                                           ),
                                                           borderRadius:
                                                               BorderRadius.circular(
@@ -1785,7 +1785,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                   .keyboard_arrow_down_rounded,
                                                               size: 20,
                                                               color: Color(
-                                                                0xFF9AB88A,
+                                                                0xFF8BAFCB,
                                                               ),
                                                             ),
                                                             items: [
@@ -1800,7 +1800,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                     fontSize:
                                                                         16,
                                                                     color: Color(
-                                                                      0xFF9AB88A,
+                                                                      0xFF8BAFCB,
                                                                     ),
                                                                   ),
                                                                 ),
@@ -1863,7 +1863,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                 FontWeight.w700,
                                                             letterSpacing: 1,
                                                             color: Color(
-                                                              0xFF2A5C30,
+                                                              0xFF4B8BC1,
                                                             ),
                                                           ),
                                                         ),
@@ -1967,7 +1967,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                 FontWeight.w700,
                                                             letterSpacing: 1,
                                                             color: Color(
-                                                              0xFF2A5C30,
+                                                              0xFF4B8BC1,
                                                             ),
                                                           ),
                                                         ),
@@ -1985,7 +1985,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                               ),
                                                           decoration: BoxDecoration(
                                                             color: const Color(
-                                                              0xFFF7F9F3,
+                                                              0xFFF2F6FA,
                                                             ),
                                                             borderRadius:
                                                                 BorderRadius.circular(
@@ -2011,7 +2011,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                     .keyboard_arrow_down_rounded,
                                                                 size: 18,
                                                                 color: Color(
-                                                                  0xFF9AB88A,
+                                                                  0xFF8BAFCB,
                                                                 ),
                                                               ),
                                                             ],
@@ -2045,7 +2045,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF2A5C30),
+                                              color: Color(0xFF4B8BC1),
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -2077,7 +2077,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: const Color(
-                                                    0xFFEBEFE5,
+                                                    0xFFE2EBF2,
                                                   ),
                                                   borderRadius:
                                                       BorderRadius.circular(10),
@@ -2110,7 +2110,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       Icons
                                                           .keyboard_arrow_down_rounded,
                                                       size: 20,
-                                                      color: Color(0xFF9AB88A),
+                                                      color: Color(0xFF8BAFCB),
                                                     ),
                                                     items: allClassesList
                                                         .map(
@@ -2559,14 +2559,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             style: TextStyle(
                               fontSize: 27,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF1A2E1A),
+                              color: Color(0xFF4B83B2),
                             ),
                           ),
                           const Spacer(),
                           TextButton(
                             onPressed: busy ? null : () => Navigator.pop(ctx),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF5F6771),
+                              foregroundColor: const Color(0xFF809CB3),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
                                 vertical: 14,
@@ -2625,7 +2625,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     if (ctx.mounted) Navigator.pop(ctx);
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2E6B2E),
+                              backgroundColor: const Color(0xFF4C8EC5),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
@@ -2677,7 +2677,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.w800,
-                                              color: Color(0xFF1A2E1A),
+                                              color: Color(0xFF4B83B2),
                                             ),
                                           ),
                                           const Spacer(),
@@ -2688,11 +2688,11 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: onboardingComplete
-                                                  ? const Color(0xFFE6EFE8)
+                                                  ? const Color(0xFFE3EBF2)
                                                   : const Color(0xFFFFEBEB),
                                               border: Border.all(
                                                 color: onboardingComplete
-                                                    ? const Color(0xFFC6DAC9)
+                                                    ? const Color(0xFFBFD1E1)
                                                     : const Color(0xFFE8AAAA),
                                                 width: 1.5,
                                               ),
@@ -2711,7 +2711,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     fontWeight: FontWeight.w700,
                                                     color: onboardingComplete
                                                         ? const Color(
-                                                            0xFF2E793A,
+                                                            0xFF4F92CC,
                                                           )
                                                         : const Color(
                                                             0xFFC0392B,
@@ -2723,10 +2723,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                 if (onboardingComplete)
                                                   _PulsingDot(
                                                     colorA: const Color(
-                                                      0xFFC6DAC9,
+                                                      0xFFBFD1E1,
                                                     ),
                                                     colorB: const Color(
-                                                      0xFF2E793A,
+                                                      0xFF4F92CC,
                                                     ),
                                                   )
                                                 else
@@ -2750,7 +2750,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: 1,
-                                          color: Color(0xFF2A5C30),
+                                          color: Color(0xFF4B8BC1),
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -2762,7 +2762,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         ),
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFEBEFE5),
+                                          color: const Color(0xFFE2EBF2),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -2847,7 +2847,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.w700,
                                                     letterSpacing: 1,
-                                                    color: Color(0xFF2A5C30),
+                                                    color: Color(0xFF4B8BC1),
                                                   ),
                                                 ),
                                                 const SizedBox(height: 6),
@@ -2861,7 +2861,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       ),
                                                   decoration: BoxDecoration(
                                                     color: const Color(
-                                                      0xFFF7F9F3,
+                                                      0xFFF2F6FA,
                                                     ),
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -2891,7 +2891,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.w700,
                                                     letterSpacing: 1,
-                                                    color: Color(0xFF2A5C30),
+                                                    color: Color(0xFF4B8BC1),
                                                   ),
                                                 ),
                                                 const SizedBox(height: 6),
@@ -2905,7 +2905,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       ),
                                                   decoration: BoxDecoration(
                                                     color: const Color(
-                                                      0xFFF7F9F3,
+                                                      0xFFF2F6FA,
                                                     ),
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -2932,7 +2932,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: 1,
-                                          color: Color(0xFF2A5C30),
+                                          color: Color(0xFF4B8BC1),
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -3002,7 +3002,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               vertical: 10,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFEBEFE5),
+                                              color: const Color(0xFFE2EBF2),
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -3031,7 +3031,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   Icons
                                                       .keyboard_arrow_down_rounded,
                                                   size: 20,
-                                                  color: Color(0xFF9AB88A),
+                                                  color: Color(0xFF8BAFCB),
                                                 ),
                                                 items: availableClassIds
                                                     .map(
@@ -3428,7 +3428,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF1A2E1A),
+                              color: Color(0xFF4B83B2),
                             ),
                           ),
                           SizedBox(height: 6),
@@ -3437,7 +3437,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             style: TextStyle(
                               fontSize: 13,
                               height: 1.4,
-                              color: Color(0xFF7B8A77),
+                              color: Color(0xFF93ABBD),
                             ),
                           ),
                         ],
@@ -3450,9 +3450,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FBF6),
+                    color: const Color(0xFFF5F9FC),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFE1ECDB)),
+                    border: Border.all(color: const Color(0xFFD8E5EF)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -3463,7 +3463,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1,
-                          color: Color(0xFF6D7B6A),
+                          color: Color(0xFF89A2B7),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -3490,7 +3490,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                         'Actiunea va elimina clasa din lista si va sterge datele asociate acesteia.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF667466),
+                          color: Color(0xFF869FB4),
                           height: 1.4,
                         ),
                       ),
@@ -3505,7 +3505,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                         onPressed: () => Navigator.of(ctx).pop(false),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Color(0xFFD7E5D2)),
+                          side: const BorderSide(color: Color(0xFFCDDDEA)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -3595,7 +3595,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     }
 
     final body = Container(
-      color: const Color(0xFFF8FFF5),
+      color: const Color(0xFFF5FBFF),
       child: Column(
         children: [
           if (!widget.embedded) const _ClassesTopBar(),
@@ -3678,7 +3678,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           'Nu exista clase configurate.',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Color(0xFF5B6B58),
+                            color: Color(0xFF7A99B1),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -3690,7 +3690,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           ),
                           label: const Text('Creează Clasă Nouă'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2E6B2E),
+                            backgroundColor: const Color(0xFF4C8EC5),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 22,
@@ -3721,7 +3721,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF223624),
+                                color: Color(0xFF5284AF),
                                 letterSpacing: -0.4,
                               ),
                             ),
@@ -3730,7 +3730,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               'Administrarea elevilor si configurarea programului operational.',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF5A8040),
+                                color: Color(0xFF659BC5),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -3749,7 +3749,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         style: TextStyle(
                                           fontSize: 28,
                                           fontWeight: FontWeight.w800,
-                                          color: Color(0xFF223624),
+                                          color: Color(0xFF5284AF),
                                           letterSpacing: -0.4,
                                         ),
                                       ),
@@ -3758,7 +3758,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         'Administrarea elevilor si configurarea programului operational.',
                                         style: TextStyle(
                                           fontSize: 13,
-                                          color: Color(0xFF5A8040),
+                                          color: Color(0xFF659BC5),
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -3779,7 +3779,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       label: const Text('Creează Clasă Nouă'),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: const Color(
-                                          0xFF0F7422,
+                                          0xFF238DE8,
                                         ),
                                         foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
@@ -3859,7 +3859,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               ),
                               label: const Text('Creează Clasă Nouă'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0F7422),
+                                backgroundColor: const Color(0xFF238DE8),
                                 foregroundColor: Colors.white,
                                 minimumSize: const Size.fromHeight(56),
                                 padding: const EdgeInsets.symmetric(
@@ -4005,7 +4005,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     if (widget.embedded) return body;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FFF5),
+      backgroundColor: const Color(0xFFF5FBFF),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
@@ -4071,7 +4071,7 @@ class _ClassesTopBar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0A7A21), Color(0xFF07681C)],
+          colors: [Color(0xFF1C8EF0), Color(0xFF178BEF)],
         ),
       ),
       child: Row(
@@ -4092,19 +4092,19 @@ class _ClassesTopBar extends StatelessWidget {
                 child: Container(
                   height: 38,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF228A37),
+                    color: const Color(0xFF4395DB),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: const Row(
                     children: [
-                      Icon(Icons.search, color: Color(0xFF9FDCAD), size: 18),
+                      Icon(Icons.search, color: Color(0xFFA9CAE7), size: 18),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Cauta inregistrari...',
                           style: TextStyle(
-                            color: Color(0xFF9FDCAD),
+                            color: Color(0xFFA9CAE7),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -4157,7 +4157,7 @@ class _ClassesSidebar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF0B7A21), Color(0xFF0C651D)],
+          colors: [Color(0xFF1D8EEF), Color(0xFF1D8CE9)],
         ),
       ),
       child: Column(
@@ -4217,7 +4217,7 @@ class _ClassesSidebar extends StatelessWidget {
               width: double.infinity,
               child: FilledButton.icon(
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF0A4A16),
+                  backgroundColor: const Color(0xFF1988E6),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
@@ -4272,7 +4272,7 @@ class _ClassesSidebar extends StatelessWidget {
                       const Text(
                         'Liceul Central',
                         style: TextStyle(
-                          color: Color(0xFFC9E6CE),
+                          color: Color(0xFFC4D9EB),
                           fontSize: 11,
                         ),
                       ),
@@ -4320,12 +4320,12 @@ class _SidebarTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFFCEF0D8), size: 18),
+                Icon(icon, color: const Color(0xFFCBE0F3), size: 18),
                 const SizedBox(width: 10),
                 Text(
                   label,
                   style: const TextStyle(
-                    color: Color(0xFFE6F6EA),
+                    color: Color(0xFFE4EFF8),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -4364,7 +4364,7 @@ class _ClassSelectorCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2EBDD)),
+        border: Border.all(color: const Color(0xFFD9E5EF)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -4380,7 +4380,7 @@ class _ClassSelectorCard extends StatelessWidget {
             'SELECTEAZA CLASA',
             style: TextStyle(
               fontSize: 10,
-              color: Color(0xFF6D7B6A),
+              color: Color(0xFF89A2B7),
               fontWeight: FontWeight.w800,
               letterSpacing: 1,
             ),
@@ -4414,23 +4414,23 @@ class _ClassSelectorCard extends StatelessWidget {
                     'Alege o clasă',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF7B8A77),
+                      color: Color(0xFF93ABBD),
                     ),
                   ),
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: const Color(0xFFF5F8F2),
+                    fillColor: const Color(0xFFF1F5F9),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 10,
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFDAE8D0)),
+                      borderSide: const BorderSide(color: Color(0xFFCCDEEC)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFDAE8D0)),
+                      borderSide: const BorderSide(color: Color(0xFFCCDEEC)),
                     ),
                   ),
                   icon: const Icon(Icons.keyboard_arrow_down_rounded),
@@ -4592,7 +4592,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A2E1A),
+                    color: Color(0xFF4B83B2),
                   ),
                 ),
                 content: Column(
@@ -4669,7 +4669,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E6B2E),
+                      backgroundColor: const Color(0xFF4C8EC5),
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () {
@@ -4789,7 +4789,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2EBDD)),
+        border: Border.all(color: const Color(0xFFD9E5EF)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -4808,7 +4808,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF1B2819),
+                color: Color(0xFF4F82AC),
               ),
             ),
           ),
@@ -4822,7 +4822,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                     : 'Clasa nu are orar. Creeaza unul pentru a-l putea modifica.',
                 style: const TextStyle(
                   fontSize: 12,
-                  color: Color(0xFF6B7868),
+                  color: Color(0xFF87A1B6),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -4846,7 +4846,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
                   label: const Text('Creeaza orar'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F7422),
+                    backgroundColor: const Color(0xFF238DE8),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -4869,7 +4869,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                       _editing ? 'Selecteaza zilele si orele' : 'Orarul clasei',
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF6D7B6A),
+                        color: Color(0xFF89A2B7),
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.5,
                       ),
@@ -4884,7 +4884,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                 ],
               ),
             ),
-            const Divider(height: 16, thickness: 1, color: Color(0xFFE2EBDD)),
+            const Divider(height: 16, thickness: 1, color: Color(0xFFD9E5EF)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Wrap(
@@ -4898,15 +4898,15 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                     onSelected: _editing
                         ? (value) => _toggleDay(entry.key, value)
                         : null,
-                    selectedColor: const Color(0xFFDFF0D5),
-                    checkmarkColor: const Color(0xFF1B5E20),
+                    selectedColor: const Color(0xFFD2E5F3),
+                    checkmarkColor: const Color(0xFF378BD2),
                     labelStyle: TextStyle(
                       color: selected
-                          ? const Color(0xFF1B5E20)
-                          : const Color(0xFF5D6D59),
+                          ? const Color(0xFF378BD2)
+                          : const Color(0xFF7B9AB2),
                       fontWeight: FontWeight.w700,
                     ),
-                    side: const BorderSide(color: Color(0xFFCFDFCC)),
+                    side: const BorderSide(color: Color(0xFFC6D7E5)),
                   );
                 }).toList(),
               ),
@@ -4918,7 +4918,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                 child: Text(
                   'Selecteaza cel putin o zi pentru orar.',
                   style: TextStyle(
-                    color: Color(0xFF667466),
+                    color: Color(0xFF869FB4),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -4938,7 +4938,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   widgets.add(
                     Container(
                       decoration: isToday
-                          ? const BoxDecoration(color: Color(0xFFE8F5E9))
+                          ? const BoxDecoration(color: Color(0xFFE6EFF7))
                           : null,
                       padding: const EdgeInsets.symmetric(
                         vertical: 16,
@@ -4952,7 +4952,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                 ? const Icon(
                                     Icons.play_arrow_rounded,
                                     size: 14,
-                                    color: Color(0xFF2E7D32),
+                                    color: Color(0xFF5094CD),
                                   )
                                 : null,
                           ),
@@ -4963,7 +4963,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF1B5E20),
+                                color: Color(0xFF378BD2),
                               ),
                             ),
                           ),
@@ -4984,7 +4984,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF0F4EE),
+                                    color: const Color(0xFFECF2F6),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
@@ -5028,7 +5028,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF0F4EE),
+                                    color: const Color(0xFFECF2F6),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
@@ -5063,7 +5063,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                       const Divider(
                         height: 1,
                         thickness: 1,
-                        color: Color(0xFFE2EBDD),
+                        color: Color(0xFFD9E5EF),
                       ),
                     );
                   }
@@ -5108,7 +5108,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                               : 'Creeaza orar',
                         ),
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF0F7422),
+                          backgroundColor: const Color(0xFF238DE8),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
@@ -5151,7 +5151,7 @@ class _ClassTeacherCard extends StatelessWidget {
 
   static const TextStyle _emptyStateTextStyle = TextStyle(
     fontSize: 14,
-    color: Color(0xFF9BAA97),
+    color: Color(0xFF95ADC1),
     fontStyle: FontStyle.italic,
   );
 
@@ -5162,7 +5162,7 @@ class _ClassTeacherCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2EBDD)),
+        border: Border.all(color: const Color(0xFFD9E5EF)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -5178,7 +5178,7 @@ class _ClassTeacherCard extends StatelessWidget {
             'DIRIGINTELE CLASEI',
             style: TextStyle(
               fontSize: 10,
-              color: Color(0xFF6D7B6A),
+              color: Color(0xFF89A2B7),
               fontWeight: FontWeight.w800,
               letterSpacing: 1,
             ),
@@ -5224,7 +5224,7 @@ class _ClassTeacherCard extends StatelessWidget {
                       height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDFF0D5),
+                        color: const Color(0xFFD2E5F3),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -5232,7 +5232,7 @@ class _ClassTeacherCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF2C6E30),
+                          color: Color(0xFF4A8EC7),
                         ),
                       ),
                     ),
@@ -5246,7 +5246,7 @@ class _ClassTeacherCard extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF1F2F1E),
+                              color: Color(0xFF5183AD),
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -5254,7 +5254,7 @@ class _ClassTeacherCard extends StatelessWidget {
                             'Username: $teacherUsername',
                             style: const TextStyle(
                               fontSize: 11,
-                              color: Color(0xFF6A7B68),
+                              color: Color(0xFF88A2B7),
                             ),
                           ),
                         ],
@@ -5335,7 +5335,7 @@ class _ClassStudentsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2EBDD)),
+        border: Border.all(color: const Color(0xFFD9E5EF)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -5356,7 +5356,7 @@ class _ClassStudentsCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1B2819),
+                    color: Color(0xFF4F82AC),
                   ),
                 ),
                 const Spacer(),
@@ -5367,14 +5367,14 @@ class _ClassStudentsCard extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEAF6E0),
+                      color: const Color(0xFFDEEDF8),
                       borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: const Color(0xFFC9E1B8)),
+                      border: Border.all(color: const Color(0xFFB3D0E6)),
                     ),
                     child: Text(
                       className!,
                       style: const TextStyle(
-                        color: Color(0xFF2C6E30),
+                        color: Color(0xFF4A8EC7),
                         fontWeight: FontWeight.w800,
                         fontSize: 11,
                       ),
@@ -5493,9 +5493,9 @@ class _ClassStudentsList extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 9),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FBF4),
+                color: const Color(0xFFF3F8FC),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE4EEDE)),
+                border: Border.all(color: const Color(0xFFDBE7F1)),
               ),
               child: Row(
                 children: [
@@ -5504,7 +5504,7 @@ class _ClassStudentsList extends StatelessWidget {
                     height: 36,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFC4EEA9),
+                      color: const Color(0xFFA6D0F1),
                       borderRadius: BorderRadius.circular(9),
                     ),
                     child: Text(
@@ -5512,7 +5512,7 @@ class _ClassStudentsList extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF1E3F1E),
+                        color: Color(0xFF4686BC),
                       ),
                     ),
                   ),
@@ -5526,7 +5526,7 @@ class _ClassStudentsList extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF1F2F1E),
+                            color: Color(0xFF5183AD),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -5534,7 +5534,7 @@ class _ClassStudentsList extends StatelessWidget {
                           'Username: $username',
                           style: const TextStyle(
                             fontSize: 11,
-                            color: Color(0xFF6A7B68),
+                            color: Color(0xFF88A2B7),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -5548,12 +5548,12 @@ class _ClassStudentsList extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: inSchool
-                          ? const Color(0xFFE8F5E9)
+                          ? const Color(0xFFE6EFF7)
                           : const Color(0xFFFFEBEE),
                       borderRadius: BorderRadius.circular(999),
                       border: Border.all(
                         color: inSchool
-                            ? const Color(0xFF4CAF50)
+                            ? const Color(0xFF7AABD3)
                             : const Color(0xFFF44336),
                       ),
                     ),
@@ -5563,7 +5563,7 @@ class _ClassStudentsList extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: inSchool
-                            ? const Color(0xFF2E7D32)
+                            ? const Color(0xFF5094CD)
                             : const Color(0xFFC62828),
                       ),
                     ),
@@ -5586,7 +5586,7 @@ class _ClassStudentsList extends StatelessWidget {
                       photoUrl: photoUrl,
                     ),
                     icon: const Icon(Icons.settings, size: 16),
-                    color: const Color(0xFF7D8E79),
+                    color: const Color(0xFF95ACBF),
                   ),
                 ],
               ),
@@ -5675,10 +5675,10 @@ class _ExportBar extends StatelessWidget {
               : const Icon(Icons.description_outlined, size: 18),
           label: Text(busy ? 'Export...' : 'Exportă conturi elevi'),
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF0F7422),
+            backgroundColor: const Color(0xFF238DE8),
             foregroundColor: Colors.white,
-            disabledBackgroundColor: const Color(0xFFDDE8D7),
-            disabledForegroundColor: const Color(0xFF8B9486),
+            disabledBackgroundColor: const Color(0xFFD3E1EC),
+            disabledForegroundColor: const Color(0xFF7F9AAF),
             padding: const EdgeInsets.symmetric(vertical: 28),
             textStyle: const TextStyle(
               fontWeight: FontWeight.w700,
@@ -5693,7 +5693,7 @@ class _ExportBar extends StatelessWidget {
         const Text(
           'Exportă lista completă a elevilor, inclusiv username-urile și parolele generate pentru accesul în aplicație.',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 11, color: Color(0xFF7A8F77)),
+          style: TextStyle(fontSize: 11, color: Color(0xFF94ACC0)),
         ),
       ],
     );

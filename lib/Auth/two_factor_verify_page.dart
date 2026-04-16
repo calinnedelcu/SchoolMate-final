@@ -30,12 +30,12 @@ class TwoFactorVerifyPage extends StatefulWidget {
 }
 
 class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
-  static const _darkBg = Color(0xFF0A2E11);
-  static const _leftPanelGreen = Color(0xFF0C5A22);
-  static const _primaryGreen = Color(0xFF1F6B38);
-  static const _cardBg = Color(0xFFF5F7F2);
-  static const _infoBoxBg = Color(0xFFE9F4EE);
-  static const _infoBoxBorder = Color(0xFFBFDECC);
+  static const _darkBg = Color(0xFF2484D4);
+  static const _leftPanelGreen = Color(0xFF1D89E7);
+  static const _primaryGreen = Color(0xFF3A8CD3);
+  static const _cardBg = Color(0xFFF1F5F8);
+  static const _infoBoxBg = Color(0xFFE7EFF6);
+  static const _infoBoxBorder = Color(0xFFB9D0E4);
 
   final _codeController = TextEditingController();
   bool _loading = false;
@@ -573,7 +573,7 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
                   onPressed: (_loading || _sending) ? null : _verify,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _primaryGreen,
-                    disabledBackgroundColor: const Color(0xFF1F6B38),
+                    disabledBackgroundColor: const Color(0xFF3A8CD3),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),

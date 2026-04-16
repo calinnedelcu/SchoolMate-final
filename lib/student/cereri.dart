@@ -3,12 +3,12 @@ import 'package:firster/core/session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-const _primary = Color(0xFF0D631B);
-const _surface = Color(0xFFECEFE6);
-const _card = Color(0xFFF7F8F3);
-const _cardMuted = Color(0xFFE8ECE3);
-const _textDark = Color(0xFF131A14);
-const _textMuted = Color(0xFF4A5750);
+const _primary = Color(0xFF1F8BE7);
+const _surface = Color(0xFFE3ECF2);
+const _card = Color(0xFFF2F6F9);
+const _cardMuted = Color(0xFFE0E9EF);
+const _textDark = Color(0xFF557EA1);
+const _textMuted = Color(0xFF6C8BA6);
 
 class CereriScreen extends StatefulWidget {
   final ValueChanged<int>? onNavigateTab;
@@ -285,14 +285,14 @@ class _CereriScreenState extends State<CereriScreen> {
                   hourMinuteShape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: const BorderSide(
-                      color: Color(0xFFCAD5C5),
+                      color: Color(0xFFBDCFDD),
                       width: 1.2,
                     ),
                   ),
                   dayPeriodShape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: const BorderSide(
-                      color: Color(0xFFCAD5C5),
+                      color: Color(0xFFBDCFDD),
                       width: 1.2,
                     ),
                   ),
@@ -584,7 +584,7 @@ class _CereriScreenState extends State<CereriScreen> {
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE0EBE1),
+                        color: const Color(0xFFDCE6EF),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -895,7 +895,7 @@ class _CereriScreenState extends State<CereriScreen> {
                                 disabledForegroundColor: Colors.white,
                                 minimumSize: const Size.fromHeight(74),
                                 elevation: 6,
-                                shadowColor: const Color(0x660D631B),
+                                shadowColor: const Color(0x661F8BE7),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(22),
                                 ),
@@ -928,7 +928,7 @@ class _CereriScreenState extends State<CereriScreen> {
                                   child: Text(
                                     'Cererile trimise expira automat dupa ora 00:00 in ziua respectiva.',
                                     style: TextStyle(
-                                      color: Color(0xFF283028),
+                                      color: Color(0xFF6084A1),
                                       fontSize: 17,
                                       fontWeight: FontWeight.w500,
                                       height: 1.38,
@@ -1036,12 +1036,12 @@ class _RecipientCard extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: const BoxDecoration(
-                color: Color(0xFFD5E1D4),
+                color: Color(0xFFCFDCE6),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: selected ? _primary : const Color(0xFF3D493E),
+                color: selected ? _primary : const Color(0xFF6788A5),
                 size: 38,
               ),
             ),
@@ -1092,7 +1092,7 @@ class _LabeledInputBox extends StatelessWidget {
             hintText: hintText,
             hintStyle: const TextStyle(
               fontSize: 18,
-              color: Color(0xFFA8B0A4),
+              color: Color(0xFFA2B6C6),
               fontWeight: FontWeight.w500,
             ),
             filled: true,
@@ -1104,14 +1104,14 @@ class _LabeledInputBox extends StatelessWidget {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(
-                color: Color(0xFFCED8C8),
+                color: Color(0xFFC1D2DF),
                 width: 1.2,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(
-                color: Color(0xFFCED8C8),
+                color: Color(0xFFC1D2DF),
                 width: 1.2,
               ),
             ),
@@ -1124,7 +1124,7 @@ class _LabeledInputBox extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: const BoxDecoration(
-                color: Color(0xFFAED2AD),
+                color: Color(0xFFB3CCE0),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: _primary, size: 21),
@@ -1156,11 +1156,11 @@ class _ReasonBox extends StatelessWidget {
         contentPadding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFCED8C8), width: 1.2),
+          borderSide: const BorderSide(color: Color(0xFFC1D2DF), width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFCED8C8), width: 1.2),
+          borderSide: const BorderSide(color: Color(0xFFC1D2DF), width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),

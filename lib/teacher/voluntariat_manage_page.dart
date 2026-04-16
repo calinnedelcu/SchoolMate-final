@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../core/session.dart';
 
-const _kHeaderGreen = Color(0xFF0D631B);
-const _kPageBg = Color(0xFFF7F9F0);
+const _kHeaderGreen = Color(0xFF1F8BE7);
+const _kPageBg = Color(0xFFEFF5FA);
 const _kCardBg = Color(0xFFFFFFFF);
 const _kOutline = Color(0xFF717B6E);
-const _kOnSurface = Color(0xFF151A14);
+const _kOnSurface = Color(0xFF587F9E);
 
 class VoluntariatManagePage extends StatefulWidget {
   const VoluntariatManagePage({super.key});
@@ -235,7 +235,7 @@ class _VoluntariatManagePageState extends State<VoluntariatManagePage> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F4E9),
+                      color: const Color(0xFFE7F0F6),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -286,7 +286,7 @@ class _VoluntariatManagePageState extends State<VoluntariatManagePage> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF0D631B), Color(0xFF19802E)],
+                  colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
                 ),
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -662,7 +662,7 @@ class _InputField extends StatelessWidget {
         hintText: label,
         hintStyle: const TextStyle(color: _kOutline, fontSize: 13),
         filled: true,
-        fillColor: const Color(0xFFF0F4E9),
+        fillColor: const Color(0xFFE7F0F6),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(

@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import '../core/session.dart';
 
-const _kHeaderGreen = Color(0xFF0D631B);
-const _kPageBg = Color(0xFFF7F9F0);
+const _kHeaderGreen = Color(0xFF1F8BE7);
+const _kPageBg = Color(0xFFEFF5FA);
 const _kCardBg = Color(0xFFF8F8F8);
 
 class MesajeDirPage extends StatefulWidget {
@@ -115,9 +115,9 @@ class _MessageCard extends StatelessWidget {
 
     switch (data.type) {
       case _MessageItemType.success:
-        accentColor = const Color(0xFF10762A);
-        tagBg = const Color(0xFFDCE9DC);
-        tagText = const Color(0xFF0F6D25);
+        accentColor = const Color(0xFF258DE7);
+        tagBg = const Color(0xFFD8E3ED);
+        tagText = const Color(0xFF238CE7);
         sourceIcon = Icons.check_circle_rounded;
         break;
       case _MessageItemType.error:
@@ -127,9 +127,9 @@ class _MessageCard extends StatelessWidget {
         sourceIcon = Icons.cancel_rounded;
         break;
       case _MessageItemType.system:
-        accentColor = const Color(0xFF1565C0);
-        tagBg = const Color(0xFFDCEEFB);
-        tagText = const Color(0xFF0B57A4);
+        accentColor = const Color(0xFF48A3EF);
+        tagBg = const Color(0xFFDBEEFC);
+        tagText = const Color(0xFF2F9BF1);
         sourceIcon = Icons.info_rounded;
         break;
       case _MessageItemType.pending:
@@ -144,7 +144,7 @@ class _MessageCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: _kCardBg,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E7DD)),
+        border: Border.all(color: const Color(0xFFD9E3EB)),
       ),
       child: Row(
         children: [
@@ -208,7 +208,7 @@ class _MessageCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF121512),
+                          color: Color(0xFF5C7B98),
                           height: 1.15,
                         ),
                       ),
@@ -254,7 +254,7 @@ class _MessageCard extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFF2F3730),
+                                        color: Color(0xFF6486A1),
                                         letterSpacing: 0.5,
                                       ),
                                     ),
@@ -266,7 +266,7 @@ class _MessageCard extends StatelessWidget {
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontStyle: FontStyle.italic,
-                                        color: Color(0xFF1A221A),
+                                        color: Color(0xFF5981A1),
                                         height: 1.2,
                                       ),
                                     ),
@@ -282,7 +282,7 @@ class _MessageCard extends StatelessWidget {
                           data.message,
                           style: const TextStyle(
                             fontSize: 16,
-                            color: Color(0xFF283028),
+                            color: Color(0xFF6084A1),
                             height: 1.55,
                             fontWeight: FontWeight.w500,
                           ),
@@ -290,7 +290,7 @@ class _MessageCard extends StatelessWidget {
                       ],
                       if (data.sourceLabel.isNotEmpty) ...[
                         const SizedBox(height: 14),
-                        const Divider(color: Color(0xFFDFE3DC), height: 1),
+                        const Divider(color: Color(0xFFD7E1E8), height: 1),
                         const SizedBox(height: 14),
                         Row(
                           children: [
@@ -298,7 +298,7 @@ class _MessageCard extends StatelessWidget {
                               width: 48,
                               height: 48,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFDCE3D8),
+                                color: const Color(0xFFD3DFE8),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
@@ -324,7 +324,7 @@ class _MessageCard extends StatelessWidget {
                         Container(
                           width: double.infinity,
                           height: 1,
-                          color: const Color(0xFFDFE3DC),
+                          color: const Color(0xFFD7E1E8),
                         ),
                       ],
                     ],
@@ -360,7 +360,7 @@ class _MessageInfoLine extends StatelessWidget {
           text,
           style: const TextStyle(
             fontSize: 17,
-            color: Color(0xFF313831),
+            color: Color(0xFF6585A0),
             fontWeight: FontWeight.w500,
             height: 1,
           ),

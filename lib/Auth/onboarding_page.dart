@@ -22,12 +22,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
   static const _stepPhoto = 'photo';
   static const _stepComplete = 'complete';
 
-  static const _darkBg = Color(0xFF0A2E11);
-  static const _leftPanelGreen = Color(0xFF0C5A22);
-  static const _primaryGreen = Color(0xFF1F6B38);
-  static const _cardBg = Color(0xFFF5F7F2);
-  static const _infoBoxBg = Color(0xFFE9F4EE);
-  static const _infoBoxBorder = Color(0xFFBFDECC);
+  static const _darkBg = Color(0xFF2484D4);
+  static const _leftPanelGreen = Color(0xFF1D89E7);
+  static const _primaryGreen = Color(0xFF3A8CD3);
+  static const _cardBg = Color(0xFFF1F5F8);
+  static const _infoBoxBg = Color(0xFFE7EFF6);
+  static const _infoBoxBorder = Color(0xFFB9D0E4);
 
   final _emailC = TextEditingController();
   final _newPasswordC = TextEditingController();
@@ -489,7 +489,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   margin: EdgeInsets.only(right: i < 2 ? 5.0 : 0),
                   height: 4,
                   decoration: BoxDecoration(
-                    color: i < n ? _primaryGreen : const Color(0xFFCDE0D4),
+                    color: i < n ? _primaryGreen : const Color(0xFFC7D8E6),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -719,7 +719,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       children: [
         const Icon(
           Icons.info_outline_rounded,
-          color: Color(0xFF2D7A4F),
+          color: Color(0xFF4E91CD),
           size: 19,
         ),
         const SizedBox(width: 10),
@@ -800,7 +800,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             onPressed: onContinue,
             style: ElevatedButton.styleFrom(
               backgroundColor: _primaryGreen,
-              disabledBackgroundColor: const Color(0xFF1F6B38),
+              disabledBackgroundColor: const Color(0xFF3A8CD3),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),

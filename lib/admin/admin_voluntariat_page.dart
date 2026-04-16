@@ -2,12 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../core/session.dart';
 
-const _primaryGreen = Color(0xFF5A9641);
-const _headerGreen = Color(0xFF0D631B);
-const _surfaceColor = Color(0xFFF8FFF5);
+const _primaryGreen = Color(0xFF6AA2CE);
+const _headerGreen = Color(0xFF1F8BE7);
+const _surfaceColor = Color(0xFFF5FBFF);
 const _cardBg = Color(0xFFFFFFFF);
 const _outline = Color(0xFF717B6E);
-const _onSurface = Color(0xFF151A14);
+const _onSurface = Color(0xFF587F9E);
 
 class AdminVoluntariatPage extends StatefulWidget {
   const AdminVoluntariatPage({super.key});
@@ -188,7 +188,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
                 icon: Icons.access_time_rounded,
                 value: '$totalHours',
                 label: 'Ore totale',
-                color: const Color(0xFF1565C0),
+                color: const Color(0xFF48A3EF),
               );
             },
           ),
@@ -271,7 +271,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 11),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F4E9),
+                      color: const Color(0xFFE7F0F6),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -682,7 +682,7 @@ class _AdminInput extends StatelessWidget {
         hintText: hint,
         hintStyle: const TextStyle(color: _outline, fontSize: 12),
         filled: true,
-        fillColor: const Color(0xFFF0F4E9),
+        fillColor: const Color(0xFFE7F0F6),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         border: OutlineInputBorder(

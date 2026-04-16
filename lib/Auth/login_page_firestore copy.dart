@@ -25,11 +25,11 @@ class ProfilePicturePage extends StatefulWidget {
 
 class _ProfilePicturePageState extends State<ProfilePicturePage> {
   // ── colours matching the mockup ─────────────────────────────────────────────
-  static const _darkBg      = Color(0xFF0B2B17);
-  static const _primaryGreen = Color(0xFF1F6B38);
+  static const _darkBg      = Color(0xFF2981CF);
+  static const _primaryGreen = Color(0xFF3A8CD3);
   static const _cardCream   = Color(0xFFF5F1E8);
-  static const _infoBoxBg   = Color(0xFFE9F4EE);
-  static const _infoBoxBorder = Color(0xFFBFDECC);
+  static const _infoBoxBg   = Color(0xFFE7EFF6);
+  static const _infoBoxBorder = Color(0xFFB9D0E4);
 
   Uint8List? _imageBytes;
   String?    _imageFilePath;
@@ -342,7 +342,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, color: Color(0xFF2D7A4F), size: 19),
+          Icon(Icons.info_outline_rounded, color: Color(0xFF4E91CD), size: 19),
           SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -391,7 +391,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
             onPressed: _loading ? null : _finalize,
             style: ElevatedButton.styleFrom(
               backgroundColor: _primaryGreen,
-              disabledBackgroundColor: Color(0xFF1F6B38).withOpacity(0.5),
+              disabledBackgroundColor: Color(0xFF3A8CD3).withOpacity(0.5),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),

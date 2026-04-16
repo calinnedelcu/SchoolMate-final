@@ -4,7 +4,6 @@ import 'package:firster/student/meniu.dart';
 import 'package:firster/student/orar.dart';
 import 'package:firster/student/cereri.dart';
 import 'package:firster/student/inbox.dart';
-import 'package:firster/student/voluntariat_page.dart';
 import 'package:flutter/material.dart';
 
 class AppShell extends StatefulWidget {
@@ -21,12 +20,13 @@ class _AppShellState extends State<AppShell> {
   bool _profilePressed = false;
   String? _inboxHighlightId;
 
+  static const int _maxIndex = 3; // 4 children: 0..3
+
   @override
   void initState() {
     super.initState();
     final idx = widget.initialIndex;
-    final maxIndex = 4; // 5 children: 0, 1, 2, 3, 4
-    _currentIndex = idx < 0 ? 0 : (idx > maxIndex ? maxIndex : idx);
+    _currentIndex = idx < 0 ? 0 : (idx > _maxIndex ? _maxIndex : idx);
   }
 
   void _openInboxWithHighlight(String docId) {
@@ -53,8 +53,7 @@ class _AppShellState extends State<AppShell> {
     }
 
     setState(() {
-      final maxIndex = 4; // 5 children: 0, 1, 2, 3, 4
-      _currentIndex = (index < 0) ? 0 : (index > maxIndex ? maxIndex : index);
+      _currentIndex = (index < 0) ? 0 : (index > _maxIndex ? _maxIndex : index);
     });
   }
 
@@ -79,7 +78,6 @@ class _AppShellState extends State<AppShell> {
                 onHighlightConsumed: () =>
                     setState(() => _inboxHighlightId = null),
               ),
-              VoluntariatPage(onBack: () => _setTab(0)),
             ],
           ),
           if (_currentIndex == 0)
@@ -102,10 +100,10 @@ class _AppShellState extends State<AppShell> {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: const Color(0x337DE38D),
+                      color: const Color(0x3389BEEB),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: const Color(0x6DC7F4CE),
+                        color: const Color(0x6DC5E0F6),
                         width: 1,
                       ),
                     ),

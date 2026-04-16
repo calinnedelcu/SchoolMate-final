@@ -38,7 +38,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(approved ? 'Cerere aprobată!' : 'Cerere respinsă.'),
-          backgroundColor: approved ? Colors.green : Colors.red,
+          backgroundColor: approved ? Colors.blue : Colors.red,
         ),
       );
     } catch (e) {
@@ -51,8 +51,8 @@ class _ParentHomePageState extends State<ParentHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryGreen = Color(0xFF7AAF5B);
-    const Color bgGrey = Color(0xFFE7EDF0);
+    const Color primaryGreen = Color(0xFF84B0D2);
+    const Color bgGrey = Color(0xFFE4EDF3);
 
     return Scaffold(
       backgroundColor: bgGrey,

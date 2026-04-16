@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-const parentGreen = Color(0xFF0C6D1C);
+const parentGreen = Color(0xFF1E8DEB);
 const parentPageBg = Color(0xFFF7F8EC);
 const parentCardBg = Colors.white;
-const parentMutedGreen = Color(0xFFDDE5D8);
-const parentText = Color(0xFF151A14);
-const parentSubtle = Color(0xFF4A5746);
+const parentMutedGreen = Color(0xFFD3E0EA);
+const parentText = Color(0xFF587F9E);
+const parentSubtle = Color(0xFF698CA9);
 
 class ParentPatternHeader extends StatelessWidget {
   final String title;
@@ -31,7 +31,7 @@ class ParentPatternHeader extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0x220A5A18),
+            color: Color(0x22198AEA),
             blurRadius: 26,
             offset: Offset(0, 12),
           ),
@@ -162,7 +162,7 @@ class _HeaderDotsPainter extends CustomPainter {
 class _BodyDotsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = const Color(0xFFC7D6C0).withValues(alpha: 0.55);
+    final paint = Paint()..color = const Color(0xFFB9CDDD).withValues(alpha: 0.55);
     const spacing = 32.0;
     const radius = 1.8;
 

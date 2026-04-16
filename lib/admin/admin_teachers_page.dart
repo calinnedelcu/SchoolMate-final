@@ -40,7 +40,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FFF5),
+      backgroundColor: const Color(0xFFF5FBFF),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -51,13 +51,13 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF1A2E1A),
+                color: Color(0xFF4B83B2),
               ),
             ),
             const SizedBox(height: 6),
             const Text(
               'Gestionează și monitorizează activitatea cadrelor didactice, clasele acestora și detaliile conturilor într-o vizualizare centrală.',
-              style: TextStyle(fontSize: 13, color: Color(0xFF5A8040)),
+              style: TextStyle(fontSize: 13, color: Color(0xFF659BC5)),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -65,7 +65,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE0E8D8), width: 1),
+                  border: Border.all(color: const Color(0xFFD4E2EC), width: 1),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.04),
@@ -94,12 +94,12 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                       'Caută diriginte după nume, username sau clasă...',
                                   hintStyle: const TextStyle(
                                     fontSize: 13,
-                                    color: Color(0xFFA0B090),
+                                    color: Color(0xFF8FAEC5),
                                   ),
                                   prefixIcon: const Icon(
                                     Icons.search_rounded,
                                     size: 20,
-                                    color: Color(0xFF7A9070),
+                                    color: Color(0xFF8FABC1),
                                   ),
                                   isDense: true,
                                   contentPadding: const EdgeInsets.symmetric(
@@ -107,23 +107,23 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                     vertical: 10,
                                   ),
                                   filled: true,
-                                  fillColor: const Color(0xFFF4F9F3),
+                                  fillColor: const Color(0xFFF2F6FA),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFFDDE8D5),
+                                      color: Color(0xFFD1E0EC),
                                     ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFFDDE8D5),
+                                      color: Color(0xFFD1E0EC),
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFF5C8B42),
+                                      color: Color(0xFF699FC9),
                                       width: 1.5,
                                     ),
                                   ),
@@ -138,10 +138,10 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF4F9F3),
+                              color: const Color(0xFFF2F6FA),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: const Color(0xFFDDE8D5),
+                                color: const Color(0xFFD1E0EC),
                               ),
                             ),
                             child: DropdownButtonHideUnderline(
@@ -150,11 +150,11 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                 icon: const Icon(
                                   Icons.unfold_more_rounded,
                                   size: 18,
-                                  color: Color(0xFF7A9070),
+                                  color: Color(0xFF8FABC1),
                                 ),
                                 style: const TextStyle(
                                   fontSize: 13,
-                                  color: Color(0xFF2E4A2E),
+                                  color: Color(0xFF5789B2),
                                   fontWeight: FontWeight.w600,
                                 ),
                                 items: const [
@@ -179,7 +179,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                     ),
                     Container(
                       padding: const EdgeInsets.fromLTRB(40, 16, 40, 16),
-                      decoration: const BoxDecoration(color: Color(0xFFF4F9F3)),
+                      decoration: const BoxDecoration(color: Color(0xFFF2F6FA)),
                       child: Row(
                         children: [
                           Expanded(
@@ -201,7 +201,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                         ],
                       ),
                     ),
-                    const Divider(height: 1, color: Color(0xFFE8F5E0)),
+                    const Divider(height: 1, color: Color(0xFFDEECF7)),
                     Expanded(
                       child: StreamBuilder<QuerySnapshot>(
                         stream: FirebaseFirestore.instance
@@ -269,7 +269,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                     ? 'Nu există diriginți'
                                     : 'Niciun rezultat pentru "$_searchQuery"',
                                 style: const TextStyle(
-                                  color: Color(0xFF7A9070),
+                                  color: Color(0xFF8FABC1),
                                   fontSize: 14,
                                 ),
                               ),
@@ -371,7 +371,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                         style: const TextStyle(
                                                           fontSize: 12,
                                                           color: Color(
-                                                            0xFF7A9070,
+                                                            0xFF8FABC1,
                                                           ),
                                                         ),
                                                       ),
@@ -394,7 +394,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
-                                                          0xFFDCEEDC,
+                                                          0xFFD9E6F1,
                                                         ),
                                                         borderRadius:
                                                             BorderRadius.circular(
@@ -410,7 +410,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                           fontWeight:
                                                               FontWeight.w700,
                                                           color: Color(
-                                                            0xFF2E7D32,
+                                                            0xFF5094CD,
                                                           ),
                                                         ),
                                                       ),
@@ -428,7 +428,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(
                                                 fontSize: 13,
-                                                color: Color(0xFF2E4A2E),
+                                                color: Color(0xFF5789B2),
                                               ),
                                             ),
                                           ),
@@ -472,7 +472,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                     14,
                                   ),
                                   decoration: const BoxDecoration(
-                                    color: Color(0xFFF4F9F3),
+                                    color: Color(0xFFF2F6FA),
                                     border: Border(
                                       top: BorderSide(color: Color(0xFFE8E8E8)),
                                     ),
@@ -559,14 +559,14 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
 
   Color _avatarColor(String name) {
     const colors = [
-      Color(0xFF7986CB),
-      Color(0xFF4DB6AC),
+      Color(0xFF7FA8D9),
+      Color(0xFF7CAAD6),
       Color(0xFFFF8A65),
-      Color(0xFFA5D6A7),
+      Color(0xFFADCAE3),
       Color(0xFFCE93D8),
       Color(0xFF80DEEA),
       Color(0xFFFFCC80),
-      Color(0xFF90A4AE),
+      Color(0xFF8FAFC4),
     ];
     return colors[name.hashCode.abs() % colors.length];
   }
@@ -577,7 +577,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
       style: const TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
-        color: Color(0xFF006B3D),
+        color: Color(0xFF0688FF),
         letterSpacing: 1.2,
       ),
     );
@@ -749,14 +749,14 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                             style: TextStyle(
                               fontSize: 27,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF1A2E1A),
+                              color: Color(0xFF4B83B2),
                             ),
                           ),
                           const Spacer(),
                           TextButton(
                             onPressed: busy ? null : () => Navigator.pop(ctx),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF5F6771),
+                              foregroundColor: const Color(0xFF809CB3),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
                                 vertical: 14,
@@ -815,7 +815,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                     if (ctx.mounted) Navigator.pop(ctx);
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2E6B2E),
+                              backgroundColor: const Color(0xFF4C8EC5),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
@@ -858,12 +858,12 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                     decoration: BoxDecoration(
                                       color: msgIsError
                                           ? const Color(0xFFFFEBEB)
-                                          : const Color(0xFFE8F5E0),
+                                          : const Color(0xFFDEECF7),
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(
                                         color: msgIsError
                                             ? const Color(0xFFE57373)
-                                            : const Color(0xFF81C784),
+                                            : const Color(0xFF86B2D6),
                                       ),
                                     ),
                                     child: Row(
@@ -875,7 +875,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                           size: 16,
                                           color: msgIsError
                                               ? const Color(0xFFE53935)
-                                              : const Color(0xFF388E3C),
+                                              : const Color(0xFF5F9CCF),
                                         ),
                                         const SizedBox(width: 8),
                                         Expanded(
@@ -886,7 +886,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                               fontWeight: FontWeight.w600,
                                               color: msgIsError
                                                   ? const Color(0xFFB71C1C)
-                                                  : const Color(0xFF1B5E20),
+                                                  : const Color(0xFF378BD2),
                                             ),
                                           ),
                                         ),
@@ -913,7 +913,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                             style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.w800,
-                                              color: Color(0xFF1A2E1A),
+                                              color: Color(0xFF4B83B2),
                                             ),
                                           ),
                                           const Spacer(),
@@ -924,11 +924,11 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: onboardingComplete
-                                                  ? const Color(0xFFE6EFE8)
+                                                  ? const Color(0xFFE3EBF2)
                                                   : const Color(0xFFFFEBEB),
                                               border: Border.all(
                                                 color: onboardingComplete
-                                                    ? const Color(0xFFC6DAC9)
+                                                    ? const Color(0xFFBFD1E1)
                                                     : const Color(0xFFE8AAAA),
                                                 width: 1.5,
                                               ),
@@ -947,7 +947,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                     fontWeight: FontWeight.w700,
                                                     color: onboardingComplete
                                                         ? const Color(
-                                                            0xFF2E793A,
+                                                            0xFF4F92CC,
                                                           )
                                                         : const Color(
                                                             0xFFC0392B,
@@ -959,10 +959,10 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                 if (onboardingComplete)
                                                   _PulsingDot(
                                                     colorA: const Color(
-                                                      0xFFC6DAC9,
+                                                      0xFFBFD1E1,
                                                     ),
                                                     colorB: const Color(
-                                                      0xFF2E793A,
+                                                      0xFF4F92CC,
                                                     ),
                                                   )
                                                 else
@@ -986,7 +986,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: 1,
-                                          color: Color(0xFF2A5C30),
+                                          color: Color(0xFF4B8BC1),
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -998,7 +998,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                         ),
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFEBEFE5),
+                                          color: const Color(0xFFE2EBF2),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -1083,7 +1083,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.w700,
                                                     letterSpacing: 1,
-                                                    color: Color(0xFF2A5C30),
+                                                    color: Color(0xFF4B8BC1),
                                                   ),
                                                 ),
                                                 const SizedBox(height: 6),
@@ -1097,7 +1097,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                       ),
                                                   decoration: BoxDecoration(
                                                     color: const Color(
-                                                      0xFFF7F9F3,
+                                                      0xFFF2F6FA,
                                                     ),
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -1127,7 +1127,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.w700,
                                                     letterSpacing: 1,
-                                                    color: Color(0xFF2A5C30),
+                                                    color: Color(0xFF4B8BC1),
                                                   ),
                                                 ),
                                                 const SizedBox(height: 6),
@@ -1141,7 +1141,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                       ),
                                                   decoration: BoxDecoration(
                                                     color: const Color(
-                                                      0xFFF7F9F3,
+                                                      0xFFF2F6FA,
                                                     ),
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -1168,7 +1168,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: 1,
-                                          color: Color(0xFF2A5C30),
+                                          color: Color(0xFF4B8BC1),
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -1238,7 +1238,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                               vertical: 10,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFEBEFE5),
+                                              color: const Color(0xFFE2EBF2),
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -1267,7 +1267,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                   Icons
                                                       .keyboard_arrow_down_rounded,
                                                   size: 20,
-                                                  color: Color(0xFF9AB88A),
+                                                  color: Color(0xFF8BAFCB),
                                                 ),
                                                 items: availableClassIds
                                                     .map(
@@ -1706,7 +1706,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                                                 fontSize: 24,
                                                                                 fontWeight: FontWeight.w800,
                                                                                 color: Color(
-                                                                                  0xFF1A2E1A,
+                                                                                  0xFF4B83B2,
                                                                                 ),
                                                                               ),
                                                                             ),
@@ -1719,7 +1719,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                                                 fontSize: 13,
                                                                                 height: 1.4,
                                                                                 color: Color(
-                                                                                  0xFF7B8A77,
+                                                                                  0xFF93ABBD,
                                                                                 ),
                                                                               ),
                                                                             ),
@@ -1740,7 +1740,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                                         ),
                                                                     decoration: BoxDecoration(
                                                                       color: const Color(
-                                                                        0xFFF8FBF6,
+                                                                        0xFFF5F9FC,
                                                                       ),
                                                                       borderRadius:
                                                                           BorderRadius.circular(
@@ -1748,7 +1748,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                                           ),
                                                                       border: Border.all(
                                                                         color: const Color(
-                                                                          0xFFE1ECDB,
+                                                                          0xFFD8E5EF,
                                                                         ),
                                                                       ),
                                                                     ),
@@ -1767,7 +1767,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                                             letterSpacing:
                                                                                 1,
                                                                             color: Color(
-                                                                              0xFF6D7B6A,
+                                                                              0xFF89A2B7,
                                                                             ),
                                                                           ),
                                                                         ),
@@ -1811,7 +1811,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                                             fontSize:
                                                                                 12,
                                                                             color: Color(
-                                                                              0xFF667466,
+                                                                              0xFF869FB4,
                                                                             ),
                                                                             height:
                                                                                 1.4,
@@ -1837,7 +1837,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                                             ),
                                                                             side: const BorderSide(
                                                                               color: Color(
-                                                                                0xFFD7E5D2,
+                                                                                0xFFCDDDEA,
                                                                               ),
                                                                             ),
                                                                             shape: RoundedRectangleBorder(

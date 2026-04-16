@@ -3,19 +3,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Auth/login_page_firestore.dart';
 import '../admin/services/admin_api.dart';
+import '../common/accessibility_settings_page.dart';
+import '../common/language_picker.dart';
 import '../core/session.dart';
 import 'parent_inbox_page.dart';
 import 'parent_requests_page.dart';
 import 'parent_students_page.dart';
 
 // ── Colour tokens (same palette as student) ──────────────────────────────────
-const _primary = Color(0xFF0D631B);
-const _surface = Color(0xFFF7F9F0);
-const _surfaceContainerLow = Color(0xFFF0F4E9);
+const _primary = Color(0xFF1F8BE7);
+const _surface = Color(0xFFEFF5FA);
+const _surfaceContainerLow = Color(0xFFE7F0F6);
 const _surfaceLowest = Color(0xFFFFFFFF);
 const _outline = Color(0xFF717B6E);
-const _outlineVariant = Color(0xFFC8D1C2);
-const _onSurface = Color(0xFF151A14);
+const _outlineVariant = Color(0xFFBACCD9);
+const _onSurface = Color(0xFF587F9E);
 const _danger = Color(0xFF8E3557);
 
 class _DampedScrollPhysics extends ScrollPhysics {
@@ -371,10 +373,10 @@ class _TopHeroHeaderState extends State<_TopHeroHeader> {
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: const Color(0x337DE38D),
+                          color: const Color(0x3389BEEB),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0x6DC7F4CE),
+                            color: const Color(0x6DC5E0F6),
                             width: 1,
                           ),
                         ),
@@ -434,7 +436,7 @@ class _ActivityCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(34),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x140D631B),
+              color: Color(0x141F8BE7),
               blurRadius: 24,
               offset: Offset(0, 10),
             ),
@@ -449,7 +451,7 @@ class _ActivityCard extends StatelessWidget {
                 fontSize: 31,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.7,
-                color: Color(0xFF1A2E1D),
+                color: Color(0xFF4B83B2),
               ),
             ),
             const SizedBox(height: 8),
@@ -643,7 +645,7 @@ class _ActivityFeedState extends State<_ActivityFeed> {
                       : Icons.arrow_back_rounded,
                   iconBg: isExit
                       ? const Color(0xFFFFF0F5)
-                      : const Color(0xFFF0F4EA),
+                      : const Color(0xFFE8F0F6),
                   iconColor: isExit ? _danger : _primary,
                 ),
               );
@@ -665,7 +667,7 @@ class _ActivityFeedState extends State<_ActivityFeed> {
                       ? Icons.check_circle_outline_rounded
                       : Icons.cancel_outlined,
                   iconBg: approved
-                      ? const Color(0xFFF0F4EA)
+                      ? const Color(0xFFE8F0F6)
                       : const Color(0xFFFFF0F5),
                   iconColor: approved ? _primary : _danger,
                 ),
@@ -726,7 +728,7 @@ class _ActivityTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFF4FBF6),
+          color: const Color(0xFFF3F8FC),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Padding(
@@ -750,7 +752,7 @@ class _ActivityTile extends StatelessWidget {
                     Text(
                       item.title,
                       style: const TextStyle(
-                        color: Color(0xFF1A2E1D),
+                        color: Color(0xFF4B83B2),
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),
@@ -759,7 +761,7 @@ class _ActivityTile extends StatelessWidget {
                     Text(
                       formattedTime,
                       style: const TextStyle(
-                        color: Color(0xFF8A9E8C),
+                        color: Color(0xFF85A0B7),
                         fontSize: 12,
                         letterSpacing: 0.6,
                         fontWeight: FontWeight.w600,
@@ -900,12 +902,12 @@ class _CereriCardState extends State<_CereriCard> {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF0D631B), Color(0xFF19802E)],
+            colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
           ),
           borderRadius: BorderRadius.circular(22),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x350D631B),
+              color: Color(0x351F8BE7),
               blurRadius: 20,
               offset: Offset(0, 10),
             ),
@@ -1165,10 +1167,10 @@ class _MesajeCardState extends State<_MesajeCard> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE7EDE1),
+                    color: const Color(0xFFDEE8F0),
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: const Color(0xFFC8D1C2).withValues(alpha: 0.36),
+                      color: const Color(0xFFBACCD9).withValues(alpha: 0.36),
                       width: 1.1,
                     ),
                   ),
@@ -1351,7 +1353,7 @@ class _StatBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F4E9),
+        color: const Color(0xFFE7F0F6),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -1546,7 +1548,7 @@ class _ParentProfileCard extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(38)),
           boxShadow: [
             BoxShadow(
-              color: Color(0x120D631B),
+              color: Color(0x121F8BE7),
               blurRadius: 28,
               offset: Offset(0, 12),
             ),
@@ -1567,7 +1569,7 @@ class _ParentProfileCard extends StatelessWidget {
                         Text(
                           displayName,
                           style: const TextStyle(
-                            color: Color(0xFF151A14),
+                            color: Color(0xFF587F9E),
                             fontSize: 26,
                             fontWeight: FontWeight.w800,
                             height: 1.1,
@@ -1578,7 +1580,7 @@ class _ParentProfileCard extends StatelessWidget {
                           Text(
                             '@$username',
                             style: const TextStyle(
-                              color: Color(0xFF0D631B),
+                              color: Color(0xFF1F8BE7),
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                             ),
@@ -1679,7 +1681,7 @@ class _ProfileInfoBox extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF151A14),
+                  color: Color(0xFF587F9E),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1740,6 +1742,28 @@ class _SettingsSheet extends StatelessWidget {
                 barrierDismissible: true,
                 builder: (_) => const _ParentAccountSettingsDialog(),
               );
+            },
+          ),
+          const SizedBox(height: 10),
+          _SettingsTile(
+            icon: Icons.accessibility_new_rounded,
+            label: 'Accesibilitate',
+            onTap: () {
+              Navigator.pop(ctx);
+              Navigator.of(ctx).push(
+                MaterialPageRoute(
+                  builder: (_) => const AccessibilitySettingsPage(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          _SettingsTile(
+            icon: Icons.language_rounded,
+            label: 'Limbă',
+            onTap: () {
+              Navigator.pop(ctx);
+              showLanguagePickerSheet(ctx);
             },
           ),
           const SizedBox(height: 10),
@@ -2492,14 +2516,14 @@ class _ParentReauthDialogState extends State<_ParentReauthDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(
-                    color: Color(0xFFCED8C8),
+                    color: Color(0xFFC1D2DF),
                     width: 1.2,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(
-                    color: Color(0xFFCED8C8),
+                    color: Color(0xFFC1D2DF),
                     width: 1.2,
                   ),
                 ),

@@ -1,0 +1,221 @@
+{
+  "@@locale": "ro",
+
+  "appTitle": "Aegis",
+  "@appTitle": {
+    "description": "Application title shown in the system task switcher"
+  },
+
+  "languageRomanian": "Română",
+  "@languageRomanian": {},
+
+  "languageEnglish": "Engleză",
+  "@languageEnglish": {},
+
+  "settingsAccountTitle": "Setări cont",
+  "@settingsAccountTitle": {},
+
+  "settingsEditProfile": "Editare profil",
+  "@settingsEditProfile": {},
+
+  "settingsAccessibility": "Accesibilitate",
+  "@settingsAccessibility": {},
+
+  "settingsLanguage": "Limbă",
+  "@settingsLanguage": {},
+
+  "settingsLogout": "Deconectează-te",
+  "@settingsLogout": {},
+
+  "languageSheetTitle": "Alege limba",
+  "@languageSheetTitle": {},
+
+  "accessibilityHeaderTitle": "Accesibilitate",
+  "@accessibilityHeaderTitle": {},
+
+  "accessibilityHeaderSubtitle": "Personalizează experiența vizuală",
+  "@accessibilityHeaderSubtitle": {},
+
+  "accessibilitySectionDisplay": "Vizualizare",
+  "@accessibilitySectionDisplay": {},
+
+  "accessibilityLargeFontTitle": "Text mărit",
+  "@accessibilityLargeFontTitle": {},
+
+  "accessibilityLargeFontSubtitle": "Mărește dimensiunea textului pentru o citire mai ușoară.",
+  "@accessibilityLargeFontSubtitle": {},
+
+  "accessibilityHighContrastTitle": "Contrast ridicat",
+  "@accessibilityHighContrastTitle": {},
+
+  "accessibilityHighContrastSubtitle": "Folosește alb și negru pentru o vizibilitate maximă.",
+  "@accessibilityHighContrastSubtitle": {},
+
+  "accessibilityPreviewTitle": "Previzualizare",
+  "@accessibilityPreviewTitle": {},
+
+  "accessibilityPreviewBody": "Acesta este un exemplu de text. Modificările făcute mai sus se aplică imediat în toată aplicația.",
+  "@accessibilityPreviewBody": {},
+
+  "accessibilityInfoBanner": "Setările sunt salvate pe acest dispozitiv și rămân active la următoarea deschidere.",
+  "@accessibilityInfoBanner": {},
+
+  "homeGreeting": "Bună, {name}",
+  "@homeGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "homeTodayCardTitle": "Azi",
+  "@homeTodayCardTitle": {},
+
+  "homeTodayInProgress": "Ești la școală acum",
+  "@homeTodayInProgress": {},
+
+  "homeTodayUpcoming": "Programul începe la {start}",
+  "@homeTodayUpcoming": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+
+  "homeTodayFinished": "Programul de azi s-a încheiat",
+  "@homeTodayFinished": {},
+
+  "homeTodayNoSchedule": "Astăzi nu ai program",
+  "@homeTodayNoSchedule": {},
+
+  "homeTodayInterval": "Program: {start} – {end}",
+  "@homeTodayInterval": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+
+  "homeTodayViewFull": "Vezi orarul complet",
+  "@homeTodayViewFull": {},
+
+  "homeRequestCardTitle": "Cerere de învoire",
+  "@homeRequestCardTitle": {},
+
+  "homeRequestNoneSubtitle": "Nu ai nicio cerere activă",
+  "@homeRequestNoneSubtitle": {},
+
+  "homeRequestNoneCta": "Creează cerere nouă",
+  "@homeRequestNoneCta": {},
+
+  "homeRequestPendingSubtitle": "Cerere trimisă, așteaptă aprobare",
+  "@homeRequestPendingSubtitle": {},
+
+  "homeRequestPendingChip": "În așteptare",
+  "@homeRequestPendingChip": {},
+
+  "homeRequestActiveSubtitle": "Învoire aprobată — gata pentru ieșire",
+  "@homeRequestActiveSubtitle": {},
+
+  "homeRequestActiveCta": "Arată QR pentru portar",
+  "@homeRequestActiveCta": {},
+
+  "homeRequestActiveChip": "Activă",
+  "@homeRequestActiveChip": {},
+
+  "homeInboxPreviewTitle": "Mesaje recente",
+  "@homeInboxPreviewTitle": {},
+
+  "homeInboxNoMessages": "Nu ai mesaje noi",
+  "@homeInboxNoMessages": {},
+
+  "homeInboxUnreadCount": "{count, plural, =0{Niciun mesaj nou} =1{1 mesaj nou} other{{count} mesaje noi}}",
+  "@homeInboxUnreadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "homeInboxOpenCta": "Vezi toate mesajele",
+  "@homeInboxOpenCta": {},
+
+  "homeQuickActionsTitle": "Acces rapid",
+  "@homeQuickActionsTitle": {},
+
+  "homeQuickActionTutoring": "Peer Tutoring",
+  "@homeQuickActionTutoring": {},
+
+  "homeQuickActionSchedule": "Orar complet",
+  "@homeQuickActionSchedule": {},
+
+  "homeQuickActionMessages": "Mesaje",
+  "@homeQuickActionMessages": {},
+
+  "qrSheetTitle": "Cod pentru portar",
+  "@qrSheetTitle": {},
+
+  "qrSheetSubtitle": "Arată acest cod portarului pentru a verifica învoirea ta.",
+  "@qrSheetSubtitle": {},
+
+  "qrSheetExpiresIn": "Se reînnoiește în {seconds}s",
+  "@qrSheetExpiresIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+
+  "qrSheetClose": "Închide",
+  "@qrSheetClose": {},
+
+  "inboxTitle": "Mesaje",
+  "@inboxTitle": {},
+
+  "inboxFilterAll": "Toate",
+  "@inboxFilterAll": {},
+
+  "inboxFilterSchool": "Școală",
+  "@inboxFilterSchool": {},
+
+  "inboxFilterTeachers": "Profesori",
+  "@inboxFilterTeachers": {},
+
+  "inboxFilterVolunteer": "Voluntariat",
+  "@inboxFilterVolunteer": {},
+
+  "inboxFilterAnnouncements": "Anunțuri",
+  "@inboxFilterAnnouncements": {},
+
+  "inboxEmpty": "Nu există mesaje în această categorie.",
+  "@inboxEmpty": {},
+
+  "inboxVolunteerSignUp": "Mă înscriu",
+  "@inboxVolunteerSignUp": {},
+
+  "inboxVolunteerSignedUp": "Înscris",
+  "@inboxVolunteerSignedUp": {},
+
+  "inboxVolunteerHours": "{hours}h",
+  "@inboxVolunteerHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+
+  "inboxVolunteerLabel": "Voluntariat",
+  "@inboxVolunteerLabel": {},
+
+  "inboxVolunteerSignupSuccess": "Te-ai înscris cu succes!",
+  "@inboxVolunteerSignupSuccess": {}
+}

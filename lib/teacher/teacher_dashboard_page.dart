@@ -8,6 +8,8 @@ import 'cereriasteptare.dart';
 import 'statuselevi.dart';
 import 'mesajedir.dart';
 import 'voluntariat_manage_page.dart';
+import 'tutoring_overview_page.dart';
+import '../admin/admin_post_composer_page.dart';
 
 class _DampedScrollPhysics extends ScrollPhysics {
   const _DampedScrollPhysics({super.parent});
@@ -19,8 +21,8 @@ class _DampedScrollPhysics extends ScrollPhysics {
       super.applyPhysicsToUserOffset(position, offset) * 0.55;
 }
 
-const _kGreen = Color(0xFF0D631B);
-const _kBg = Color(0xFFF7F9F0);
+const _kGreen = Color(0xFF1F8BE7);
+const _kBg = Color(0xFFEFF5FA);
 
 class TeacherDashboardPage extends StatefulWidget {
   const TeacherDashboardPage({super.key});
@@ -76,9 +78,9 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
       context,
       accentColor: _kGreen,
       surfaceColor: Colors.white,
-      softSurfaceColor: const Color(0xFFEAF2EC),
-      titleColor: const Color(0xFF0D631B),
-      messageColor: const Color(0xFF3A4A3F),
+      softSurfaceColor: const Color(0xFFE8EEF4),
+      titleColor: const Color(0xFF1F8BE7),
+      messageColor: const Color(0xFF6488A8),
     );
 
     if (!shouldLogout) return;
@@ -179,10 +181,10 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: const Color(0x337DE38D),
+                    color: const Color(0x3389BEEB),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0x6DC7F4CE),
+                      color: const Color(0x6DC5E0F6),
                       width: 1,
                     ),
                   ),
@@ -322,7 +324,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                     fontSize: 31,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.7,
-                    color: Color(0xFF1A2E1D),
+                    color: Color(0xFF4B83B2),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -477,6 +479,41 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+            _GridCard(
+              icon: Icons.school_rounded,
+              title: 'Peer Tutoring',
+              subtitle: 'Validare sesiuni elevi',
+              isDark: false,
+              wide: true,
+              onTap: () => Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (_, __, ___) =>
+                      const TutoringOverviewPage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _GridCard(
+              icon: Icons.dynamic_feed_rounded,
+              title: 'Postări pentru clasă',
+              subtitle: 'Anunțuri, competiții, tabere, voluntariat',
+              isDark: false,
+              wide: true,
+              onTap: () => Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (_, __, ___) => const AdminPostComposerPage(
+                    mode: PostComposerMode.teacher,
+                  ),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              ),
+            ),
           ],
         );
       },
@@ -518,7 +555,7 @@ class _StatBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F4E9),
+        color: const Color(0xFFE7F0F6),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -559,7 +596,7 @@ class _ActivityItemWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFF4FBF6),
+          color: const Color(0xFFF3F8FC),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Padding(
@@ -583,7 +620,7 @@ class _ActivityItemWidget extends StatelessWidget {
                     Text(
                       data.title,
                       style: const TextStyle(
-                        color: Color(0xFF1A2E1D),
+                        color: Color(0xFF4B83B2),
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),
@@ -592,7 +629,7 @@ class _ActivityItemWidget extends StatelessWidget {
                     Text(
                       data.time,
                       style: const TextStyle(
-                        color: Color(0xFF8A9E8C),
+                        color: Color(0xFF85A0B7),
                         fontSize: 12,
                         letterSpacing: 0.6,
                         fontWeight: FontWeight.w600,
@@ -634,10 +671,10 @@ class _GridCard extends StatelessWidget {
         ? Colors.white.withValues(alpha: 0.18)
         : _kGreen.withValues(alpha: 0.10);
     final iconColor = isDark ? Colors.white : _kGreen;
-    final titleColor = isDark ? Colors.white : const Color(0xFF1A2E1D);
+    final titleColor = isDark ? Colors.white : const Color(0xFF4B83B2);
     final subtitleColor = isDark
         ? Colors.white.withValues(alpha: 0.74)
-        : const Color(0xFF6B7A6D);
+        : const Color(0xFF8AA2B6);
 
     return GestureDetector(
       onTap: onTap,
@@ -652,25 +689,25 @@ class _GridCard extends StatelessWidget {
               ? const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF0D631B), Color(0xFF19802E)],
+                  colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
                 )
               : null,
           color: wide
               ? const Color(0xFFFFFFFF)
               : isDark
               ? null
-              : const Color(0xFFE7EDE1),
+              : const Color(0xFFDEE8F0),
           borderRadius: BorderRadius.circular(22),
           border: (!isDark && !wide)
               ? Border.all(
-                  color: const Color(0xFFC8D1C2).withValues(alpha: 0.36),
+                  color: const Color(0xFFBACCD9).withValues(alpha: 0.36),
                   width: 1.1,
                 )
               : null,
           boxShadow: isDark && !wide
               ? const [
                   BoxShadow(
-                    color: Color(0x350D631B),
+                    color: Color(0x351F8BE7),
                     blurRadius: 20,
                     offset: Offset(0, 10),
                   ),
@@ -692,7 +729,7 @@ class _GridCard extends StatelessWidget {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F4E9),
+                      color: const Color(0xFFE7F0F6),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Icon(icon, color: _kGreen, size: 28),

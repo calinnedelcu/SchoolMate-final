@@ -15,8 +15,8 @@ class FixedBottomNav extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF7AAF5B),
-      unselectedItemColor: const Color(0xFF5F6771),
+      selectedItemColor: const Color(0xFF84B0D2),
+      unselectedItemColor: const Color(0xFF809CB3),
       selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700),
       onTap: onTap,
       items: [

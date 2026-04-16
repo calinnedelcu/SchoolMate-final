@@ -654,10 +654,10 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
   }
 
   // ÔöÇÔöÇ Colors ÔöÇÔöÇ
-  static const _darkBg = Color(0xFF0A2E11);
-  static const _greenAccent = Color(0xFF0B741D);
-  static const _cardBg = Color(0xFFF5F7F2);
-  static const _inputBorder = Color(0xFFD6D9D0);
+  static const _darkBg = Color(0xFF2484D4);
+  static const _greenAccent = Color(0xFF1D8DEE);
+  static const _cardBg = Color(0xFFF1F5F8);
+  static const _inputBorder = Color(0xFFC9D6E0);
   static const _hintColor = Color(0xFF8A8F84);
 
   // ÔöÇÔöÇ Dot pattern painter ÔöÇÔöÇ
@@ -683,7 +683,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF145A1E), Color(0xFF0D3B15), Color(0xFF0A2E11)],
+          colors: [Color(0xFF2C8ADA), Color(0xFF2585D7), Color(0xFF2484D4)],
           stops: [0.0, 0.5, 1.0],
         ),
       ),
@@ -773,7 +773,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF1A1F1A),
+              color: Color(0xFF5D7E9C),
             ),
           ),
           const SizedBox(height: 6),
@@ -789,7 +789,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF2C332C),
+              color: Color(0xFF63839F),
             ),
           ),
           const SizedBox(height: 8),
@@ -833,7 +833,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF2C332C),
+                  color: Color(0xFF63839F),
                 ),
               ),
               const Spacer(),

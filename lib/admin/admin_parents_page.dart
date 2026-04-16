@@ -40,7 +40,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FFF5),
+      backgroundColor: const Color(0xFFF5FBFF),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -51,13 +51,13 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF1A2E1A),
+                color: Color(0xFF4B83B2),
               ),
             ),
             const SizedBox(height: 6),
             const Text(
               'Gestionează și monitorizează activitatea părinților, copiii înscriși și detaliile de contact într-o vizualizare centrală.',
-              style: TextStyle(fontSize: 13, color: Color(0xFF5A8040)),
+              style: TextStyle(fontSize: 13, color: Color(0xFF659BC5)),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -65,7 +65,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE0E8D8), width: 1),
+                  border: Border.all(color: const Color(0xFFD4E2EC), width: 1),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.04),
@@ -94,12 +94,12 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                       'Caută părinte după nume sau username...',
                                   hintStyle: const TextStyle(
                                     fontSize: 13,
-                                    color: Color(0xFFA0B090),
+                                    color: Color(0xFF8FAEC5),
                                   ),
                                   prefixIcon: const Icon(
                                     Icons.search_rounded,
                                     size: 20,
-                                    color: Color(0xFF7A9070),
+                                    color: Color(0xFF8FABC1),
                                   ),
                                   isDense: true,
                                   contentPadding: const EdgeInsets.symmetric(
@@ -107,23 +107,23 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                     vertical: 10,
                                   ),
                                   filled: true,
-                                  fillColor: const Color(0xFFF4F9F3),
+                                  fillColor: const Color(0xFFF2F6FA),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFFDDE8D5),
+                                      color: Color(0xFFD1E0EC),
                                     ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFFDDE8D5),
+                                      color: Color(0xFFD1E0EC),
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFF5C8B42),
+                                      color: Color(0xFF699FC9),
                                       width: 1.5,
                                     ),
                                   ),
@@ -138,10 +138,10 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF4F9F3),
+                              color: const Color(0xFFF2F6FA),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: const Color(0xFFDDE8D5),
+                                color: const Color(0xFFD1E0EC),
                               ),
                             ),
                             child: DropdownButtonHideUnderline(
@@ -150,11 +150,11 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                 icon: const Icon(
                                   Icons.unfold_more_rounded,
                                   size: 18,
-                                  color: Color(0xFF7A9070),
+                                  color: Color(0xFF8FABC1),
                                 ),
                                 style: const TextStyle(
                                   fontSize: 13,
-                                  color: Color(0xFF2E4A2E),
+                                  color: Color(0xFF5789B2),
                                   fontWeight: FontWeight.w600,
                                 ),
                                 items: const [
@@ -179,7 +179,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                     ),
                     Container(
                       padding: const EdgeInsets.fromLTRB(40, 16, 40, 16),
-                      decoration: const BoxDecoration(color: Color(0xFFF4F9F3)),
+                      decoration: const BoxDecoration(color: Color(0xFFF2F6FA)),
                       child: Row(
                         children: [
                           Expanded(flex: 5, child: _colHeader('NUME PĂRINTE')),
@@ -198,7 +198,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                         ],
                       ),
                     ),
-                    const Divider(height: 1, color: Color(0xFFE8F5E0)),
+                    const Divider(height: 1, color: Color(0xFFDEECF7)),
                     Expanded(
                       child: StreamBuilder<QuerySnapshot>(
                         stream: FirebaseFirestore.instance
@@ -258,7 +258,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                     ? 'Nu există părinți'
                                     : 'Niciun rezultat pentru "$_searchQuery"',
                                 style: const TextStyle(
-                                  color: Color(0xFF7A9070),
+                                  color: Color(0xFF8FABC1),
                                   fontSize: 14,
                                 ),
                               ),
@@ -366,7 +366,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                         style: const TextStyle(
                                                           fontSize: 12,
                                                           color: Color(
-                                                            0xFF7A9070,
+                                                            0xFF8FABC1,
                                                           ),
                                                         ),
                                                       ),
@@ -455,7 +455,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                               decoration: BoxDecoration(
                                                                 color:
                                                                     const Color(
-                                                                      0xFFDCEEDC,
+                                                                      0xFFD9E6F1,
                                                                     ),
                                                                 borderRadius:
                                                                     BorderRadius.circular(
@@ -470,7 +470,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                       FontWeight
                                                                           .w700,
                                                                   color: Color(
-                                                                    0xFF2E7D32,
+                                                                    0xFF5094CD,
                                                                   ),
                                                                 ),
                                                               ),
@@ -491,7 +491,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(
                                                 fontSize: 13,
-                                                color: Color(0xFF2E4A2E),
+                                                color: Color(0xFF5789B2),
                                               ),
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -541,7 +541,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                     14,
                                   ),
                                   decoration: const BoxDecoration(
-                                    color: Color(0xFFF4F9F3),
+                                    color: Color(0xFFF2F6FA),
                                     border: Border(
                                       top: BorderSide(color: Color(0xFFE8E8E8)),
                                     ),
@@ -592,7 +592,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
       style: const TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
-        color: Color(0xFF006B3D),
+        color: Color(0xFF0688FF),
         letterSpacing: 1.2,
       ),
     );
@@ -695,14 +695,14 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                               style: TextStyle(
                                 fontSize: 27,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF1A2E1A),
+                                color: Color(0xFF4B83B2),
                               ),
                             ),
                             const Spacer(),
                             TextButton(
                               onPressed: busy ? null : () => Navigator.pop(ctx),
                               style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFF5F6771),
+                                foregroundColor: const Color(0xFF809CB3),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20,
                                   vertical: 14,
@@ -761,7 +761,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                       if (ctx.mounted) Navigator.pop(ctx);
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2E6B2E),
+                                backgroundColor: const Color(0xFF4C8EC5),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(
@@ -817,7 +817,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                 decoration: BoxDecoration(
                                                   color: msgIsError
                                                       ? const Color(0xFFFFEBEB)
-                                                      : const Color(0xFFE8F5E0),
+                                                      : const Color(0xFFDEECF7),
                                                   borderRadius:
                                                       BorderRadius.circular(10),
                                                   border: Border.all(
@@ -826,7 +826,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                             0xFFE57373,
                                                           )
                                                         : const Color(
-                                                            0xFF81C784,
+                                                            0xFF86B2D6,
                                                           ),
                                                   ),
                                                 ),
@@ -843,7 +843,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                               0xFFE53935,
                                                             )
                                                           : const Color(
-                                                              0xFF388E3C,
+                                                              0xFF5F9CCF,
                                                             ),
                                                     ),
                                                     const SizedBox(width: 8),
@@ -859,7 +859,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                   0xFFB71C1C,
                                                                 )
                                                               : const Color(
-                                                                  0xFF1B5E20,
+                                                                  0xFF378BD2,
                                                                 ),
                                                         ),
                                                       ),
@@ -878,7 +878,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w800,
-                                                  color: Color(0xFF1A2E1A),
+                                                  color: Color(0xFF4B83B2),
                                                 ),
                                               ),
                                               const Spacer(),
@@ -890,12 +890,12 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: onboardingComplete
-                                                      ? const Color(0xFFE6EFE8)
+                                                      ? const Color(0xFFE3EBF2)
                                                       : const Color(0xFFFFEBEB),
                                                   border: Border.all(
                                                     color: onboardingComplete
                                                         ? const Color(
-                                                            0xFFC6DAC9,
+                                                            0xFFBFD1E1,
                                                           )
                                                         : const Color(
                                                             0xFFE8AAAA,
@@ -920,7 +920,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                         color:
                                                             onboardingComplete
                                                             ? const Color(
-                                                                0xFF2E793A,
+                                                                0xFF4F92CC,
                                                               )
                                                             : const Color(
                                                                 0xFFC0392B,
@@ -932,10 +932,10 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                     if (onboardingComplete)
                                                       _PulsingDot(
                                                         colorA: const Color(
-                                                          0xFFC6DAC9,
+                                                          0xFFBFD1E1,
                                                         ),
                                                         colorB: const Color(
-                                                          0xFF2E793A,
+                                                          0xFF4F92CC,
                                                         ),
                                                       )
                                                     else
@@ -960,7 +960,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF2A5C30),
+                                              color: Color(0xFF4B8BC1),
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -972,7 +972,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                             ),
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFEBEFE5),
+                                              color: const Color(0xFFE2EBF2),
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -1063,7 +1063,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
                                                         color: Color(
-                                                          0xFF2A5C30,
+                                                          0xFF4B8BC1,
                                                         ),
                                                       ),
                                                     ),
@@ -1078,7 +1078,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
-                                                          0xFFF7F9F3,
+                                                          0xFFF2F6FA,
                                                         ),
                                                         borderRadius:
                                                             BorderRadius.circular(
@@ -1112,7 +1112,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
                                                         color: Color(
-                                                          0xFF2A5C30,
+                                                          0xFF4B8BC1,
                                                         ),
                                                       ),
                                                     ),
@@ -1127,7 +1127,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
-                                                          0xFFF7F9F3,
+                                                          0xFFF2F6FA,
                                                         ),
                                                         borderRadius:
                                                             BorderRadius.circular(
@@ -1157,7 +1157,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF2A5C30),
+                                              color: Color(0xFF4B8BC1),
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -1384,7 +1384,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                               ),
                                                           decoration: BoxDecoration(
                                                             color: const Color(
-                                                              0xFFD9DED2,
+                                                              0xFFCCDAE4,
                                                             ),
                                                             borderRadius:
                                                                 BorderRadius.circular(
@@ -1406,7 +1406,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                       FontWeight
                                                                           .w700,
                                                                   color: Color(
-                                                                    0xFF1A2E1A,
+                                                                    0xFF4B83B2,
                                                                   ),
                                                                 ),
                                                               ),
@@ -1423,7 +1423,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                   Icons.close,
                                                                   size: 17,
                                                                   color: Color(
-                                                                    0xFF1A2E1A,
+                                                                    0xFF4B83B2,
                                                                   ),
                                                                 ),
                                                               ),
@@ -1443,7 +1443,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                         ),
                                                     decoration: BoxDecoration(
                                                       color: const Color(
-                                                        0xFFEBEFE5,
+                                                        0xFFE2EBF2,
                                                       ),
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -1457,7 +1457,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                               .manage_search_rounded,
                                                           size: 20,
                                                           color: Color(
-                                                            0xFF55636B,
+                                                            0xFF789BB2,
                                                           ),
                                                         ),
                                                         const SizedBox(
@@ -1507,7 +1507,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                             Icons
                                                                 .add_circle_outline,
                                                             color: Color(
-                                                              0xFF0B7A45,
+                                                              0xFF1D8BEF,
                                                             ),
                                                             size: 24,
                                                           ),
@@ -1528,7 +1528,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
-                                                          0xFFF4F9F3,
+                                                          0xFFF2F6FA,
                                                         ),
                                                         borderRadius:
                                                             BorderRadius.circular(
@@ -1536,7 +1536,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                             ),
                                                         border: Border.all(
                                                           color: const Color(
-                                                            0xFFDDE8D5,
+                                                            0xFFD1E0EC,
                                                           ),
                                                         ),
                                                       ),
@@ -1553,7 +1553,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                 const Divider(
                                                                   height: 1,
                                                                   color: Color(
-                                                                    0xFFE4ECE1,
+                                                                    0xFFDEE8EF,
                                                                   ),
                                                                 ),
                                                         itemBuilder: (_, index) {
@@ -1586,7 +1586,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                       FontWeight
                                                                           .w600,
                                                                   color: Color(
-                                                                    0xFF1A2E1A,
+                                                                    0xFF4B83B2,
                                                                   ),
                                                                 ),
                                                               ),
@@ -1984,7 +1984,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                                   fontSize: 24,
                                                                                   fontWeight: FontWeight.w800,
                                                                                   color: Color(
-                                                                                    0xFF1A2E1A,
+                                                                                    0xFF4B83B2,
                                                                                   ),
                                                                                 ),
                                                                               ),
@@ -1997,7 +1997,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                                   fontSize: 13,
                                                                                   height: 1.4,
                                                                                   color: Color(
-                                                                                    0xFF7B8A77,
+                                                                                    0xFF93ABBD,
                                                                                   ),
                                                                                 ),
                                                                               ),
@@ -2019,7 +2019,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                           ),
                                                                       decoration: BoxDecoration(
                                                                         color: const Color(
-                                                                          0xFFF8FBF6,
+                                                                          0xFFF5F9FC,
                                                                         ),
                                                                         borderRadius:
                                                                             BorderRadius.circular(
@@ -2027,7 +2027,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                             ),
                                                                         border: Border.all(
                                                                           color: const Color(
-                                                                            0xFFE1ECDB,
+                                                                            0xFFD8E5EF,
                                                                           ),
                                                                         ),
                                                                       ),
@@ -2042,7 +2042,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                               fontWeight: FontWeight.w700,
                                                                               letterSpacing: 1,
                                                                               color: Color(
-                                                                                0xFF6D7B6A,
+                                                                                0xFF89A2B7,
                                                                               ),
                                                                             ),
                                                                           ),
@@ -2083,7 +2083,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                             style: const TextStyle(
                                                                               fontSize: 12,
                                                                               color: Color(
-                                                                                0xFF667466,
+                                                                                0xFF869FB4,
                                                                               ),
                                                                               height: 1.4,
                                                                             ),
@@ -2111,7 +2111,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                               ),
                                                                               side: const BorderSide(
                                                                                 color: Color(
-                                                                                  0xFFD7E5D2,
+                                                                                  0xFFCDDDEA,
                                                                                 ),
                                                                               ),
                                                                               shape: RoundedRectangleBorder(
@@ -2221,14 +2221,14 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
 
   Color _avatarColor(String name) {
     const colors = [
-      Color(0xFF7986CB),
-      Color(0xFF4DB6AC),
+      Color(0xFF7FA8D9),
+      Color(0xFF7CAAD6),
       Color(0xFFFF8A65),
-      Color(0xFFA5D6A7),
+      Color(0xFFADCAE3),
       Color(0xFFCE93D8),
       Color(0xFF80DEEA),
       Color(0xFFFFCC80),
-      Color(0xFF90A4AE),
+      Color(0xFF8FAFC4),
     ];
     return colors[name.hashCode.abs() % colors.length];
   }

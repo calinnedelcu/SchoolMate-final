@@ -236,7 +236,7 @@ class _AdminTurnstilesPageState extends State<AdminTurnstilesPage> {
   @override
   Widget build(BuildContext context) {
     final body = Container(
-      color: const Color(0xFFF8FFF5),
+      color: const Color(0xFFF5FBFF),
       child: Column(
         children: [
           if (!widget.embedded)
@@ -259,7 +259,7 @@ class _AdminTurnstilesPageState extends State<AdminTurnstilesPage> {
     if (widget.embedded) return body;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B7A21),
+      backgroundColor: const Color(0xFF1D8EEF),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
@@ -400,7 +400,7 @@ class _TurnstileBody extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF1A2F1E),
+                              color: Color(0xFF4A82B3),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -408,7 +408,7 @@ class _TurnstileBody extends StatelessWidget {
                             'Gestionează punctele de acces și jurnalele live de securitate.',
                             style: TextStyle(
                               fontSize: 13,
-                              color: const Color(0xFF5A8040),
+                              color: const Color(0xFF659BC5),
                             ),
                           ),
                         ],
@@ -590,7 +590,7 @@ class _ActiveHubsPanelState extends State<_ActiveHubsPanel> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE8F5E0)),
+        border: Border.all(color: const Color(0xFFDEECF7)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -608,7 +608,7 @@ class _ActiveHubsPanelState extends State<_ActiveHubsPanel> {
               children: [
                 const Icon(
                   Icons.door_front_door_rounded,
-                  color: Color(0xFF0A7A21),
+                  color: Color(0xFF1C8EF0),
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -617,7 +617,7 @@ class _ActiveHubsPanelState extends State<_ActiveHubsPanel> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A2E1A),
+                    color: Color(0xFF4B83B2),
                   ),
                 ),
                 const Spacer(),
@@ -627,7 +627,7 @@ class _ActiveHubsPanelState extends State<_ActiveHubsPanel> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0A7A21),
+                    color: const Color(0xFF1C8EF0),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
@@ -642,13 +642,13 @@ class _ActiveHubsPanelState extends State<_ActiveHubsPanel> {
               ],
             ),
           ),
-          const Divider(height: 1, color: Color(0xFFEEF4EE)),
+          const Divider(height: 1, color: Color(0xFFECF2F6)),
           Expanded(
             child: widget.gates.isEmpty
                 ? const Center(
                     child: Text(
                       'Nu există turnichete înregistrate.',
-                      style: TextStyle(color: Color(0xFF7B9E84), fontSize: 14),
+                      style: TextStyle(color: Color(0xFF7799B7), fontSize: 14),
                     ),
                   )
                 : Column(
@@ -867,7 +867,7 @@ class _GateCardState extends State<_GateCard> {
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF1A2E1A),
+                                      color: Color(0xFF4B83B2),
                                     ),
                                   ),
                                   SizedBox(height: 6),
@@ -876,7 +876,7 @@ class _GateCardState extends State<_GateCard> {
                                     style: TextStyle(
                                       fontSize: 13,
                                       height: 1.4,
-                                      color: Color(0xFF7B8A77),
+                                      color: Color(0xFF93ABBD),
                                     ),
                                   ),
                                 ],
@@ -889,9 +889,9 @@ class _GateCardState extends State<_GateCard> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FBF6),
+                            color: const Color(0xFFF5F9FC),
                             borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: const Color(0xFFE1ECDB)),
+                            border: Border.all(color: const Color(0xFFD8E5EF)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -902,7 +902,7 @@ class _GateCardState extends State<_GateCard> {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1,
-                                  color: Color(0xFF6D7B6A),
+                                  color: Color(0xFF89A2B7),
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -929,7 +929,7 @@ class _GateCardState extends State<_GateCard> {
                                 username,
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF667466),
+                                  color: Color(0xFF869FB4),
                                   height: 1.4,
                                 ),
                               ),
@@ -948,7 +948,7 @@ class _GateCardState extends State<_GateCard> {
                                     vertical: 16,
                                   ),
                                   side: const BorderSide(
-                                    color: Color(0xFFD7E5D2),
+                                    color: Color(0xFFCDDDEA),
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
@@ -1100,7 +1100,7 @@ class _GateCardState extends State<_GateCard> {
               borderSide: BorderSide.none,
             ),
             filled: true,
-            fillColor: const Color(0xFFF4F9F3),
+            fillColor: const Color(0xFFF2F6FA),
           );
 
           final initials = currentName
@@ -1152,14 +1152,14 @@ class _GateCardState extends State<_GateCard> {
                             style: TextStyle(
                               fontSize: 27,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF1A2E1A),
+                              color: Color(0xFF4B83B2),
                             ),
                           ),
                           const Spacer(),
                           TextButton(
                             onPressed: busy ? null : () => Navigator.pop(ctx),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF5F6771),
+                              foregroundColor: const Color(0xFF809CB3),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
                                 vertical: 14,
@@ -1187,7 +1187,7 @@ class _GateCardState extends State<_GateCard> {
                                     if (ctx.mounted) Navigator.pop(ctx);
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2E6B2E),
+                              backgroundColor: const Color(0xFF4C8EC5),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
@@ -1240,13 +1240,13 @@ class _GateCardState extends State<_GateCard> {
                                               decoration: BoxDecoration(
                                                 color: msgIsError
                                                     ? const Color(0xFFFFEBEB)
-                                                    : const Color(0xFFE8F5E0),
+                                                    : const Color(0xFFDEECF7),
                                                 borderRadius:
                                                     BorderRadius.circular(10),
                                                 border: Border.all(
                                                   color: msgIsError
                                                       ? const Color(0xFFE57373)
-                                                      : const Color(0xFF81C784),
+                                                      : const Color(0xFF86B2D6),
                                                 ),
                                               ),
                                               child: Row(
@@ -1262,7 +1262,7 @@ class _GateCardState extends State<_GateCard> {
                                                             0xFFE53935,
                                                           )
                                                         : const Color(
-                                                            0xFF388E3C,
+                                                            0xFF5F9CCF,
                                                           ),
                                                   ),
                                                   const SizedBox(width: 8),
@@ -1278,7 +1278,7 @@ class _GateCardState extends State<_GateCard> {
                                                                 0xFFB71C1C,
                                                               )
                                                             : const Color(
-                                                                0xFF1B5E20,
+                                                                0xFF378BD2,
                                                               ),
                                                       ),
                                                     ),
@@ -1294,7 +1294,7 @@ class _GateCardState extends State<_GateCard> {
                                           style: TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.w800,
-                                            color: Color(0xFF1A2E1A),
+                                            color: Color(0xFF4B83B2),
                                           ),
                                         ),
                                         const SizedBox(height: 6),
@@ -1303,7 +1303,7 @@ class _GateCardState extends State<_GateCard> {
                                           style: TextStyle(
                                             fontSize: 13,
                                             height: 1.45,
-                                            color: Color(0xFF6A7768),
+                                            color: Color(0xFF87A0B5),
                                           ),
                                         ),
                                         const SizedBox(height: 10),
@@ -1313,7 +1313,7 @@ class _GateCardState extends State<_GateCard> {
                                             fontSize: 11,
                                             fontWeight: FontWeight.w700,
                                             letterSpacing: 1,
-                                            color: Color(0xFF2A5C30),
+                                            color: Color(0xFF4B8BC1),
                                           ),
                                         ),
                                         const SizedBox(height: 6),
@@ -1325,7 +1325,7 @@ class _GateCardState extends State<_GateCard> {
                                           ),
                                           alignment: Alignment.center,
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFEBEFE5),
+                                            color: const Color(0xFFE2EBF2),
                                             borderRadius: BorderRadius.circular(
                                               10,
                                             ),
@@ -1382,7 +1382,7 @@ class _GateCardState extends State<_GateCard> {
                                                       fontWeight:
                                                           FontWeight.w700,
                                                       letterSpacing: 1,
-                                                      color: Color(0xFF2A5C30),
+                                                      color: Color(0xFF4B8BC1),
                                                     ),
                                                   ),
                                                   const SizedBox(height: 6),
@@ -1414,7 +1414,7 @@ class _GateCardState extends State<_GateCard> {
                                                       fontWeight:
                                                           FontWeight.w700,
                                                       letterSpacing: 1,
-                                                      color: Color(0xFF2A5C30),
+                                                      color: Color(0xFF4B8BC1),
                                                     ),
                                                   ),
                                                   const SizedBox(height: 6),
@@ -1461,7 +1461,7 @@ class _GateCardState extends State<_GateCard> {
                                       child: CircleAvatar(
                                         radius: 50,
                                         backgroundColor: const Color(
-                                          0xFFD8E7D3,
+                                          0xFFCFDFEB,
                                         ),
                                         backgroundImage: photoUrl.isNotEmpty
                                             ? NetworkImage(photoUrl)
@@ -1660,7 +1660,7 @@ class _GateCardState extends State<_GateCard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8F0E6)),
+        border: Border.all(color: const Color(0xFFE3ECF3)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -1691,7 +1691,7 @@ class _GateCardState extends State<_GateCard> {
                       height: 50,
                       decoration: BoxDecoration(
                         color: isOnline
-                            ? const Color(0xFFE8F5EA)
+                            ? const Color(0xFFE6EFF7)
                             : const Color(0xFFF5F0E8),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -1699,7 +1699,7 @@ class _GateCardState extends State<_GateCard> {
                       child: Icon(
                         Icons.door_front_door_rounded,
                         color: isOnline
-                            ? const Color(0xFF0A7A21)
+                            ? const Color(0xFF1C8EF0)
                             : const Color(0xFFA08030),
                         size: 24,
                       ),
@@ -1718,7 +1718,7 @@ class _GateCardState extends State<_GateCard> {
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 16,
-                                    color: Color(0xFF1A2E1A),
+                                    color: Color(0xFF4B83B2),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1742,8 +1742,8 @@ class _GateCardState extends State<_GateCard> {
                       onPressed: _actionBusy ? null : _showSettingsDialog,
                       tooltip: 'Setări turnichetă',
                       style: IconButton.styleFrom(
-                        backgroundColor: const Color(0xFFF4F9F3),
-                        foregroundColor: const Color(0xFF5A8040),
+                        backgroundColor: const Color(0xFFF2F6FA),
+                        foregroundColor: const Color(0xFF659BC5),
                         minimumSize: const Size(36, 36),
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
@@ -1756,7 +1756,7 @@ class _GateCardState extends State<_GateCard> {
                               height: 14,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Color(0xFF7B9E84),
+                                color: Color(0xFF7799B7),
                               ),
                             )
                           : const Icon(Icons.settings_rounded, size: 18),
@@ -1768,7 +1768,7 @@ class _GateCardState extends State<_GateCard> {
                       child: const Icon(
                         Icons.keyboard_arrow_down_rounded,
                         size: 22,
-                        color: Color(0xFF7B9E84),
+                        color: Color(0xFF7799B7),
                       ),
                     ),
                   ],
@@ -1800,7 +1800,7 @@ class _LastScansSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Divider(height: 1, color: Color(0xFFE8F5E0)),
+        const Divider(height: 1, color: Color(0xFFDEECF7)),
         const Padding(
           padding: EdgeInsets.fromLTRB(16, 10, 16, 6),
           child: Text(
@@ -1808,7 +1808,7 @@ class _LastScansSection extends StatelessWidget {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF7B9E84),
+              color: Color(0xFF7799B7),
               letterSpacing: 0.8,
             ),
           ),
@@ -1848,7 +1848,7 @@ class _LastScansSection extends StatelessWidget {
                         width: 28,
                         height: 28,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD9EDDE),
+                          color: const Color(0xFFD6E4F0),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         alignment: Alignment.center,
@@ -1857,7 +1857,7 @@ class _LastScansSection extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF0A7A21),
+                            color: Color(0xFF1C8EF0),
                           ),
                         ),
                       ),
@@ -1870,7 +1870,7 @@ class _LastScansSection extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: isDenied
                           ? const Color(0xFF6B1A1A)
-                          : const Color(0xFF1A2F1E),
+                          : const Color(0xFF4A82B3),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1890,7 +1890,7 @@ class _LastScansSection extends StatelessWidget {
                     _hhmm(ts),
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF7B9E84),
+                      color: Color(0xFF7799B7),
                     ),
                   ),
               ],
@@ -1927,7 +1927,7 @@ class _LiveTrafficPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE8F5E0)),
+        border: Border.all(color: const Color(0xFFDEECF7)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -1949,7 +1949,7 @@ class _LiveTrafficPanel extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A2E1A),
+                    color: Color(0xFF4B83B2),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -1964,7 +1964,7 @@ class _LiveTrafficPanel extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 1, color: Color(0xFFE8F5E0)),
+          const Divider(height: 1, color: Color(0xFFDEECF7)),
 
           // Events list
           Expanded(
@@ -1972,7 +1972,7 @@ class _LiveTrafficPanel extends StatelessWidget {
                 ? const Center(
                     child: Text(
                       'Nu există activitate recentă.',
-                      style: TextStyle(color: Color(0xFF7B9E84), fontSize: 15),
+                      style: TextStyle(color: Color(0xFF7799B7), fontSize: 15),
                     ),
                   )
                 : ListView.builder(
@@ -2017,8 +2017,8 @@ class _LiveTrafficPanel extends StatelessWidget {
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 48),
-                side: const BorderSide(color: Color(0xFFCCDDCC)),
-                foregroundColor: const Color(0xFF1A2E1A),
+                side: const BorderSide(color: Color(0xFFC6D6E3)),
+                foregroundColor: const Color(0xFF4B83B2),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -2085,7 +2085,7 @@ class _TrafficEntry extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isDenied
                         ? const Color(0xFFB04068)
-                        : const Color(0xFF0A7A21),
+                        : const Color(0xFF1C8EF0),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -2097,7 +2097,7 @@ class _TrafficEntry extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isDenied
                           ? const Color(0xFFE7C8D3)
-                          : const Color(0xFFCDE8D2),
+                          : const Color(0xFFC9DCEC),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -2117,7 +2117,7 @@ class _TrafficEntry extends StatelessWidget {
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
-                          color: Color(0xFF1A2E1A),
+                          color: Color(0xFF4B83B2),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -2127,7 +2127,7 @@ class _TrafficEntry extends StatelessWidget {
                       timeAgo,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF7B9E84),
+                        color: Color(0xFF7799B7),
                       ),
                     ),
                   ],
@@ -2139,7 +2139,7 @@ class _TrafficEntry extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isDenied
                         ? const Color(0xFFFDF2F4)
-                        : const Color(0xFFF4F9F3),
+                        : const Color(0xFFF2F6FA),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Column(
@@ -2149,14 +2149,14 @@ class _TrafficEntry extends StatelessWidget {
                         text: TextSpan(
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF2F4837),
+                            color: Color(0xFF5987AF),
                           ),
                           children: [
                             const TextSpan(
                               text: 'Utilizator: ',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF2F4837),
+                                color: Color(0xFF5987AF),
                               ),
                             ),
                             TextSpan(text: personName),
@@ -2173,7 +2173,7 @@ class _TrafficEntry extends StatelessWidget {
                             size: 14,
                             color: isDenied
                                 ? const Color(0xFFB04068)
-                                : const Color(0xFF0A7A21),
+                                : const Color(0xFF1C8EF0),
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -2184,7 +2184,7 @@ class _TrafficEntry extends StatelessWidget {
                                 fontWeight: FontWeight.w700,
                                 color: isDenied
                                     ? const Color(0xFFB04068)
-                                    : const Color(0xFF0A7A21),
+                                    : const Color(0xFF1C8EF0),
                                 letterSpacing: 0.2,
                               ),
                             ),
@@ -2197,7 +2197,7 @@ class _TrafficEntry extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 12,
                           height: 1.4,
-                          color: Color(0xFF5F7162),
+                          color: Color(0xFF809CB3),
                         ),
                       ),
                       if (metaText.isNotEmpty) ...[
@@ -2207,7 +2207,7 @@ class _TrafficEntry extends StatelessWidget {
                             const Icon(
                               Icons.info_outline_rounded,
                               size: 13,
-                              color: Color(0xFF7B9E84),
+                              color: Color(0xFF7799B7),
                             ),
                             const SizedBox(width: 4),
                             Expanded(
@@ -2215,7 +2215,7 @@ class _TrafficEntry extends StatelessWidget {
                                 metaText,
                                 style: const TextStyle(
                                   fontSize: 11,
-                                  color: Color(0xFF7B9E84),
+                                  color: Color(0xFF7799B7),
                                 ),
                               ),
                             ),
@@ -2278,7 +2278,7 @@ class _DailyScansCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A5C18),
+        color: const Color(0xFF198AEB),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -2287,7 +2287,7 @@ class _DailyScansCard extends StatelessWidget {
           const Text(
             'TOTAL SCANĂRI ZILNICE',
             style: TextStyle(
-              color: Color(0xFF9FDCAD),
+              color: Color(0xFFA9CAE7),
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.8,
@@ -2313,9 +2313,9 @@ class _DailyScansCard extends StatelessWidget {
                           ? Icons.trending_up_rounded
                           : Icons.trending_down_rounded),
                 color: pct < 0.5
-                    ? const Color(0xFF9FDCAD)
+                    ? const Color(0xFFA9CAE7)
                     : (isUp
-                          ? const Color(0xFF6FDFBF)
+                          ? const Color(0xFF7BB3E8)
                           : const Color(0xFFFF8080)),
                 size: 16,
               ),
@@ -2325,9 +2325,9 @@ class _DailyScansCard extends StatelessWidget {
                   trendText,
                   style: TextStyle(
                     color: pct < 0.5
-                        ? const Color(0xFF9FDCAD)
+                        ? const Color(0xFFA9CAE7)
                         : (isUp
-                              ? const Color(0xFF6FDFBF)
+                              ? const Color(0xFF7BB3E8)
                               : const Color(0xFFFF8080)),
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -2377,19 +2377,19 @@ void _showAllLogsDialog(
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF1A2F1E),
+                      color: Color(0xFF4A82B3),
                     ),
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.of(ctx).pop(),
                     icon: const Icon(Icons.close_rounded),
-                    color: const Color(0xFF7B9E84),
+                    color: const Color(0xFF7799B7),
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1, color: Color(0xFFEEF4EE)),
+            const Divider(height: 1, color: Color(0xFFECF2F6)),
 
             // Logs
             Expanded(
@@ -2407,7 +2407,7 @@ void _showAllLogsDialog(
                       docs.isEmpty) {
                     return const Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xFF0A7A21),
+                        color: Color(0xFF1C8EF0),
                       ),
                     );
                   }
@@ -2416,7 +2416,7 @@ void _showAllLogsDialog(
                       child: Text(
                         'Nu există înregistrări.',
                         style: TextStyle(
-                          color: Color(0xFF7B9E84),
+                          color: Color(0xFF7799B7),
                           fontSize: 14,
                         ),
                       ),
@@ -2543,7 +2543,7 @@ class _TurnstilesSidebar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF0B7A21), Color(0xFF0C651D)],
+          colors: [Color(0xFF1D8EEF), Color(0xFF1D8CE9)],
         ),
       ),
       child: Column(
@@ -2609,7 +2609,7 @@ class _TurnstilesSidebar extends StatelessWidget {
               width: double.infinity,
               child: FilledButton.icon(
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF0A4A16),
+                  backgroundColor: const Color(0xFF1988E6),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
@@ -2666,7 +2666,7 @@ class _TurnstilesSidebar extends StatelessWidget {
                       const Text(
                         'Liceul Central',
                         style: TextStyle(
-                          color: Color(0xFFC9E6CE),
+                          color: Color(0xFFC4D9EB),
                           fontSize: 11,
                         ),
                       ),
@@ -2718,12 +2718,12 @@ class _SidebarTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFFCEF0D8), size: 18),
+                Icon(icon, color: const Color(0xFFCBE0F3), size: 18),
                 const SizedBox(width: 10),
                 Text(
                   label,
                   style: const TextStyle(
-                    color: Color(0xFFE6F6EA),
+                    color: Color(0xFFE4EFF8),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -2761,7 +2761,7 @@ class _TurnstilesTopBar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0A7A21), Color(0xFF07681C)],
+          colors: [Color(0xFF1C8EF0), Color(0xFF178BEF)],
         ),
       ),
       child: Row(
@@ -2782,7 +2782,7 @@ class _TurnstilesTopBar extends StatelessWidget {
                 child: Container(
                   height: 38,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF228A37),
+                    color: const Color(0xFF4395DB),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -2790,7 +2790,7 @@ class _TurnstilesTopBar extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.search,
-                        color: Color(0xFF9FDCAD),
+                        color: Color(0xFFA9CAE7),
                         size: 18,
                       ),
                       const SizedBox(width: 8),
@@ -2808,7 +2808,7 @@ class _TurnstilesTopBar extends StatelessWidget {
                             isCollapsed: true,
                             hintText: 'Cauta dupa nume...',
                             hintStyle: TextStyle(
-                              color: Color(0xFF9FDCAD),
+                              color: Color(0xFFA9CAE7),
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),

@@ -155,9 +155,9 @@ class _SecretariatGlobalMessagesPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF7AAF5B),
+      backgroundColor: const Color(0xFF84B0D2),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF7AAF5B),
+        backgroundColor: const Color(0xFF84B0D2),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         title: const Text(
@@ -169,7 +169,7 @@ class _SecretariatGlobalMessagesPageState
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          color: Color(0xFFF5F7FA),
+          color: Color(0xFFF4F8FB),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: SingleChildScrollView(
@@ -195,7 +195,7 @@ class _SecretariatGlobalMessagesPageState
                   'Mesajul va fi trimis în căsuțele existente de mesaje, exact ca fluxul de cereri.',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF2D3142),
+                    color: Color(0xFF5A80AD),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -223,7 +223,7 @@ class _SecretariatGlobalMessagesPageState
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF2D3142),
+                        color: Color(0xFF5A80AD),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -283,9 +283,9 @@ class _SecretariatGlobalMessagesPageState
                           'Trimite global',
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF5A9641),
+                          backgroundColor: const Color(0xFF6AA2CE),
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: const Color(0xFF5A9641),
+                          disabledBackgroundColor: const Color(0xFF6AA2CE),
                           disabledForegroundColor: Colors.white,
                           minimumSize: const Size.fromHeight(50),
                           shape: RoundedRectangleBorder(

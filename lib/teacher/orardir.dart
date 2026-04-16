@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../core/session.dart';
 import 'account_bottom_sheet.dart';
 
-const _kOrarHeaderGreen = Color(0xFF0D631B);
-const _kOrarPageBg = Color(0xFFF7F9F0);
+const _kOrarHeaderGreen = Color(0xFF1F8BE7);
+const _kOrarPageBg = Color(0xFFEFF5FA);
 
 // ─── Roman numeral helpers ────────────────────────────────────────────────────
 
@@ -194,7 +194,7 @@ class _OrarDirPageState extends State<OrarDirPage> {
                                     borderRadius: BorderRadius.circular(30),
                                     border: Border.all(
                                       color: const Color(
-                                        0xFFC8D1C2,
+                                        0xFFBACCD9,
                                       ).withValues(alpha: 0.18),
                                     ),
                                   ),
@@ -209,7 +209,7 @@ class _OrarDirPageState extends State<OrarDirPage> {
                                                 ? 'Orar Clasa $classRoman'
                                                 : 'Orar Săptămanal',
                                             style: const TextStyle(
-                                              color: Color(0xFF151A14),
+                                              color: Color(0xFF587F9E),
                                               fontSize: 22,
                                               fontWeight: FontWeight.w800,
                                             ),
@@ -223,7 +223,7 @@ class _OrarDirPageState extends State<OrarDirPage> {
                                                     vertical: 7,
                                                   ),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFFDAEDD9),
+                                                color: const Color(0xFFD6E4F0),
                                                 borderRadius:
                                                     BorderRadius.circular(20),
                                               ),
@@ -232,7 +232,7 @@ class _OrarDirPageState extends State<OrarDirPage> {
                                                 style: const TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w600,
-                                                  color: Color(0xFF1A601F),
+                                                  color: Color(0xFF358CD4),
                                                   height: 1,
                                                 ),
                                               ),
@@ -245,7 +245,7 @@ class _OrarDirPageState extends State<OrarDirPage> {
                                           width: double.infinity,
                                           padding: const EdgeInsets.all(14),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFF0F4E9),
+                                            color: const Color(0xFFE7F0F6),
                                             borderRadius: BorderRadius.circular(
                                               18,
                                             ),
@@ -319,7 +319,7 @@ class _TeacherProfileCard extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(38)),
           boxShadow: [
             BoxShadow(
-              color: Color(0x120D631B),
+              color: Color(0x121F8BE7),
               blurRadius: 28,
               offset: Offset(0, 12),
             ),
@@ -341,7 +341,7 @@ class _TeacherProfileCard extends StatelessWidget {
                         Text(
                           displayName,
                           style: const TextStyle(
-                            color: Color(0xFF151A14),
+                            color: Color(0xFF587F9E),
                             fontSize: 26,
                             fontWeight: FontWeight.w800,
                             height: 1.1,
@@ -352,7 +352,7 @@ class _TeacherProfileCard extends StatelessWidget {
                           Text(
                             '@$username',
                             style: const TextStyle(
-                              color: Color(0xFF0D631B),
+                              color: Color(0xFF1F8BE7),
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                             ),
@@ -371,12 +371,12 @@ class _TeacherProfileCard extends StatelessWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0F4E9),
+                          color: const Color(0xFFE7F0F6),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(
                           Icons.settings_outlined,
-                          color: Color(0xFF0D631B),
+                          color: Color(0xFF1F8BE7),
                           size: 26,
                         ),
                       ),
@@ -427,10 +427,10 @@ class _InfoBox extends StatelessWidget {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: const Color(0xFF0D631B).withValues(alpha: 0.10),
+            color: const Color(0xFF1F8BE7).withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(18),
           ),
-          child: Icon(icon, color: const Color(0xFF0D631B), size: 28),
+          child: Icon(icon, color: const Color(0xFF1F8BE7), size: 28),
         ),
         const SizedBox(width: 18),
         Expanded(
@@ -452,7 +452,7 @@ class _InfoBox extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF151A14),
+                  color: Color(0xFF587F9E),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -562,7 +562,7 @@ class _OrarRow extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F4E9),
+        color: const Color(0xFFE7F0F6),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -572,7 +572,7 @@ class _OrarRow extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF111811),
+              color: Color(0xFF537DA2),
               height: 1,
             ),
           ),
@@ -582,7 +582,7 @@ class _OrarRow extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF0D631B),
+              color: Color(0xFF1F8BE7),
               height: 1,
             ),
           ),

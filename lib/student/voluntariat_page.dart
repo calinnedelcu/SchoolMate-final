@@ -3,11 +3,11 @@ import 'package:firster/core/session.dart';
 import 'package:firster/student/voluntariat_detail_page.dart';
 import 'package:flutter/material.dart';
 
-const _primary = Color(0xFF0D631B);
-const _surface = Color(0xFFF7F9F0);
+const _primary = Color(0xFF1F8BE7);
+const _surface = Color(0xFFEFF5FA);
 const _surfaceLowest = Color(0xFFFFFFFF);
 const _outline = Color(0xFF717B6E);
-const _onSurface = Color(0xFF151A14);
+const _onSurface = Color(0xFF587F9E);
 
 class VoluntariatPage extends StatefulWidget {
   final VoidCallback? onBack;
@@ -205,7 +205,7 @@ class _Header extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF0D631B), Color(0xFF19802E)],
+            colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
           ),
         ),
         child: Stack(
@@ -320,7 +320,7 @@ class _HoursSummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x100D631B),
+            color: Color(0x101F8BE7),
             blurRadius: 16,
             offset: Offset(0, 6),
           ),
@@ -597,7 +597,7 @@ class _OpportunityCard extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF0D631B), Color(0xFF19802E)],
+                      colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
                     ),
                     borderRadius: BorderRadius.circular(14),
                   ),

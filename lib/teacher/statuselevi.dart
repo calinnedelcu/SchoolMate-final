@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import '../core/session.dart';
 
-const _kHeaderGreen = Color(0xFF0D631B);
-const _kPageBg = Color(0xFFF7F9F0);
+const _kHeaderGreen = Color(0xFF1F8BE7);
+const _kPageBg = Color(0xFFEFF5FA);
 const _kCardBg = Color(0xFFFFFFFF);
 
 enum _StudentSortMode { presence, name }
@@ -167,7 +167,7 @@ class _StatusEleviPageState extends State<StatusEleviPage> {
                                     Text(
                                       'Clasa $classId',
                                       style: const TextStyle(
-                                        color: Color(0xFF1B231A),
+                                        color: Color(0xFF5780A3),
                                         fontSize: 20,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -205,7 +205,7 @@ class _StatusEleviPageState extends State<StatusEleviPage> {
                                             16,
                                           ),
                                           border: Border.all(
-                                            color: const Color(0xFFDCE5D6),
+                                            color: const Color(0xFFD1DFEA),
                                           ),
                                         ),
                                         child: Row(
@@ -214,7 +214,7 @@ class _StatusEleviPageState extends State<StatusEleviPage> {
                                             const Icon(
                                               Icons.sort_rounded,
                                               size: 18,
-                                              color: Color(0xFF0D631B),
+                                              color: Color(0xFF1F8BE7),
                                             ),
                                             const SizedBox(width: 8),
                                             Text(
@@ -223,7 +223,7 @@ class _StatusEleviPageState extends State<StatusEleviPage> {
                                                   ? 'După prezență'
                                                   : 'După nume',
                                               style: const TextStyle(
-                                                color: Color(0xFF1B231A),
+                                                color: Color(0xFF5780A3),
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -232,7 +232,7 @@ class _StatusEleviPageState extends State<StatusEleviPage> {
                                             const Icon(
                                               Icons.keyboard_arrow_down_rounded,
                                               size: 18,
-                                              color: Color(0xFF4D5A4A),
+                                              color: Color(0xFF6F90AA),
                                             ),
                                           ],
                                         ),
@@ -501,12 +501,12 @@ class _StudentListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final avatarBg = _avatarBackgroundColor(avatarSeed);
     final statusText = inSchool ? 'ÎN INCINTĂ' : 'ÎN AFARA INCINTEI';
-    final pillBg = inSchool ? const Color(0xFFE2EFE6) : const Color(0xFFF1E4EC);
+    final pillBg = inSchool ? const Color(0xFFDFE9F2) : const Color(0xFFF1E4EC);
     final pillBorder = inSchool
-        ? const Color(0xFFA6C8B0)
+        ? const Color(0xFFAAC3D8)
         : const Color(0xFFDCB1C5);
     final pillText = inSchool
-        ? const Color(0xFF0D6D1E)
+        ? const Color(0xFF1F8DEA)
         : const Color(0xFF922255);
 
     return Container(
@@ -571,7 +571,7 @@ class _StudentListCard extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: Color(0xFF101310),
+                            color: Color(0xFF5B7A98),
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
                             height: 1.15,
@@ -625,7 +625,7 @@ class _StudentListCard extends StatelessWidget {
                   height: 44,
                   margin: const EdgeInsets.only(top: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFECEFE6),
+                    color: const Color(0xFFE3ECF2),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -638,7 +638,7 @@ class _StudentListCard extends StatelessWidget {
                   child: const Icon(
                     Icons.chevron_right_rounded,
                     size: 26,
-                    color: Color(0xFF1B231A),
+                    color: Color(0xFF5780A3),
                   ),
                 ),
               ],
@@ -651,14 +651,14 @@ class _StudentListCard extends StatelessWidget {
 
   Color _avatarBackgroundColor(String seed) {
     const palette = [
-      Color(0xFF4F8CFF),
-      Color(0xFF00A896),
+      Color(0xFF63B3FF),
+      Color(0xFF1C90FF),
       Color(0xFFF4A261),
       Color(0xFFE76F51),
       Color(0xFF7B61FF),
-      Color(0xFF2A9D8F),
+      Color(0xFF5398DB),
       Color(0xFFC04D83),
-      Color(0xFF6C8A3B),
+      Color(0xFF619ECC),
     ];
     final normalized = seed.trim();
     final index = normalized.isEmpty
@@ -730,7 +730,7 @@ class _StudentDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9F0),
+      backgroundColor: const Color(0xFFEFF5FA),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -826,7 +826,7 @@ class _StudentDetailPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(38),
                       boxShadow: const [
                         BoxShadow(
-                          color: Color(0x120D631B),
+                          color: Color(0x121F8BE7),
                           blurRadius: 28,
                           offset: Offset(0, 12),
                         ),
@@ -874,7 +874,7 @@ class _StudentDetailPage extends StatelessWidget {
                                     style: const TextStyle(
                                       fontSize: 26,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF111811),
+                                      color: Color(0xFF537DA2),
                                       height: 1.1,
                                     ),
                                   ),
@@ -885,7 +885,7 @@ class _StudentDetailPage extends StatelessWidget {
                                       style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFF0D631B),
+                                        color: Color(0xFF1F8BE7),
                                       ),
                                     ),
                                 ],
@@ -1036,14 +1036,14 @@ class _DetailAvatarFallback extends StatelessWidget {
 
 Color _detailAvatarColor(String seed) {
   const palette = [
-    Color(0xFF4F8CFF),
-    Color(0xFF00A896),
+    Color(0xFF63B3FF),
+    Color(0xFF1C90FF),
     Color(0xFFF4A261),
     Color(0xFFE76F51),
     Color(0xFF7B61FF),
-    Color(0xFF2A9D8F),
+    Color(0xFF5398DB),
     Color(0xFFC04D83),
-    Color(0xFF6C8A3B),
+    Color(0xFF619ECC),
   ];
   final normalized = seed.trim();
   final index = normalized.isEmpty
@@ -1101,12 +1101,12 @@ class _StatusMetaRow extends StatelessWidget {
     final inSchool =
         normalized.contains('incinta') && !normalized.contains('afara');
     final label = inSchool ? 'ÎN INCINTĂ' : 'ÎN AFARA INCINTEI';
-    final pillBg = inSchool ? const Color(0xFFE2EFE6) : const Color(0xFFF1E4EC);
+    final pillBg = inSchool ? const Color(0xFFDFE9F2) : const Color(0xFFF1E4EC);
     final pillBorder = inSchool
-        ? const Color(0xFFA6C8B0)
+        ? const Color(0xFFAAC3D8)
         : const Color(0xFFDCB1C5);
     final pillText = inSchool
-        ? const Color(0xFF0D6D1E)
+        ? const Color(0xFF1F8DEA)
         : const Color(0xFF922255);
 
     return Align(
@@ -1165,10 +1165,10 @@ class _PersonMetaRow extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F2E8),
+            color: const Color(0xFFE6EEF4),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: const Color(0xFF0D631B), size: 24),
+          child: Icon(icon, color: const Color(0xFF1F8BE7), size: 24),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -1192,7 +1192,7 @@ class _PersonMetaRow extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF111811),
+                  color: Color(0xFF537DA2),
                 ),
               ),
             ],

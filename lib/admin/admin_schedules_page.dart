@@ -11,9 +11,9 @@ class AdminSchedulesPage extends StatefulWidget {
 }
 
 class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
-  final Color primaryGreen = const Color(0xFF7AAF5B);
-  final Color darkGreen = const Color(0xFF5C8B42);
-  final Color lightGreen = const Color(0xFFF8FFF5);
+  final Color primaryGreen = const Color(0xFF84B0D2);
+  final Color darkGreen = const Color(0xFF699FC9);
+  final Color lightGreen = const Color(0xFFF5FBFF);
   String? selectedClassId;
   final _classSearchC = TextEditingController();
   String _classQuery = "";
@@ -142,7 +142,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
             // LEFT SIDEBAR - Classes List
             Container(
               width: 280,
-              color: const Color(0xFF5C8B42),
+              color: const Color(0xFF699FC9),
               child: Column(
                 children: [
                   Padding(
@@ -217,12 +217,12 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFFEAF6DE)
+                                      ? const Color(0xFFDCECF8)
                                       : Colors.white.withValues(alpha: 0.03),
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
                                     color: isSelected
-                                        ? const Color(0xFFB6D89B)
+                                        ? const Color(0xFFA4C8E4)
                                         : Colors.white.withValues(alpha: 0.07),
                                   ),
                                 ),
@@ -233,7 +233,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                                       classId,
                                       style: TextStyle(
                                         color: isSelected
-                                            ? const Color(0xFF40632D)
+                                            ? const Color(0xFF4D8FC2)
                                             : Colors.white,
                                         fontSize: 15,
                                         fontWeight: isSelected
@@ -246,7 +246,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                                             'Diriginte: (nepus)',
                                             style: TextStyle(
                                               color: isSelected
-                                                  ? const Color(0xFF355126)
+                                                  ? const Color(0xFF4A8BBF)
                                                   : Colors.white.withValues(
                                                       alpha: 0.70,
                                                     ),
@@ -280,7 +280,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                                                 'Diriginte: $displayName',
                                                 style: TextStyle(
                                                   color: isSelected
-                                                      ? const Color(0xFF355126)
+                                                      ? const Color(0xFF4A8BBF)
                                                       : Colors.white.withValues(
                                                           alpha: 0.70,
                                                         ),
@@ -358,7 +358,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF7AAF5B), Color(0xFF5A9641)],
+              colors: [Color(0xFF84B0D2), Color(0xFF6AA2CE)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),

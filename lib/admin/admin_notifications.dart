@@ -77,7 +77,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF17341F),
+                            color: Color(0xFF4083BE),
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -85,16 +85,16 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF4F8F3),
+                            color: const Color(0xFFF2F6F9),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFD8E5D6)),
+                            border: Border.all(color: const Color(0xFFD1DFEA)),
                           ),
                           child: const Text(
                             'Prima versiune este gata!',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF26402D),
+                              color: Color(0xFF5185B3),
                             ),
                           ),
                         ),
@@ -105,8 +105,8 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                             onPressed: () =>
                                 Navigator.of(menuContext).pop('all'),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF0A7A21),
-                              side: const BorderSide(color: Color(0xFFBFD4BF)),
+                              foregroundColor: const Color(0xFF1C8EF0),
+                              side: const BorderSide(color: Color(0xFFB7CBDC)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -161,19 +161,19 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF17341F),
+                          color: Color(0xFF4083BE),
                         ),
                       ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(dialogContext).pop(),
                       icon: const Icon(Icons.close_rounded),
-                      color: const Color(0xFF6F8875),
+                      color: const Color(0xFF8EA7BD),
                     ),
                   ],
                 ),
               ),
-              const Divider(height: 1, color: Color(0xFFE8EEE7)),
+              const Divider(height: 1, color: Color(0xFFE4EBF1)),
               Expanded(
                 child: ListView.separated(
                   padding: const EdgeInsets.all(20),
@@ -184,9 +184,9 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F9F4),
+                        color: const Color(0xFFF3F7FA),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFD9E7D8)),
+                        border: Border.all(color: const Color(0xFFD4E1EB)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,7 +195,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                             width: 38,
                             height: 38,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0A7A21),
+                              color: const Color(0xFF1C8EF0),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(
@@ -214,7 +214,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF6C8672),
+                                    color: Color(0xFF8BA6BC),
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -224,7 +224,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF203626),
+                                    color: Color(0xFF4F83B2),
                                   ),
                                 ),
                               ],
@@ -241,7 +241,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                 child: FilledButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF0A7A21),
+                    backgroundColor: const Color(0xFF1C8EF0),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(

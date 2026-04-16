@@ -1,0 +1,73 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Aegis",
+
+  "languageRomanian": "Romanian",
+  "languageEnglish": "English",
+
+  "settingsAccountTitle": "Account settings",
+  "settingsEditProfile": "Edit profile",
+  "settingsAccessibility": "Accessibility",
+  "settingsLanguage": "Language",
+  "settingsLogout": "Sign out",
+
+  "languageSheetTitle": "Choose language",
+
+  "accessibilityHeaderTitle": "Accessibility",
+  "accessibilityHeaderSubtitle": "Customize your visual experience",
+  "accessibilitySectionDisplay": "Display",
+  "accessibilityLargeFontTitle": "Larger text",
+  "accessibilityLargeFontSubtitle": "Increase text size for easier reading.",
+  "accessibilityHighContrastTitle": "High contrast",
+  "accessibilityHighContrastSubtitle": "Use black and white for maximum visibility.",
+  "accessibilityPreviewTitle": "Preview",
+  "accessibilityPreviewBody": "This is an example text. Changes you make above are applied immediately across the app.",
+  "accessibilityInfoBanner": "Settings are stored on this device and stay active the next time you open the app.",
+
+  "homeGreeting": "Hi, {name}",
+  "homeTodayCardTitle": "Today",
+  "homeTodayInProgress": "You're at school right now",
+  "homeTodayUpcoming": "School starts at {start}",
+  "homeTodayFinished": "Today's schedule is over",
+  "homeTodayNoSchedule": "No classes today",
+  "homeTodayInterval": "Schedule: {start} – {end}",
+  "homeTodayViewFull": "View full schedule",
+
+  "homeRequestCardTitle": "Leave request",
+  "homeRequestNoneSubtitle": "You have no active request",
+  "homeRequestNoneCta": "Create new request",
+  "homeRequestPendingSubtitle": "Request sent, awaiting approval",
+  "homeRequestPendingChip": "Pending",
+  "homeRequestActiveSubtitle": "Approved — ready to leave",
+  "homeRequestActiveCta": "Show QR for the gate",
+  "homeRequestActiveChip": "Active",
+
+  "homeInboxPreviewTitle": "Recent messages",
+  "homeInboxNoMessages": "No new messages",
+  "homeInboxUnreadCount": "{count, plural, =0{No new messages} =1{1 new message} other{{count} new messages}}",
+  "homeInboxOpenCta": "See all messages",
+
+  "homeQuickActionsTitle": "Quick actions",
+  "homeQuickActionTutoring": "Peer Tutoring",
+  "homeQuickActionSchedule": "Full schedule",
+  "homeQuickActionMessages": "Messages",
+
+  "qrSheetTitle": "Code for the gate",
+  "qrSheetSubtitle": "Show this code to the gate keeper to verify your leave permission.",
+  "qrSheetExpiresIn": "Refreshes in {seconds}s",
+  "qrSheetClose": "Close",
+
+  "inboxTitle": "Messages",
+  "inboxFilterAll": "All",
+  "inboxFilterSchool": "School",
+  "inboxFilterTeachers": "Teachers",
+  "inboxFilterVolunteer": "Volunteering",
+  "inboxFilterAnnouncements": "Announcements",
+  "inboxEmpty": "No messages in this category.",
+  "inboxVolunteerSignUp": "Sign up",
+  "inboxVolunteerSignedUp": "Signed up",
+  "inboxVolunteerHours": "{hours}h",
+  "inboxVolunteerLabel": "Volunteering",
+  "inboxVolunteerSignupSuccess": "Successfully signed up!"
+}

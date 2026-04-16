@@ -2,15 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../admin/services/admin_api.dart';
+import '../common/accessibility_settings_page.dart';
+import '../common/language_picker.dart';
 import '../core/session.dart';
 import '../student/logout_dialog.dart';
 
-const _primary = Color(0xFF0D631B);
+const _primary = Color(0xFF1F8BE7);
 const _surfaceLowest = Color(0xFFFFFFFF);
-const _surfaceContainerLow = Color(0xFFF0F4E9);
-const _outline = Color(0xFF5A6B5C);
-const _outlineVariant = Color(0xFFC8D1C2);
-const _onSurface = Color(0xFF111811);
+const _surfaceContainerLow = Color(0xFFE7F0F6);
+const _outline = Color(0xFF7C99B1);
+const _outlineVariant = Color(0xFFBACCD9);
+const _onSurface = Color(0xFF537DA2);
 const _danger = Color(0xFF8E3557);
 
 /// Functia principala care deschide panoul de setari pentru diriginte.
@@ -31,9 +33,9 @@ class _SettingsSheet extends StatelessWidget {
       context,
       accentColor: _primary,
       surfaceColor: Colors.white,
-      softSurfaceColor: const Color(0xFFEAF2EC),
+      softSurfaceColor: const Color(0xFFE8EEF4),
       titleColor: _primary,
-      messageColor: const Color(0xFF3A4A3F),
+      messageColor: const Color(0xFF6488A8),
     );
 
     if (!shouldLogout) return;
@@ -88,6 +90,28 @@ class _SettingsSheet extends StatelessWidget {
                 barrierDismissible: true,
                 builder: (_) => const _AccountSettingsDialog(),
               );
+            },
+          ),
+          const SizedBox(height: 10),
+          _SettingsTile(
+            icon: Icons.accessibility_new_rounded,
+            label: 'Accesibilitate',
+            onTap: () {
+              Navigator.pop(ctx);
+              Navigator.of(ctx).push(
+                MaterialPageRoute(
+                  builder: (_) => const AccessibilitySettingsPage(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          _SettingsTile(
+            icon: Icons.language_rounded,
+            label: 'Limbă',
+            onTap: () {
+              Navigator.pop(ctx);
+              showLanguagePickerSheet(ctx);
             },
           ),
           const SizedBox(height: 10),
@@ -359,7 +383,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
 
               if (_emailVerified) const Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: Text('✓ Email verificat', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                child: Text('✓ Email verificat', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
               ),
 
               const SizedBox(height: 24),
