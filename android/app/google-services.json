@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "483829433461",
-    "project_id": "studentid-cd43b",
-    "storage_bucket": "studentid-cd43b.firebasestorage.app"
+    "project_number": "931629371445",
+    "project_id": "aplicatiaelevului",
+    "storage_bucket": "aplicatiaelevului.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:483829433461:android:d157ca42a7b0315557e43c",
+        "mobilesdk_app_id": "1:931629371445:android:63d7387d39e3d37313a17c",
         "android_client_info": {
           "package_name": "com.example.firster"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAMitiJbGwgjip_UE-hGmE1gEbqL2OaXzI"
+          "current_key": "AIzaSyCsL7J3rI-pCuHH6_WAjyK8c-x_ogcU2yY"
         }
       ],
       "services": {

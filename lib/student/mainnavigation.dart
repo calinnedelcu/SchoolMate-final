@@ -4,6 +4,7 @@ import 'package:firster/student/meniu.dart';
 import 'package:firster/student/orar.dart';
 import 'package:firster/student/cereri.dart';
 import 'package:firster/student/inbox.dart';
+import 'package:firster/student/voluntariat_page.dart';
 import 'package:flutter/material.dart';
 
 class AppShell extends StatefulWidget {
@@ -24,7 +25,7 @@ class _AppShellState extends State<AppShell> {
   void initState() {
     super.initState();
     final idx = widget.initialIndex;
-    final maxIndex = 3; // 4 children: 0, 1, 2, 3
+    final maxIndex = 4; // 5 children: 0, 1, 2, 3, 4
     _currentIndex = idx < 0 ? 0 : (idx > maxIndex ? maxIndex : idx);
   }
 
@@ -52,7 +53,7 @@ class _AppShellState extends State<AppShell> {
     }
 
     setState(() {
-      final maxIndex = 3; // 4 children: 0, 1, 2, 3
+      final maxIndex = 4; // 5 children: 0, 1, 2, 3, 4
       _currentIndex = (index < 0) ? 0 : (index > maxIndex ? maxIndex : index);
     });
   }
@@ -78,6 +79,7 @@ class _AppShellState extends State<AppShell> {
                 onHighlightConsumed: () =>
                     setState(() => _inboxHighlightId = null),
               ),
+              VoluntariatPage(onBack: () => _setTab(0)),
             ],
           ),
           if (_currentIndex == 0)

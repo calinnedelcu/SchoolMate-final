@@ -629,7 +629,9 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[LOGIN ERROR] $e');
+      debugPrint('[LOGIN STACK] $st');
       final msg = e.toString().contains('timeout')
           ? 'Autentificarea a expirat. Verifica internetul si incearca din nou.'
           : 'Autentificare esuata. Incearca din nou.';

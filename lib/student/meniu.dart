@@ -263,6 +263,14 @@ class _MeniuScreenState extends State<MeniuScreen> {
                               isWithinSchedule: _isWithinSchedule,
                               onActiveTap: widget.onNavigateToActiveLeave,
                             ),
+                            const SizedBox(height: 14),
+                            _VoluntariatCard(
+                              onTap: () {
+                                if (widget.onNavigateTab != null) {
+                                  widget.onNavigateTab!(4);
+                                }
+                              },
+                            ),
                           ],
                         ),
                       ),
@@ -1112,6 +1120,87 @@ class _LeaveStatusCard extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// VOLUNTARIAT CARD
+// ────────────────────────────────────────────────────────────────────────────
+class _VoluntariatCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _VoluntariatCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0D631B), Color(0xFF19802E)],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x350D631B),
+              blurRadius: 20,
+              offset: Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.volunteer_activism_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Voluntariat',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Implica-te in comunitate',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.74),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.white.withValues(alpha: 0.6),
+              size: 24,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

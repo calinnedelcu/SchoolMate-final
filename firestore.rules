@@ -253,6 +253,35 @@ service cloud.firestore {
           (isStudent() && resource.data.userId == request.auth.uid);
     }
 
+    match /volunteerOpportunities/{opportunityId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() ||
+          (isTeacher() &&
+           request.resource.data.createdByRole == 'teacher' &&
+           request.resource.data.createdBy == request.auth.uid &&
+           request.resource.data.createdAt is timestamp);
+      allow update: if isAdmin() ||
+          (isTeacher() && resource.data.createdBy == request.auth.uid);
+      allow delete: if isAdmin() ||
+          (isTeacher() && resource.data.createdBy == request.auth.uid);
+    }
+
+    match /volunteerSignups/{signupId} {
+      allow read: if isAdmin() ||
+          (isStudent() && resource.data.studentUid == request.auth.uid) ||
+          isTeacherForClass(resource.data.classId) ||
+          isParentOfStudent(resource.data.studentUid);
+      allow create: if isStudent() &&
+          request.resource.data.studentUid == request.auth.uid &&
+          request.resource.data.status == 'signed_up' &&
+          request.resource.data.signedUpAt is timestamp;
+      allow update: if isAdmin() ||
+          (isStudent() && resource.data.studentUid == request.auth.uid &&
+           request.resource.data.status == 'cancelled') ||
+          (isTeacher() && isTeacherForClass(resource.data.classId));
+      allow delete: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

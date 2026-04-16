@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'aplicatiaelevului.firebasestorage.app',
     measurementId: 'G-Z8RYLDBR12',
   );
+
 }

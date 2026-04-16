@@ -7,6 +7,7 @@ import 'orardir.dart';
 import 'cereriasteptare.dart';
 import 'statuselevi.dart';
 import 'mesajedir.dart';
+import 'voluntariat_manage_page.dart';
 
 class _DampedScrollPhysics extends ScrollPhysics {
   const _DampedScrollPhysics({super.parent});
@@ -458,6 +459,23 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            _GridCard(
+              icon: Icons.volunteer_activism_rounded,
+              title: 'Voluntariat',
+              subtitle: 'Gestionare activitati',
+              isDark: false,
+              wide: true,
+              onTap: () => Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (_, __, ___) =>
+                      const VoluntariatManagePage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              ),
             ),
           ],
         );

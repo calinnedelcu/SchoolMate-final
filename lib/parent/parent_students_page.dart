@@ -732,6 +732,9 @@ class _StudentDetailPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 18),
+                        // ── Voluntariat card ──
+                        _VoluntariatSection(studentUid: avatarSeed),
+                        const SizedBox(height: 18),
                         // ── Orar card ──
                         Container(
                           width: double.infinity,
@@ -1020,6 +1023,149 @@ class _PersonMetaRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// VOLUNTARIAT SECTION (parent child detail)
+// ────────────────────────────────────────────────────────────────────────────
+class _VoluntariatSection extends StatelessWidget {
+  final String studentUid;
+  const _VoluntariatSection({required this.studentUid});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('volunteerSignups')
+          .where('studentUid', isEqualTo: studentUid)
+          .where('status', isEqualTo: 'completed')
+          .snapshots(),
+      builder: (context, snap) {
+        final docs = snap.data?.docs ?? [];
+        int totalHours = 0;
+        for (final doc in docs) {
+          totalHours += (doc.data()['hoursLogged'] as num?)?.toInt() ?? 0;
+        }
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: const Color(0xFFC8D1C2).withValues(alpha: 0.18),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Voluntariat',
+                      style: TextStyle(
+                        color: Color(0xFF151A14),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _kHeaderGreen.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.access_time_rounded,
+                            color: _kHeaderGreen, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$totalHours ore',
+                          style: const TextStyle(
+                            color: _kHeaderGreen,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              if (docs.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F4E9),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: const Text(
+                    'Nicio activitate de voluntariat completata.',
+                    style: TextStyle(
+                      color: Color(0xFF717B6E),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                )
+              else
+                ...docs.map((doc) {
+                  final d = doc.data();
+                  final title =
+                      (d['opportunityTitle'] ?? 'Activitate').toString();
+                  final hours = (d['hoursLogged'] as num?)?.toInt() ?? 0;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0F4E9),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.volunteer_activism_rounded,
+                              color: _kHeaderGreen, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF111811),
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '$hours ore',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: _kHeaderGreen,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+            ],
+          ),
+        );
+      },
     );
   }
 }
