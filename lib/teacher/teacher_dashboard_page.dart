@@ -8,7 +8,6 @@ import 'cereriasteptare.dart';
 import 'statuselevi.dart';
 import 'mesajedir.dart';
 import 'voluntariat_manage_page.dart';
-import 'tutoring_overview_page.dart';
 import '../admin/admin_post_composer_page.dart';
 
 class _DampedScrollPhysics extends ScrollPhysics {
@@ -474,23 +473,6 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 PageRouteBuilder(
                   pageBuilder: (_, __, ___) =>
                       const VoluntariatManagePage(),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _GridCard(
-              icon: Icons.school_rounded,
-              title: 'Peer Tutoring',
-              subtitle: 'Validare sesiuni elevi',
-              isDark: false,
-              wide: true,
-              onTap: () => Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) =>
-                      const TutoringOverviewPage(),
                   transitionDuration: Duration.zero,
                   reverseTransitionDuration: Duration.zero,
                 ),

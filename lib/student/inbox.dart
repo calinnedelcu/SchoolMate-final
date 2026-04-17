@@ -12,7 +12,6 @@ enum _InboxFilter {
   requests,
   announcements,
   volunteer,
-  tutoring,
   competition,
   camp,
 }
@@ -603,10 +602,6 @@ class _InboxScreenState extends State<InboxScreen> {
         filteredCards = const [];
         filteredVolunteer = volunteerItems;
         break;
-      case _InboxFilter.tutoring:
-        filteredCards = const [];
-        filteredVolunteer = const [];
-        break;
     }
 
     // Combine into a single chronologically sorted list
@@ -645,9 +640,7 @@ class _InboxScreenState extends State<InboxScreen> {
                     borderRadius: BorderRadius.circular(28),
                   ),
                   child: Text(
-                    _filter == _InboxFilter.tutoring
-                        ? 'Meditațiile vor fi disponibile în curând.'
-                        : l.inboxEmpty,
+                    l.inboxEmpty,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: _textMuted,
@@ -1083,7 +1076,6 @@ class _FilterPillsBar extends StatelessWidget {
       (_InboxFilter.requests, 'Cereri'),
       (_InboxFilter.announcements, 'Anunțuri'),
       (_InboxFilter.volunteer, 'Voluntariate'),
-      (_InboxFilter.tutoring, 'Meditații'),
       (_InboxFilter.competition, 'Competiții'),
       (_InboxFilter.camp, 'Tabere'),
     ];

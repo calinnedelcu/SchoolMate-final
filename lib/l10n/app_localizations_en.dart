@@ -148,9 +148,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickActionsTitle => 'Quick actions';
 
   @override
-  String get homeQuickActionTutoring => 'Peer Tutoring';
-
-  @override
   String get homeQuickActionSchedule => 'Full schedule';
 
   @override

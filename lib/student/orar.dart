@@ -6,6 +6,7 @@ import 'package:firster/common/accessibility_settings_page.dart';
 import 'package:firster/common/language_picker.dart';
 import 'package:firster/student/logout_dialog.dart';
 import 'package:firster/core/session.dart';
+import 'package:firster/student/widgets/qr_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -136,6 +137,12 @@ class _OrarScreenState extends State<OrarScreen> {
                                 teacherUid: teacherUid,
                                 teacherUsername: teacherUsername,
                                 onLogout: _logout,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                              child: _QrAccessCard(
+                                onTap: () => showQrSheet(context),
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -321,6 +328,79 @@ class _Circle extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: opacity),
         shape: BoxShape.circle,
+      ),
+    );
+  }
+}
+
+class _QrAccessCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _QrAccessCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          decoration: BoxDecoration(
+            color: _surfaceLowest,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: _primary.withValues(alpha: 0.12),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: _primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.qr_code_2_rounded,
+                  color: _primary,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cod de acces',
+                      style: TextStyle(
+                        color: _onSurface,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Scanează la ieșirea din școală',
+                      style: TextStyle(
+                        color: _outline,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: _outlineVariant,
+                size: 24,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -338,12 +338,6 @@ abstract class AppLocalizations {
   /// **'Acces rapid'**
   String get homeQuickActionsTitle;
 
-  /// No description provided for @homeQuickActionTutoring.
-  ///
-  /// In ro, this message translates to:
-  /// **'Peer Tutoring'**
-  String get homeQuickActionTutoring;
-
   /// No description provided for @homeQuickActionSchedule.
   ///
   /// In ro, this message translates to:
