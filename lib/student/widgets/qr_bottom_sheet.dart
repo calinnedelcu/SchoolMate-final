@@ -7,13 +7,13 @@ import 'package:firster/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-const _primary = Color(0xFF1F8BE7);
+const _primary = Color(0xFF2848B0);
 const _surfaceLowest = Color(0xFFFFFFFF);
-const _surfaceContainerLow = Color(0xFFE7F0F6);
-const _surfaceContainerHigh = Color(0xFFDEE8F0);
-const _onSurface = Color(0xFF587F9E);
-const _outline = Color(0xFF717B6E);
-const _outlineVariant = Color(0xFFBACCD9);
+const _surfaceContainerLow = Color(0xFFE8EAF2);
+const _surfaceContainerHigh = Color(0xFFDDE0EC);
+const _onSurface = Color(0xFF1A2050);
+const _outline = Color(0xFF7A7E9A);
+const _outlineVariant = Color(0xFFC0C4D8);
 
 /// Opens the QR access bottom sheet.
 Future<void> showQrSheet(BuildContext context) async {

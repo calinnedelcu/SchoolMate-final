@@ -30,12 +30,12 @@ class TwoFactorVerifyPage extends StatefulWidget {
 }
 
 class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
-  static const _darkBg = Color(0xFF2484D4);
-  static const _leftPanelGreen = Color(0xFF1D89E7);
-  static const _primaryGreen = Color(0xFF3A8CD3);
-  static const _cardBg = Color(0xFFF1F5F8);
-  static const _infoBoxBg = Color(0xFFE7EFF6);
-  static const _infoBoxBorder = Color(0xFFB9D0E4);
+  static const _darkBg = Color(0xFF1E3CA0);
+  static const _leftPanelGreen = Color(0xFF2E58D0);
+  static const _primaryGreen = Color(0xFF2848B0);
+  static const _cardBg = Color(0xFFF2F4F8);
+  static const _infoBoxBg = Color(0xFFE8EAF2);
+  static const _infoBoxBorder = Color(0xFFC0C4D8);
 
   final _codeController = TextEditingController();
   bool _loading = false;
@@ -325,31 +325,8 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: _primaryGreen,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: _primaryGreen.withValues(alpha: 0.35),
-                                blurRadius: 18,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.asset(
-                              'assets/images/aegis_logo.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 56),
                         const Text(
-                          'Poarta ta catre\nsecuritate academica',
+                          'Your gateway to\nacademic security',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 46,
@@ -359,11 +336,10 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
                         ),
                         const SizedBox(height: 20),
                         const Text(
-                          'Solutia completa, optimizata pentru mobil, '
-                          'pentru gestionarea accesului si plecarilor din '
-                          'scoala. Creste siguranta prin identitati QR '
-                          'dinamice, integrare automata a orarului si '
-                          'aprobari in timp real din partea parintilor.',
+                          'A mobile-optimized solution for managing school '
+                          'access and leave requests. Enhancing safety through '
+                          'dynamic QR identities, automatic schedule integration, '
+                          'and real-time parent approvals.',
                           style: TextStyle(
                             color: Color(0xCCFFFFFF),
                             fontSize: 15,

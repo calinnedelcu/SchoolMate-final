@@ -71,11 +71,17 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String homeGreeting(String name) {
-    return 'Bună, $name';
+    return 'Bine ai venit, $name';
   }
 
   @override
-  String get homeTodayCardTitle => 'Azi';
+  String get homeTodayCardTitle => 'PROGRAMUL DE AZI';
+
+  @override
+  String get homeTodayDayLabel => 'Ziua curentă';
+
+  @override
+  String get homeTodayIntervalLabel => 'Interval cursuri';
 
   @override
   String get homeTodayInProgress => 'Ești la școală acum';
@@ -97,13 +103,13 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get homeTodayViewFull => 'Vezi orarul complet';
+  String get homeTodayViewFull => 'Vezi orar complet';
 
   @override
-  String get homeRequestCardTitle => 'Cerere de învoire';
+  String get homeRequestCardTitle => 'Cererile de învoire';
 
   @override
-  String get homeRequestNoneSubtitle => 'Nu ai nicio cerere activă';
+  String get homeRequestNoneSubtitle => 'Gestionează absențele tale';
 
   @override
   String get homeRequestNoneCta => 'Creează cerere nouă';
@@ -125,7 +131,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get homeRequestActiveChip => 'Activă';
 
   @override
-  String get homeInboxPreviewTitle => 'Mesaje recente';
+  String get homeInboxPreviewTitle => 'Mesaje';
 
   @override
   String get homeInboxNoMessages => 'Nu ai mesaje noi';

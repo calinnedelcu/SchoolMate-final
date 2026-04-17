@@ -3,12 +3,12 @@ import 'package:firster/core/session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-const _primary = Color(0xFF1F8BE7);
-const _surface = Color(0xFFE3ECF2);
-const _card = Color(0xFFF2F6F9);
-const _cardMuted = Color(0xFFE0E9EF);
-const _textDark = Color(0xFF557EA1);
-const _textMuted = Color(0xFF6C8BA6);
+const _primary = Color(0xFF2848B0);
+const _surface = Color(0xFFF2F4F8);
+const _card = Color(0xFFFFFFFF);
+const _cardMuted = Color(0xFFE8EAF2);
+const _textDark = Color(0xFF1A2050);
+const _textMuted = Color(0xFF7A7E9A);
 
 class CereriScreen extends StatefulWidget {
   final ValueChanged<int>? onNavigateTab;
@@ -60,10 +60,10 @@ class _CereriScreenState extends State<CereriScreen> {
       firstDate: DateTime(now.year, now.month, now.day),
       lastDate: DateTime(now.year + 2),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
-      helpText: 'Selecteaza data',
-      fieldHintText: 'ZZ/LL/AAAA',
-      fieldLabelText: 'Data',
-      cancelText: 'Anuleaza',
+      helpText: 'Select date',
+      fieldHintText: 'DD/MM/YYYY',
+      fieldLabelText: 'Date',
+      cancelText: 'Cancel',
       confirmText: 'OK',
       selectableDayPredicate: (day) =>
           day.weekday != DateTime.saturday && day.weekday != DateTime.sunday,
@@ -222,7 +222,7 @@ class _CereriScreenState extends State<CereriScreen> {
   Future<void> _pickTime() async {
     if (_selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecteaza mai intai data invoirii.')),
+        const SnackBar(content: Text('Please select the leave date first.')),
       );
       return;
     }
@@ -235,7 +235,7 @@ class _CereriScreenState extends State<CereriScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Orarul clasei tale nu este setat pentru ziua selectata.',
+              'Your class schedule is not set for the selected day.',
             ),
           ),
         );
@@ -250,11 +250,11 @@ class _CereriScreenState extends State<CereriScreen> {
       context: context,
       initialTime: _selectedTime ?? rangeStart,
       initialEntryMode: TimePickerEntryMode.input,
-      helpText: 'Selecteaza ora',
-      cancelText: 'Anuleaza',
+      helpText: 'Select time',
+      cancelText: 'Cancel',
       confirmText: 'OK',
-      hourLabelText: 'Ora',
-      minuteLabelText: 'Minute',
+      hourLabelText: 'Hour',
+      minuteLabelText: 'Minutes',
       builder: (context, child) {
         return Localizations.override(
           context: context,
@@ -285,14 +285,14 @@ class _CereriScreenState extends State<CereriScreen> {
                   hourMinuteShape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: const BorderSide(
-                      color: Color(0xFFBDCFDD),
+                      color: Color(0xFFC0C4D8),
                       width: 1.2,
                     ),
                   ),
                   dayPeriodShape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: const BorderSide(
-                      color: Color(0xFFBDCFDD),
+                      color: Color(0xFFC0C4D8),
                       width: 1.2,
                     ),
                   ),
@@ -323,7 +323,7 @@ class _CereriScreenState extends State<CereriScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Ora trebuie sa fie intre ${fmt(rangeStart)} si ${fmt(rangeEnd)} (orarul clasei tale).',
+            'Time must be between ${fmt(rangeStart)} and ${fmt(rangeEnd)} (your class schedule).',
           ),
         ),
       );
@@ -369,7 +369,7 @@ class _CereriScreenState extends State<CereriScreen> {
     }
     return <String, String>{
       'uid': teacherUid,
-      'name': teacherName.isNotEmpty ? teacherName : 'Diriginte',
+      'name': teacherName.isNotEmpty ? teacherName : 'Teacher',
       'username': teacherUsername,
     };
   }
@@ -401,7 +401,7 @@ class _CereriScreenState extends State<CereriScreen> {
     if (_selectedDate == null || _selectedTime == null || message.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Completeaza data, ora si mesajul cererii.'),
+          content: Text('Please fill in the date, time and reason.'),
         ),
       );
       return;
@@ -409,7 +409,7 @@ class _CereriScreenState extends State<CereriScreen> {
 
     if (!_targetTeacher && !_targetParent) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecteaza cel putin un destinatar.')),
+        const SnackBar(content: Text('Select at least one recipient.')),
       );
       return;
     }
@@ -419,7 +419,7 @@ class _CereriScreenState extends State<CereriScreen> {
     final studentUid = AppSession.uid;
     if (studentUid == null || studentUid.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sesiune invalida. Reautentifica-te.')),
+        const SnackBar(content: Text('Invalid session. Please log in again.')),
       );
       return;
     }
@@ -439,7 +439,7 @@ class _CereriScreenState extends State<CereriScreen> {
               .trim();
 
       if (classId.isEmpty) {
-        throw Exception('Elevul nu are clasa setata in profil.');
+        throw Exception('Student does not have a class set in profile.');
       }
 
       final baseDoc = {
@@ -476,7 +476,7 @@ class _CereriScreenState extends State<CereriScreen> {
             ...baseDoc,
             'targetRole': 'teacher',
             'targetUid': (teacher['uid'] ?? '').trim(),
-            'targetName': (teacher['name'] ?? 'Diriginte').trim(),
+            'targetName': (teacher['name'] ?? 'Teacher').trim(),
             'targetUsername': (teacher['username'] ?? '').trim(),
           }),
         );
@@ -505,7 +505,7 @@ class _CereriScreenState extends State<CereriScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cererea a fost trimisa cu succes.')),
+        const SnackBar(content: Text('Request submitted successfully.')),
       );
 
       setState(() {
@@ -524,7 +524,7 @@ class _CereriScreenState extends State<CereriScreen> {
           content: Text(
             e.toString().contains('Exception:')
                 ? e.toString().replaceFirst('Exception: ', '')
-                : 'Eroare la trimiterea cererii.',
+                : 'Error submitting the request.',
           ),
         ),
       );
@@ -584,7 +584,7 @@ class _CereriScreenState extends State<CereriScreen> {
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDCE6EF),
+                        color: const Color(0xFFDDE0EC),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -596,7 +596,7 @@ class _CereriScreenState extends State<CereriScreen> {
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Text(
-                        'Renunți la cerere?',
+                        'Discard request?',
                         style: TextStyle(
                           color: _textDark,
                           fontWeight: FontWeight.w800,
@@ -609,7 +609,7 @@ class _CereriScreenState extends State<CereriScreen> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Cererea nu a fost trimisă și datele vor fi șterse.',
+                  'The request has not been submitted and data will be cleared.',
                   style: TextStyle(
                     color: _textMuted,
                     fontSize: 13.5,
@@ -631,7 +631,7 @@ class _CereriScreenState extends State<CereriScreen> {
                           ),
                         ),
                         child: const Text(
-                          'Renunț',
+                          'Discard',
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
@@ -652,7 +652,7 @@ class _CereriScreenState extends State<CereriScreen> {
                           ),
                         ),
                         child: const Text(
-                          'Rămân',
+                          'Stay',
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
@@ -692,8 +692,8 @@ class _CereriScreenState extends State<CereriScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
     final compact = MediaQuery.sizeOf(context).width < 390;
-    final headerHeight = compact ? 138.0 : 146.0;
     final titleSize = compact ? 29.0 : 33.0;
 
     return PopScope(
@@ -709,170 +709,296 @@ class _CereriScreenState extends State<CereriScreen> {
             children: [
               Column(
                 children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(54),
-                      bottomRight: Radius.circular(54),
-                    ),
-                    child: Container(
-                      height: headerHeight,
-                      width: double.infinity,
-                      color: _primary,
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            top: -72,
-                            right: -52,
-                            child: _HeaderCircle(size: 220, opacity: 0.08),
-                          ),
-                          Positioned(
-                            top: 44,
-                            right: 34,
-                            child: _HeaderCircle(size: 72, opacity: 0.07),
-                          ),
-                          Positioned(
-                            left: 156,
-                            bottom: -28,
-                            child: _HeaderCircle(size: 82, opacity: 0.08),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 18),
-                            child: Center(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  _HeaderIconButton(
-                                    icon: Icons.arrow_back_rounded,
-                                    onTap: _goBack,
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Text(
-                                      'Cereri de invoire',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: titleSize,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: -0.6,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 22),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
                       ),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(28),
+                        bottomRight: Radius.circular(28),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x302848B0),
+                          blurRadius: 20,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            onPressed: _goBack,
+                            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Leave requests',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: titleSize,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _RecipientCard(
-                                  selected: _targetTeacher,
-                                  icon: Icons.school_rounded,
-                                  title: 'Diriginte',
-                                  onTap: () => setState(
-                                    () => _targetTeacher = !_targetTeacher,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: _RecipientCard(
-                                  selected: _targetParent,
-                                  icon: Icons.family_restroom,
-                                  title: 'Parinte',
-                                  onTap: () => setState(
-                                    () => _targetParent = !_targetParent,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 34),
-                          const Text(
-                            'DATA',
-                            style: TextStyle(
-                              color: _primary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 2.2,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          _LabeledInputBox(
-                            controller: _dateController,
-                            hintText: 'ZZ/LL/AAAA',
-                            icon: Icons.calendar_month_rounded,
-                            onTap: _pickDate,
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'ORA DE INCEPUT',
-                            style: TextStyle(
-                              color: _primary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 2.2,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          _LabeledInputBox(
-                            controller: _timeController,
-                            hintText: '08:00',
-                            icon: Icons.access_time_filled_rounded,
-                            onTap: _loadingSchedule ? null : _pickTime,
-                          ),
-                          if (_loadingSchedule)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 8),
-                              child: LinearProgressIndicator(color: _primary),
-                            )
-                          else if (_scheduleStart != null &&
-                              _scheduleEnd != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                'Interval valid: '
-                                '${_scheduleStart!.hour.toString().padLeft(2, '0')}:${_scheduleStart!.minute.toString().padLeft(2, '0')}'
-                                ' - '
-                                '${_scheduleEnd!.hour.toString().padLeft(2, '0')}:${_scheduleEnd!.minute.toString().padLeft(2, '0')}',
-                                style: const TextStyle(
-                                  color: _primary,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'MOTIVUL ABSENTEI',
-                            style: TextStyle(
-                              color: _primary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 2.2,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          _ReasonBox(controller: _messageController),
-                          const SizedBox(height: 16),
-                          SizedBox(
+                          // ── Description ──
+                          Container(
                             width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _submitting ? null : _submitRequest,
-                              icon: _submitting
-                                  ? const SizedBox(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: _primary.withValues(alpha: 0.07),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(Icons.info_outline_rounded,
+                                    color: _primary, size: 20),
+                                const SizedBox(width: 10),
+                                const Expanded(
+                                  child: Text(
+                                    'Request permission to leave school during scheduled hours. If approved, your QR access code will be updated automatically.',
+                                    style: TextStyle(
+                                      color: _textDark,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // ── Recipients ──
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: _card,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'SEND TO',
+
+                                  style: TextStyle(
+                                    color: _textMuted,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _RecipientPill(
+                                        selected: _targetTeacher,
+                                        icon: Icons.school_rounded,
+                                        label: 'Teacher',
+                                        onTap: () => setState(
+                                          () => _targetTeacher = !_targetTeacher,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: _RecipientPill(
+                                        selected: _targetParent,
+                                        icon: Icons.family_restroom,
+                                        label: 'Parent',
+                                        onTap: () => setState(
+                                          () => _targetParent = !_targetParent,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // ── Date & Time row ──
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: _card,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _FieldTile(
+                                        label: 'DATE',
+                                        value: _dateController.text.isEmpty
+                                            ? 'Select date'
+                                            : _dateController.text,
+                                        icon: Icons.calendar_month_rounded,
+                                        isEmpty: _dateController.text.isEmpty,
+                                        onTap: _pickDate,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: _FieldTile(
+                                        label: 'TIME',
+                                        value: _timeController.text.isEmpty
+                                            ? 'Select time'
+                                            : _timeController.text,
+                                        icon: Icons.access_time_rounded,
+                                        isEmpty: _timeController.text.isEmpty,
+                                        onTap: _loadingSchedule ? null : _pickTime,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (_loadingSchedule)
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 10),
+                                    child: LinearProgressIndicator(color: _primary),
+                                  )
+                                else if (_scheduleStart != null &&
+                                    _scheduleEnd != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 10),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.info_outline_rounded,
+                                            color: _primary, size: 14),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Schedule: '
+                                          '${_scheduleStart!.hour.toString().padLeft(2, '0')}:${_scheduleStart!.minute.toString().padLeft(2, '0')}'
+                                          ' – '
+                                          '${_scheduleEnd!.hour.toString().padLeft(2, '0')}:${_scheduleEnd!.minute.toString().padLeft(2, '0')}',
+                                          style: const TextStyle(
+                                            color: _primary,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // ── Reason ──
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: _card,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'REASON',
+                                  style: TextStyle(
+                                    color: _textMuted,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextField(
+                                  controller: _messageController,
+                                  minLines: 4,
+                                  maxLines: 6,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: _textDark,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.4,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: 'Why do you need to leave?',
+                                    hintStyle: const TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFFA0A4B8),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    filled: true,
+                                    fillColor: _cardMuted,
+                                    contentPadding: const EdgeInsets.all(14),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(
+                                          color: _primary, width: 1.4),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          // ── Submit ──
+                          GestureDetector(
+                            onTap: _submitting ? null : _submitRequest,
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF2848B0), Color(0xFF3460CC)],
+                                ),
+                                borderRadius: BorderRadius.circular(18),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x352848B0),
+                                    blurRadius: 16,
+                                    offset: Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (_submitting)
+                                    const SizedBox(
                                       width: 18,
                                       height: 18,
                                       child: CircularProgressIndicator(
@@ -880,58 +1006,56 @@ class _CereriScreenState extends State<CereriScreen> {
                                         color: Colors.white,
                                       ),
                                     )
-                                  : const Icon(Icons.send_rounded, size: 30),
-                              label: const Text(
-                                'Trimite Cererea',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: _primary,
-                                foregroundColor: Colors.white,
-                                disabledBackgroundColor: _primary,
-                                disabledForegroundColor: Colors.white,
-                                minimumSize: const Size.fromHeight(74),
-                                elevation: 6,
-                                shadowColor: const Color(0x661F8BE7),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(22),
-                                ),
+                                  else
+                                    const Icon(Icons.send_rounded,
+                                        color: Colors.white, size: 18),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    'Submit request',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                          const SizedBox(height: 34),
+                          const SizedBox(height: 16),
+                          // ── Info banner ──
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: _card,
-                              borderRadius: BorderRadius.circular(22),
+                              color: const Color(0xFFFFF3E0),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            child: const Row(
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                SizedBox(width: 6),
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: Color(0xFFF3D0DD),
-                                  child: Icon(
-                                    Icons.alarm_rounded,
-                                    color: Color(0xFF8A2D52),
-                                    size: 24,
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFE0B2),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.schedule_rounded,
+                                    color: Color(0xFFE65100),
+                                    size: 18,
                                   ),
                                 ),
-                                SizedBox(width: 12),
-                                Expanded(
+                                const SizedBox(width: 10),
+                                const Expanded(
                                   child: Text(
-                                    'Cererile trimise expira automat dupa ora 00:00 in ziua respectiva.',
+                                    'Requests expire automatically at midnight on the selected day.',
                                     style: TextStyle(
-                                      color: Color(0xFF6084A1),
-                                      fontSize: 17,
+                                      color: Color(0xFF5D4037),
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w500,
-                                      height: 1.38,
+                                      height: 1.35,
                                     ),
                                   ),
                                 ),
@@ -978,7 +1102,7 @@ class _CereriScreenState extends State<CereriScreen> {
                               SizedBox(width: 14),
                               Flexible(
                                 child: Text(
-                                  'Se trimite cererea...',
+                                  'Submitting request...',
                                   style: TextStyle(
                                     color: _textDark,
                                     fontSize: 16,
@@ -1001,57 +1125,45 @@ class _CereriScreenState extends State<CereriScreen> {
   }
 }
 
-class _RecipientCard extends StatelessWidget {
+class _RecipientPill extends StatelessWidget {
   final bool selected;
   final IconData icon;
-  final String title;
+  final String label;
   final VoidCallback onTap;
 
-  const _RecipientCard({
+  const _RecipientPill({
     required this.selected,
     required this.icon,
-    required this.title,
+    required this.label,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
-      child: Ink(
-        height: 150,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? _card : _cardMuted,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: selected ? _primary : Colors.transparent,
-            width: selected ? 3 : 0,
-          ),
+          color: selected ? _primary : _cardMuted,
+          borderRadius: BorderRadius.circular(14),
         ),
-        child: Column(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: const BoxDecoration(
-                color: Color(0xFFCFDCE6),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: selected ? _primary : const Color(0xFF6788A5),
-                size: 38,
-              ),
+            Icon(
+              icon,
+              color: selected ? Colors.white : _textMuted,
+              size: 20,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(width: 8),
             Text(
-              title,
+              label,
               style: TextStyle(
-                color: selected ? _textDark : _textMuted,
-                fontSize: 22,
-                fontWeight: FontWeight.w500,
+                color: selected ? Colors.white : _textMuted,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -1061,157 +1173,72 @@ class _RecipientCard extends StatelessWidget {
   }
 }
 
-class _LabeledInputBox extends StatelessWidget {
-  final TextEditingController controller;
-  final String hintText;
+class _FieldTile extends StatelessWidget {
+  final String label;
+  final String value;
   final IconData icon;
+  final bool isEmpty;
   final VoidCallback? onTap;
 
-  const _LabeledInputBox({
-    required this.controller,
-    required this.hintText,
+  const _FieldTile({
+    required this.label,
+    required this.value,
     required this.icon,
+    required this.isEmpty,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: onTap,
-      child: IgnorePointer(
-        child: TextField(
-          controller: controller,
-          readOnly: true,
-          style: const TextStyle(
-            fontSize: 18,
-            color: _textDark,
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: const TextStyle(
-              fontSize: 18,
-              color: Color(0xFFA2B6C6),
-              fontWeight: FontWeight.w500,
-            ),
-            filled: true,
-            fillColor: _cardMuted,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 14,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFFC1D2DF),
-                width: 1.2,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFFC1D2DF),
-                width: 1.2,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: _primary, width: 1.6),
-            ),
-            suffixIcon: Container(
-              margin: const EdgeInsets.all(8),
-              width: 36,
-              height: 36,
-              decoration: const BoxDecoration(
-                color: Color(0xFFB3CCE0),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: _primary, size: 21),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ReasonBox extends StatelessWidget {
-  final TextEditingController controller;
-
-  const _ReasonBox({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      minLines: 4,
-      maxLines: 4,
-      style: const TextStyle(fontSize: 18, color: _textDark, height: 1.2),
-      decoration: InputDecoration(
-        hintText: 'Introduceti motivul cererii de invoire...',
-        hintStyle: const TextStyle(fontSize: 18, color: Color(0xFFA2AAA0)),
-        filled: true,
-        fillColor: _cardMuted,
-        contentPadding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFC1D2DF), width: 1.2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFC1D2DF), width: 1.2),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: _primary, width: 1.6),
-        ),
-      ),
-    );
-  }
-}
-
-class _HeaderIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _HeaderIconButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 34,
-        height: 34,
-        child: Center(child: Icon(icon, color: Colors.white, size: 32)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: _cardMuted,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: _primary, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: _textMuted,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      color: isEmpty ? const Color(0xFFA0A4B8) : _textDark,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _HeaderCircle extends StatelessWidget {
-  final double size;
-  final double opacity;
 
-  const _HeaderCircle({required this.size, required this.opacity});
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: opacity),
-        shape: BoxShape.circle,
-      ),
-    );
-  }
-}
 
 // ---------------------------------------------------------------------------
-// Delegate pentru traducerea tooltip-urilor din TimePicker în română
+// Delegate for customizing TimePicker tooltips
 // ---------------------------------------------------------------------------
 class _RomanianTimePickerLocalizationsDelegate
     extends LocalizationsDelegate<MaterialLocalizations> {
@@ -1222,22 +1249,18 @@ class _RomanianTimePickerLocalizationsDelegate
 
   @override
   Future<MaterialLocalizations> load(Locale locale) async =>
-      const _RomanianMaterialLocalizations();
+      const _CustomMaterialLocalizations();
 
   @override
   bool shouldReload(_RomanianTimePickerLocalizationsDelegate old) => false;
 }
 
-class _RomanianMaterialLocalizations extends DefaultMaterialLocalizations {
-  const _RomanianMaterialLocalizations();
-
-  String get switchToInputModeLabel => 'Comută la mod text';
-
-  String get switchToCalendarModeLabel => 'Comută la calendar';
+class _CustomMaterialLocalizations extends DefaultMaterialLocalizations {
+  const _CustomMaterialLocalizations();
 
   @override
-  String get dialModeButtonLabel => 'Comută la selectorul cu cadran';
+  String get dialModeButtonLabel => 'Switch to dial picker';
 
   @override
-  String get inputTimeModeButtonLabel => 'Comută la mod text';
+  String get inputTimeModeButtonLabel => 'Switch to text input';
 }

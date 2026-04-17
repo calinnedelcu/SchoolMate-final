@@ -28,13 +28,13 @@ class ProfilePicturePage extends StatefulWidget {
 }
 
 class _ProfilePicturePageState extends State<ProfilePicturePage> {
-  // ── colours matching the mockup ─────────────────────────────────────────────
-  static const _darkBg = Color(0xFF2981CF);
-  static const _leftPanelGreen = Color(0xFF1D89E7);
-  static const _primaryGreen = Color(0xFF3A8CD3);
-  static const _cardCream = Color(0xFFF5F1E8);
-  static const _infoBoxBg = Color(0xFFE7EFF6);
-  static const _infoBoxBorder = Color(0xFFB9D0E4);
+  // ── colours ──
+  static const _darkBg = Color(0xFF1E3CA0);
+  static const _leftPanelGreen = Color(0xFF2E58D0);
+  static const _primaryGreen = Color(0xFF2848B0);
+  static const _cardCream = Color(0xFFF2F4F8);
+  static const _infoBoxBg = Color(0xFFE8EAF2);
+  static const _infoBoxBorder = Color(0xFFC0C4D8);
 
   Uint8List? _imageBytes;
   String? _imageFilePath;
@@ -211,32 +211,8 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // app icon / logo
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: _primaryGreen,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _primaryGreen.withValues(alpha: 0.35),
-                        blurRadius: 18,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.asset(
-                      'assets/images/aegis_logo.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 48),
                 const Text(
-                  'Poarta ta către\nsecuritate academică',
+                  'Your gateway to\nacademic security',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -246,11 +222,10 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Soluția completă, optimizată pentru mobil, '
-                  'pentru gestionarea accesului și plecărilor din '
-                  'școală. Crește siguranța prin identități QR '
-                  'dinamice, integrare automată a orarului și '
-                  'aprobări în timp real din partea părinților.',
+                  'A mobile-optimized solution for managing school '
+                  'access and leave requests. Enhancing safety through '
+                  'dynamic QR identities, automatic schedule integration, '
+                  'and real-time parent approvals.',
                   style: TextStyle(
                     color: Color(0xCCFFFFFF),
                     fontSize: 13.5,

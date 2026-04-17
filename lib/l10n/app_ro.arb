@@ -60,7 +60,7 @@
   "accessibilityInfoBanner": "Setările sunt salvate pe acest dispozitiv și rămân active la următoarea deschidere.",
   "@accessibilityInfoBanner": {},
 
-  "homeGreeting": "Bună, {name}",
+  "homeGreeting": "Bine ai venit, {name}",
   "@homeGreeting": {
     "placeholders": {
       "name": {
@@ -69,8 +69,14 @@
     }
   },
 
-  "homeTodayCardTitle": "Azi",
+  "homeTodayCardTitle": "PROGRAMUL DE AZI",
   "@homeTodayCardTitle": {},
+
+  "homeTodayDayLabel": "Ziua curentă",
+  "@homeTodayDayLabel": {},
+
+  "homeTodayIntervalLabel": "Interval cursuri",
+  "@homeTodayIntervalLabel": {},
 
   "homeTodayInProgress": "Ești la școală acum",
   "@homeTodayInProgress": {},
@@ -102,13 +108,13 @@
     }
   },
 
-  "homeTodayViewFull": "Vezi orarul complet",
+  "homeTodayViewFull": "Vezi orar complet",
   "@homeTodayViewFull": {},
 
-  "homeRequestCardTitle": "Cerere de învoire",
+  "homeRequestCardTitle": "Cererile de învoire",
   "@homeRequestCardTitle": {},
 
-  "homeRequestNoneSubtitle": "Nu ai nicio cerere activă",
+  "homeRequestNoneSubtitle": "Gestionează absențele tale",
   "@homeRequestNoneSubtitle": {},
 
   "homeRequestNoneCta": "Creează cerere nouă",
@@ -129,7 +135,7 @@
   "homeRequestActiveChip": "Activă",
   "@homeRequestActiveChip": {},
 
-  "homeInboxPreviewTitle": "Mesaje recente",
+  "homeInboxPreviewTitle": "Mesaje",
   "@homeInboxPreviewTitle": {},
 
   "homeInboxNoMessages": "Nu ai mesaje noi",

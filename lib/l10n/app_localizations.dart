@@ -215,14 +215,26 @@ abstract class AppLocalizations {
   /// No description provided for @homeGreeting.
   ///
   /// In ro, this message translates to:
-  /// **'Bună, {name}'**
+  /// **'Bine ai venit, {name}'**
   String homeGreeting(String name);
 
   /// No description provided for @homeTodayCardTitle.
   ///
   /// In ro, this message translates to:
-  /// **'Azi'**
+  /// **'PROGRAMUL DE AZI'**
   String get homeTodayCardTitle;
+
+  /// No description provided for @homeTodayDayLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ziua curentă'**
+  String get homeTodayDayLabel;
+
+  /// No description provided for @homeTodayIntervalLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Interval cursuri'**
+  String get homeTodayIntervalLabel;
 
   /// No description provided for @homeTodayInProgress.
   ///
@@ -257,19 +269,19 @@ abstract class AppLocalizations {
   /// No description provided for @homeTodayViewFull.
   ///
   /// In ro, this message translates to:
-  /// **'Vezi orarul complet'**
+  /// **'Vezi orar complet'**
   String get homeTodayViewFull;
 
   /// No description provided for @homeRequestCardTitle.
   ///
   /// In ro, this message translates to:
-  /// **'Cerere de învoire'**
+  /// **'Cererile de învoire'**
   String get homeRequestCardTitle;
 
   /// No description provided for @homeRequestNoneSubtitle.
   ///
   /// In ro, this message translates to:
-  /// **'Nu ai nicio cerere activă'**
+  /// **'Gestionează absențele tale'**
   String get homeRequestNoneSubtitle;
 
   /// No description provided for @homeRequestNoneCta.
@@ -311,7 +323,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeInboxPreviewTitle.
   ///
   /// In ro, this message translates to:
-  /// **'Mesaje recente'**
+  /// **'Mesaje'**
   String get homeInboxPreviewTitle;
 
   /// No description provided for @homeInboxNoMessages.

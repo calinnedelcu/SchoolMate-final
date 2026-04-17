@@ -10,14 +10,14 @@ import 'package:firster/student/widgets/qr_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-const _primary = Color(0xFF1F8BE7);
-const _surface = Color(0xFFEFF5FA);
+const _primary = Color(0xFF2848B0);
+const _surface = Color(0xFFF2F4F8);
 const _surfaceLowest = Color(0xFFFFFFFF);
-const _surfaceContainerLow = Color(0xFFE7F0F6);
-const _surfaceContainerHigh = Color(0xFFDEE8F0);
-const _outline = Color(0xFF717B6E);
-const _outlineVariant = Color(0xFFBACCD9);
-const _onSurface = Color(0xFF587F9E);
+const _surfaceContainerLow = Color(0xFFE8EAF2);
+const _surfaceContainerHigh = Color(0xFFDDE0EC);
+const _outline = Color(0xFF7A7E9A);
+const _outlineVariant = Color(0xFFC0C4D8);
+const _onSurface = Color(0xFF1A2050);
 
 class OrarScreen extends StatefulWidget {
   final VoidCallback? onBackToHome;
@@ -52,7 +52,7 @@ class _OrarScreenState extends State<OrarScreen> {
       softSurfaceColor: _surfaceContainerHigh,
       titleColor: _onSurface,
       messageColor: _outline,
-      dangerColor: const Color(0xFF8E3557),
+      dangerColor: const Color(0xFFB03040),
     );
     if (!shouldLogout) return;
     await FirebaseAuth.instance.signOut();
@@ -71,7 +71,7 @@ class _OrarScreenState extends State<OrarScreen> {
   Widget build(BuildContext context) {
     final fallbackName = (AppSession.username?.trim().isNotEmpty ?? false)
         ? AppSession.username!.trim()
-        : 'Elev';
+        : 'Student';
 
     return Scaffold(
       backgroundColor: _surface,
@@ -94,7 +94,7 @@ class _OrarScreenState extends State<OrarScreen> {
 
             final resolvedClassName = className.isNotEmpty
                 ? className
-                : (classId.isNotEmpty ? classId : 'Clasa necunoscută');
+                : (classId.isNotEmpty ? classId : 'Unknown class');
 
             final classStream = classId.isNotEmpty
                 ? FirebaseFirestore.instance
@@ -168,7 +168,7 @@ class _OrarScreenState extends State<OrarScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Orar Clasa ${_classToRoman(resolvedClassName)}',
+                                      'Schedule Class ${_classToRoman(resolvedClassName)}',
                                       style: const TextStyle(
                                         color: _onSurface,
                                         fontSize: 22,
@@ -187,7 +187,7 @@ class _OrarScreenState extends State<OrarScreen> {
                                           ),
                                         ),
                                         child: const Text(
-                                          'Nu există orar definit pe server pentru clasa ta.',
+                                          'No schedule defined on the server for your class.',
                                           style: TextStyle(
                                             color: _outline,
                                             fontSize: 13,
@@ -230,104 +230,57 @@ class _OrarHeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
     final compact = MediaQuery.sizeOf(context).width < 390;
-    final headerHeight = compact ? 138.0 : 146.0;
     final titleSize = compact ? 29.0 : 33.0;
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(52),
-        bottomRight: Radius.circular(52),
-      ),
-      child: Container(
-        height: headerHeight,
-        color: _primary,
-        child: Stack(
-          children: [
-            Positioned(
-              top: -72,
-              right: -52,
-              child: _Circle(size: 220, opacity: 0.08),
-            ),
-            Positioned(
-              top: 44,
-              right: 34,
-              child: _Circle(size: 72, opacity: 0.07),
-            ),
-            Positioned(
-              left: 156,
-              bottom: -28,
-              child: _Circle(size: 82, opacity: 0.08),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: Center(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _HeaderIconButton(
-                      icon: Icons.arrow_back_rounded,
-                      onTap: onBack,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        'Profil',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: titleSize,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.6,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HeaderIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _HeaderIconButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 34,
-        height: 34,
-        child: Center(child: Icon(icon, color: Colors.white, size: 32)),
-      ),
-    );
-  }
-}
-
-class _Circle extends StatelessWidget {
-  final double size;
-  final double opacity;
-
-  const _Circle({required this.size, required this.opacity});
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: opacity),
-        shape: BoxShape.circle,
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 22),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x302848B0),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              onPressed: onBack,
+              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+              padding: EdgeInsets.zero,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Text(
+            'Profile',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: titleSize,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.3,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -374,7 +327,7 @@ class _QrAccessCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cod de acces',
+                      'Access code',
                       style: TextStyle(
                         color: _onSurface,
                         fontSize: 16,
@@ -383,7 +336,7 @@ class _QrAccessCard extends StatelessWidget {
                     ),
                     SizedBox(height: 2),
                     Text(
-                      'Scanează la ieșirea din școală',
+                      'Scan when leaving school',
                       style: TextStyle(
                         color: _outline,
                         fontSize: 13,
@@ -435,7 +388,7 @@ class _ProfileIdentityCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(38),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x121F8BE7),
+              color: Color(0x122848B0),
               blurRadius: 28,
               offset: Offset(0, 12),
             ),
@@ -544,10 +497,10 @@ class _ProfileIdentityCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 26),
-              Container(height: 1, color: const Color(0xFFF0F1EA)),
+              Container(height: 1, color: const Color(0xFFE8EAF2)),
               const SizedBox(height: 22),
               _PersonInfoBox(
-                label: 'DIRIGINTE',
+                label: 'HOMEROOM TEACHER',
                 icon: Icons.school,
                 teacherUid: teacherUid,
                 teacherUsername: teacherUsername,
@@ -665,7 +618,7 @@ class _SettingsSheet extends StatelessWidget {
           const Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Setări cont',
+              'Account settings',
               style: TextStyle(
                 color: _onSurface,
                 fontSize: 20,
@@ -676,7 +629,7 @@ class _SettingsSheet extends StatelessWidget {
           const SizedBox(height: 18),
           _SettingsTile(
             icon: Icons.edit_outlined,
-            label: 'Editare profil',
+            label: 'Edit profile',
             onTap: () {
               Navigator.pop(ctx);
               _showEditProfileSheet(ctx);
@@ -685,7 +638,7 @@ class _SettingsSheet extends StatelessWidget {
           const SizedBox(height: 10),
           _SettingsTile(
             icon: Icons.accessibility_new_rounded,
-            label: 'Accesibilitate',
+            label: 'Accessibility',
             onTap: () {
               Navigator.pop(ctx);
               Navigator.of(ctx).push(
@@ -698,7 +651,7 @@ class _SettingsSheet extends StatelessWidget {
           const SizedBox(height: 10),
           _SettingsTile(
             icon: Icons.language_rounded,
-            label: 'Limbă',
+            label: 'Language',
             onTap: () {
               Navigator.pop(ctx);
               showLanguagePickerSheet(ctx);
@@ -707,7 +660,7 @@ class _SettingsSheet extends StatelessWidget {
           const SizedBox(height: 10),
           _SettingsTile(
             icon: Icons.logout,
-            label: 'Deconectează-te',
+            label: 'Sign out',
             danger: true,
             onTap: () {
               Navigator.pop(ctx);
@@ -728,8 +681,17 @@ class _SettingsSheet extends StatelessWidget {
   }
 }
 
+/// Opens the account-settings dialog (email, password, profile picture).
+void showEditProfileDialog(BuildContext context) {
+  showDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    builder: (_) => const _AccountSettingsDialog(),
+  );
+}
+
 // ────────────────────────────────────────────────────────────────────────────
-// ACCOUNT SETTINGS DIALOG  (Email · Parolă · Imagine Profil)
+// ACCOUNT SETTINGS DIALOG  (Email · Password · Profile Picture)
 // ────────────────────────────────────────────────────────────────────────────
 class _AccountSettingsDialog extends StatefulWidget {
   const _AccountSettingsDialog();
@@ -817,7 +779,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Eroare la încărcare: $e')));
+        ).showSnackBar(SnackBar(content: Text('Upload error: $e')));
       }
     } finally {
       if (mounted) setState(() => _uploading = false);
@@ -847,7 +809,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
     } on FirebaseAuthException {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Parola actuală este incorectă.')),
+          const SnackBar(content: Text('Current password is incorrect.')),
         );
       }
       return false;
@@ -866,7 +828,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
       if (_editingEmail && _emailC.text.trim().isNotEmpty) {
         if (!_emailVerified) {
           setState(() {
-            _emailError = 'Verifică mai întâi email-ul nou.';
+            _emailError = 'Verify the new email first.';
             _saving = false;
           });
           return;
@@ -879,14 +841,14 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
           _passwordC.text.trim() != '••••••••••••') {
         if (_passwordC.text.trim() != _confirmPasswordC.text.trim()) {
           setState(() {
-            _passwordError = 'Parolele nu se potrivesc.';
+            _passwordError = 'Passwords do not match.';
             _saving = false;
           });
           return;
         }
         if (_passwordC.text.trim().length < 8) {
           setState(() {
-            _passwordError = 'Parola trebuie să aibă cel puțin 8 caractere.';
+            _passwordError = 'Password must be at least 8 characters.';
             _saving = false;
           });
           return;
@@ -911,14 +873,14 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
         final messenger = ScaffoldMessenger.of(context);
         Navigator.pop(context);
         messenger.showSnackBar(
-          const SnackBar(content: Text('Setări actualizate.')),
+          const SnackBar(content: Text('Settings updated.')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Eroare: $e')));
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (!closed && mounted) setState(() => _saving = false);
@@ -961,7 +923,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                     children: [
                       const Expanded(
                         child: Text(
-                          'Setări Cont',
+                          'Account Settings',
                           style: TextStyle(
                             color: _onSurface,
                             fontSize: 24,
@@ -979,7 +941,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: const Text(
-                          'Anulează',
+                          'Cancel',
                           style: TextStyle(
                             color: _outline,
                             fontSize: 15,
@@ -1012,7 +974,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                 ),
                               )
                             : const Text(
-                                'Salvează',
+                                'Save',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
@@ -1022,7 +984,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  const Divider(color: Color(0xFFF0F1EA)),
+                  const Divider(color: Color(0xFFE8EAF2)),
                   const SizedBox(height: 18),
 
                   // ── EMAIL ──
@@ -1090,7 +1052,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                       ],
                     ),
                   ),
-                  // ── VERIFICARE EMAIL ──
+                  // ── EMAIL VERIFICATION ──
                   if (_editingEmail && !_emailVerified) ...[
                     const SizedBox(height: 10),
                     Row(
@@ -1106,7 +1068,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                       if (email.isEmpty ||
                                           !email.contains('@')) {
                                         setState(
-                                          () => _emailError = 'Email invalid.',
+                                          () => _emailError = 'Invalid email.',
                                         );
                                         return;
                                       }
@@ -1133,7 +1095,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                         if (mounted)
                                           setState(() {
                                             _emailError =
-                                                'Nu am putut trimite codul.';
+                                                'Could not send the code.';
                                             _sendingCode = false;
                                           });
                                       }
@@ -1149,7 +1111,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                     )
                                   : const Icon(Icons.send_rounded, size: 18),
                               label: Text(
-                                _codeSent ? 'Retrimite cod' : 'Trimite cod',
+                                _codeSent ? 'Resend code' : 'Send code',
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: _primary,
@@ -1181,7 +1143,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            'Am trimis un cod la ${_emailC.text.trim()}. Introdu-l mai jos.',
+                            'We sent a code to ${_emailC.text.trim()}. Enter it below.',
                             style: const TextStyle(
                               color: _outline,
                               fontSize: 12.5,
@@ -1230,7 +1192,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                             onTap: () async {
                               final code = _verificationCodeC.text.trim();
                               if (code.isEmpty) {
-                                setState(() => _emailError = 'Introdu codul.');
+                                setState(() => _emailError = 'Enter the code.');
                                 return;
                               }
                               final uid =
@@ -1248,7 +1210,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                 } else {
                                   if (mounted)
                                     setState(
-                                      () => _emailError = 'Cod invalid.',
+                                      () => _emailError = 'Invalid code.',
                                     );
                                 }
                               } catch (e) {
@@ -1266,7 +1228,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Text(
-                                'Verifică',
+                                'Verify',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 13,
@@ -1286,7 +1248,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                         Icon(Icons.check_circle, color: _primary, size: 18),
                         SizedBox(width: 6),
                         Text(
-                          'Email verificat cu succes!',
+                          'Email verified successfully!',
                           style: TextStyle(
                             color: _primary,
                             fontSize: 13,
@@ -1301,7 +1263,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                     Text(
                       _emailError!,
                       style: const TextStyle(
-                        color: Color(0xFF8E3557),
+                        color: Color(0xFFB03040),
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1309,9 +1271,9 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                   ],
                   const SizedBox(height: 22),
 
-                  // ── PAROLĂ ──
+                  // ── PASSWORD ──
                   const Text(
-                    'PAROLĂ',
+                    'PASSWORD',
                     style: TextStyle(
                       color: _primary,
                       fontSize: 12,
@@ -1344,7 +1306,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                     fontSize: 15,
                                   ),
                                   decoration: InputDecoration.collapsed(
-                                    hintText: 'Parola nouă',
+                                    hintText: 'New password',
                                   ),
                                 )
                               : const Text(
@@ -1381,7 +1343,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                       ],
                     ),
                   ),
-                  // ── CONFIRMARE PAROLĂ ──
+                  // ── CONFIRM PASSWORD ──
                   if (_editingPassword) ...[
                     const SizedBox(height: 10),
                     Container(
@@ -1406,7 +1368,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                 fontSize: 15,
                               ),
                               decoration: const InputDecoration.collapsed(
-                                hintText: 'Confirmă parola',
+                                hintText: 'Confirm password',
                               ),
                             ),
                           ),
@@ -1419,7 +1381,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                     Text(
                       _passwordError!,
                       style: const TextStyle(
-                        color: Color(0xFF8E3557),
+                        color: Color(0xFFB03040),
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1427,9 +1389,9 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                   ],
                   const SizedBox(height: 22),
 
-                  // ── IMAGINE PROFIL ──
+                  // ── PROFILE PICTURE ──
                   const Text(
-                    'IMAGINE PROFIL',
+                    'PROFILE PICTURE',
                     style: TextStyle(
                       color: _primary,
                       fontSize: 12,
@@ -1527,7 +1489,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: const [
                                 Text(
-                                  'Schimbă poza de profil',
+                                  'Change profile picture',
                                   style: TextStyle(
                                     color: _onSurface,
                                     fontSize: 15,
@@ -1536,7 +1498,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                 ),
                                 SizedBox(height: 2),
                                 Text(
-                                  'Folosește o poză clară, doar cu tine, pe un fundal simplu.',
+                                  'Use a clear photo of just yourself on a plain background.',
                                   style: TextStyle(
                                     color: _outline,
                                     fontSize: 13,
@@ -1614,7 +1576,7 @@ class _ReauthDialogState extends State<_ReauthDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Confirmare identitate',
+              'Identity confirmation',
               style: TextStyle(
                 color: _onSurface,
                 fontSize: 18,
@@ -1623,7 +1585,7 @@ class _ReauthDialogState extends State<_ReauthDialog> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Introdu parola actuală pentru a continua.',
+              'Enter your current password to continue.',
               style: TextStyle(color: _outline, fontSize: 13.5, height: 1.4),
             ),
             const SizedBox(height: 16),
@@ -1633,7 +1595,7 @@ class _ReauthDialogState extends State<_ReauthDialog> {
               autofocus: true,
               style: const TextStyle(color: _onSurface, fontSize: 15),
               decoration: InputDecoration(
-                hintText: 'Parola actuală',
+                hintText: 'Current password',
                 hintStyle: const TextStyle(color: _outline),
                 filled: true,
                 fillColor: _surfaceContainerLow,
@@ -1644,14 +1606,14 @@ class _ReauthDialogState extends State<_ReauthDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(
-                    color: Color(0xFFC1D2DF),
+                    color: Color(0xFFC0C4D8),
                     width: 1.2,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(
-                    color: Color(0xFFC1D2DF),
+                    color: Color(0xFFC0C4D8),
                     width: 1.2,
                   ),
                 ),
@@ -1686,7 +1648,7 @@ class _ReauthDialogState extends State<_ReauthDialog> {
                       ),
                     ),
                     child: const Text(
-                      'Anulează',
+                      'Cancel',
                       style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -1704,7 +1666,7 @@ class _ReauthDialogState extends State<_ReauthDialog> {
                       ),
                     ),
                     child: const Text(
-                      'Confirmă',
+                      'Confirm',
                       style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -1733,10 +1695,10 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = danger ? const Color(0xFF8E3557) : _primary;
+    final color = danger ? const Color(0xFFB03040) : _primary;
     return Material(
       color: danger
-          ? const Color(0xFF8E3557).withValues(alpha: 0.07)
+          ? const Color(0xFFB03040).withValues(alpha: 0.07)
           : _surfaceContainerLow,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
@@ -1838,7 +1800,7 @@ class _PersonInfoBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (teacherUid.isEmpty && teacherUsername.isEmpty) {
-      return _ProfileDetailRow(label: label, value: 'Nedefinit', icon: icon);
+      return _ProfileDetailRow(label: label, value: 'Not set', icon: icon);
     }
 
     if (teacherUid.isNotEmpty) {
@@ -1882,7 +1844,7 @@ class _PersonInfoBox extends StatelessWidget {
   }
 
   Widget _buildInfoCard(String name) {
-    final displayName = name.trim().isEmpty ? 'Nedefinit' : name.trim();
+    final displayName = name.trim().isEmpty ? 'Not set' : name.trim();
 
     return _ProfileDetailRow(label: label, value: displayName, icon: icon);
   }
@@ -1897,8 +1859,8 @@ class _ParentInfoBox extends StatelessWidget {
 
     if (uid == null || uid.isEmpty) {
       return const _ProfileDetailRow(
-        label: 'PÂRINTE / TUTORE',
-        value: 'Nedefinit',
+        label: 'PARENT / GUARDIAN',
+        value: 'Not set',
         icon: Icons.family_restroom,
       );
     }
@@ -1923,8 +1885,8 @@ class _ParentInfoBox extends StatelessWidget {
 
         if (parentId.isEmpty) {
           return const _ProfileDetailRow(
-            label: 'PÂRINTE / TUTORE',
-            value: 'Nedefinit',
+            label: 'PARENT / GUARDIAN',
+            value: 'Not set',
             icon: Icons.family_restroom,
           );
         }
@@ -1944,7 +1906,7 @@ class _ParentInfoBox extends StatelessWidget {
             );
 
             return _ProfileDetailRow(
-              label: 'PÂRINTE / TUTORE',
+              label: 'PARENT / GUARDIAN',
               value: displayName,
               icon: Icons.family_restroom,
             );
@@ -2015,11 +1977,11 @@ List<_ScheduleRowData> _buildScheduleRows(Map<String, dynamic> classData) {
 
   if (schedule is Map) {
     const dayMap = {
-      1: 'Luni',
-      2: 'Marți',
-      3: 'Miercuri',
-      4: 'Joi',
-      5: 'Vineri',
+      1: 'Monday',
+      2: 'Tuesday',
+      3: 'Wednesday',
+      4: 'Thursday',
+      5: 'Friday',
     };
 
     final dayKeys = <int>[];
@@ -2039,7 +2001,7 @@ List<_ScheduleRowData> _buildScheduleRows(Map<String, dynamic> classData) {
         if (start.isNotEmpty && end.isNotEmpty) {
           result.add(
             _ScheduleRowData(
-              dayName: dayMap[day] ?? 'Ziua $day',
+              dayName: dayMap[day] ?? 'Day $day',
               intervalText: '$start - $end',
               dayNumber: day,
             ),
@@ -2061,14 +2023,14 @@ List<_ScheduleRowData> _buildScheduleRows(Map<String, dynamic> classData) {
     return const [];
   }
 
-  const dayMap = {1: 'Luni', 2: 'Marți', 3: 'Miercuri', 4: 'Joi', 5: 'Vineri'};
+  const dayMap = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday'};
 
   final normalizedDays = oldDays.whereType<int>().toList()..sort();
   return normalizedDays
       .where((day) => day >= 1 && day <= 5)
       .map(
         (day) => _ScheduleRowData(
-          dayName: dayMap[day] ?? 'Ziua $day',
+          dayName: dayMap[day] ?? 'Day $day',
           intervalText: '$oldStart - $oldEnd',
           dayNumber: day,
         ),

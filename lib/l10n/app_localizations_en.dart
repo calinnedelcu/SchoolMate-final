@@ -71,11 +71,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String homeGreeting(String name) {
-    return 'Hi, $name';
+    return 'Welcome, $name';
   }
 
   @override
-  String get homeTodayCardTitle => 'Today';
+  String get homeTodayCardTitle => 'TODAY\'S SCHEDULE';
+
+  @override
+  String get homeTodayDayLabel => 'Current day';
+
+  @override
+  String get homeTodayIntervalLabel => 'Class interval';
 
   @override
   String get homeTodayInProgress => 'You\'re at school right now';
@@ -100,10 +106,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTodayViewFull => 'View full schedule';
 
   @override
-  String get homeRequestCardTitle => 'Leave request';
+  String get homeRequestCardTitle => 'Leave requests';
 
   @override
-  String get homeRequestNoneSubtitle => 'You have no active request';
+  String get homeRequestNoneSubtitle => 'Manage your absences';
 
   @override
   String get homeRequestNoneCta => 'Create new request';
@@ -124,7 +130,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeRequestActiveChip => 'Active';
 
   @override
-  String get homeInboxPreviewTitle => 'Recent messages';
+  String get homeInboxPreviewTitle => 'Messages';
 
   @override
   String get homeInboxNoMessages => 'No new messages';

@@ -653,14 +653,15 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
     super.dispose();
   }
 
-  // ÔöÇÔöÇ Colors ÔöÇÔöÇ
-  static const _darkBg = Color(0xFF2484D4);
-  static const _greenAccent = Color(0xFF1D8DEE);
-  static const _cardBg = Color(0xFFF1F5F8);
-  static const _inputBorder = Color(0xFFC9D6E0);
-  static const _hintColor = Color(0xFF8A8F84);
+  // ── Colors ──
+  static const _darkBg = Color(0xFF1E3CA0);
+  static const _accent = Color(0xFF2848B0);
+  static const _accentLight = Color(0xFF3460CC);
+  static const _cardBg = Color(0xFFF2F4F8);
+  static const _inputBorder = Color(0xFFC0C4D8);
+  static const _hintColor = Color(0xFF7A7E9A);
 
-  // ÔöÇÔöÇ Dot pattern painter ÔöÇÔöÇ
+  // ── Dot pattern painter ──
   Widget _buildDotPattern({
     int alpha = 10,
     double spacing = 20,
@@ -676,21 +677,20 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
     );
   }
 
-  // ÔöÇÔöÇ Branding panel (left side on landscape) ÔöÇÔöÇ
+  // ── Branding panel (left side on landscape) ──
   Widget _buildBrandingPanel() {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF2C8ADA), Color(0xFF2585D7), Color(0xFF2484D4)],
-          stops: [0.0, 0.5, 1.0],
+          colors: [Color(0xFF1E3CA0), Color(0xFF2848B0), Color(0xFF3460CC)],
         ),
       ),
       child: Stack(
         children: [
           Positioned.fill(
-            child: _buildDotPattern(alpha: 22, spacing: 20, radius: 1.5),
+            child: _buildDotPattern(alpha: 18, spacing: 22, radius: 1.5),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 56),
@@ -698,17 +698,8 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: Image.asset(
-                    'assets/images/aegis_logo.png',
-                    width: 72,
-                    height: 72,
-                  ),
-                ),
-                const SizedBox(height: 36),
                 const Text(
-                  'Poarta ta către\nsecuritate academică',
+                  'Your gateway to\nacademic security',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -718,11 +709,10 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  'Soluția completă, optimizată pentru mobil, '
-                  'pentru gestionarea accesului și plecărilor din școală. '
-                  'Crește siguranța prin identități QR dinamice, '
-                  'integrare automată a orarului și aprobări în timp real '
-                  'din partea părinților.',
+                  'A mobile-optimized solution for managing school '
+                  'access and leave requests. Enhancing safety through '
+                  'dynamic QR identities, automatic schedule integration, '
+                  'and real-time parent approvals.',
                   style: TextStyle(
                     color: Colors.white.withAlpha(180),
                     fontSize: 14,
@@ -737,9 +727,9 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
     );
   }
 
-  // ÔöÇÔöÇ Login form card ÔöÇÔöÇ
+  // ── Login form card ──
   Widget _buildLoginForm({required bool compact}) {
-    final radius = BorderRadius.circular(12);
+    final radius = BorderRadius.circular(14);
 
     return Container(
       width: compact ? double.infinity : 420,
@@ -749,55 +739,43 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
       ),
       decoration: BoxDecoration(
         color: _cardBg,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (compact) ...[
-            Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: Image.asset(
-                  'assets/images/aegis_logo.png',
-                  width: 56,
-                  height: 56,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
           const Text(
-            'Autentificare',
+            'Sign in',
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF5D7E9C),
+              color: _accent,
             ),
           ),
           const SizedBox(height: 6),
           const Text(
-            'Introduceți datele pentru a accesa contul',
+            'Enter your credentials to access your account',
             style: TextStyle(fontSize: 13, color: _hintColor),
           ),
           const SizedBox(height: 28),
 
           // Username / Email
           const Text(
-            'Nume utilizator sau Email',
+            'USERNAME OR EMAIL',
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF63839F),
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: _hintColor,
+              letterSpacing: 0.8,
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: userC,
             decoration: InputDecoration(
-              hintText: 'ex: ion.popescu@scoala.ro',
-              hintStyle: const TextStyle(color: _hintColor, fontSize: 14),
+              hintText: 'e.g. ion.popescu',
+              hintStyle: const TextStyle(color: _inputBorder, fontSize: 14),
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(
@@ -806,15 +784,15 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
               ),
               border: OutlineInputBorder(
                 borderRadius: radius,
-                borderSide: const BorderSide(color: _inputBorder),
+                borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: radius,
-                borderSide: const BorderSide(color: _inputBorder),
+                borderSide: BorderSide.none,
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: radius,
-                borderSide: const BorderSide(color: _greenAccent, width: 1.5),
+                borderSide: const BorderSide(color: _accent, width: 1.5),
               ),
               suffixIcon: const Icon(
                 Icons.alternate_email,
@@ -829,21 +807,22 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
           Row(
             children: [
               const Text(
-                'Parolă',
+                'PASSWORD',
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF63839F),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: _hintColor,
+                  letterSpacing: 0.8,
                 ),
               ),
               const Spacer(),
               GestureDetector(
                 onTap: loading ? null : _openForgotPasswordFlow,
                 child: const Text(
-                  'Ai uitat parola?',
+                  'Forgot password?',
                   style: TextStyle(
                     fontSize: 12,
-                    color: _greenAccent,
+                    color: _accent,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -856,7 +835,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
             obscureText: !passwordVisible,
             decoration: InputDecoration(
               hintText: '••••••••',
-              hintStyle: const TextStyle(color: _hintColor, fontSize: 14),
+              hintStyle: const TextStyle(color: _inputBorder, fontSize: 14),
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(
@@ -865,15 +844,15 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
               ),
               border: OutlineInputBorder(
                 borderRadius: radius,
-                borderSide: const BorderSide(color: _inputBorder),
+                borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: radius,
-                borderSide: const BorderSide(color: _inputBorder),
+                borderSide: BorderSide.none,
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: radius,
-                borderSide: const BorderSide(color: _greenAccent, width: 1.5),
+                borderSide: const BorderSide(color: _accent, width: 1.5),
               ),
               suffixIcon: IconButton(
                 icon: Icon(
@@ -891,44 +870,53 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
           const SizedBox(height: 28),
 
           // Login button
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: (loading || _isLocallyBlocked) ? null : _login,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _greenAccent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+          GestureDetector(
+            onTap: (loading || _isLocallyBlocked) ? null : _login,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF2848B0), Color(0xFF3460CC)],
                 ),
-                elevation: 0,
-                textStyle: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x352848B0),
+                    blurRadius: 16,
+                    offset: Offset(0, 6),
+                  ),
+                ],
               ),
-              child: loading
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _isLocallyBlocked
-                              ? 'Blocat (${_remainingSeconds}s)'
-                              : 'Conectează-te',
+              child: Center(
+                child: loading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward, size: 18),
-                      ],
-                    ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _isLocallyBlocked
+                                ? 'Locked (${_remainingSeconds}s)'
+                                : 'Sign in',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_rounded,
+                              color: Colors.white, size: 18),
+                        ],
+                      ),
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -938,15 +926,15 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
             child: Column(
               children: const [
                 Text(
-                  'Nu ai un cont încă?',
+                  'Don\'t have an account yet?',
                   style: TextStyle(fontSize: 13, color: _hintColor),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Contactează administrația instituției',
+                  'Contact your school administration',
                   style: TextStyle(
                     fontSize: 13,
-                    color: _greenAccent,
+                    color: _accent,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -966,20 +954,31 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
       backgroundColor: _darkBg,
       body: Stack(
         children: [
-          Positioned.fill(child: _buildDotPattern(alpha: 8, radius: 1.0)),
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(child: _buildDotPattern(alpha: 10, radius: 1.0)),
           SafeArea(child: isWide ? _buildLandscape() : _buildPortrait()),
         ],
       ),
     );
   }
 
-  // ÔöÇÔöÇ LANDSCAPE: split view ÔöÇÔöÇ
+  // ── LANDSCAPE: split view ──
   Widget _buildLandscape() {
     return Center(
       child: Material(
         color: Colors.transparent,
         elevation: 24,
-        shadowColor: Colors.black,
+        shadowColor: const Color(0x40000000),
         borderRadius: BorderRadius.circular(24),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 960, maxHeight: 620),
@@ -1006,18 +1005,18 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
     );
   }
 
-  // ÔöÇÔöÇ PORTRAIT: card over dark background ÔöÇÔöÇ
+  // ── PORTRAIT: card over dark background ──
   Widget _buildPortrait() {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
         child: Material(
           color: Colors.transparent,
           elevation: 20,
-          shadowColor: Colors.black,
-          borderRadius: BorderRadius.circular(20),
+          shadowColor: const Color(0x40000000),
+          borderRadius: BorderRadius.circular(24),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 380),
+            constraints: const BoxConstraints(maxWidth: 400),
             child: _buildLoginForm(compact: true),
           ),
         ),
@@ -1026,7 +1025,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
   }
 }
 
-// ÔöÇÔöÇ Dot pattern painter ÔöÇÔöÇ
+// ── Dot pattern painter ──
 class _DotPatternPainter extends CustomPainter {
   final int alpha;
   final double spacing;

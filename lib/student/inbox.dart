@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firster/l10n/app_localizations.dart';
 import 'package:firster/student/meniu.dart';
 import 'package:firster/core/session.dart';
@@ -18,11 +17,11 @@ enum _InboxFilter {
 
 const String _kAudienceAll = '__ALL__';
 
-const _primary = Color(0xFF1F8BE7);
-const _surface = Color(0xFFE3ECF2);
-const _card = Color(0xFFF2F6F9);
-const _textDark = Color(0xFF557EA1);
-const _textMuted = Color(0xFF6F7669);
+const _primary = Color(0xFF2848B0);
+const _surface = Color(0xFFF2F4F8);
+const _card = Color(0xFFFFFFFF);
+const _textDark = Color(0xFF1A2050);
+const _textMuted = Color(0xFF7A7E9A);
 
 class InboxScreen extends StatefulWidget {
   final ValueChanged<int>? onNavigateTab;
@@ -155,45 +154,31 @@ class _InboxScreenState extends State<InboxScreen> {
     );
   }
 
-  Future<void> _logout() async {
-    await FirebaseAuth.instance.signOut();
-  }
-
-  void _openProfile(BuildContext context) {
-    if (widget.onNavigateTab != null) {
-      widget.onNavigateTab!(1);
-      return;
-    }
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const MeniuScreen()));
-  }
-
   String _formatRequestDate(DateTime? date) {
     if (date == null) return '--';
     const months = <String>[
-      'Ianuarie',
-      'Februarie',
-      'Martie',
-      'Aprilie',
-      'Mai',
-      'Iunie',
-      'Iulie',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
       'August',
-      'Septembrie',
-      'Octombrie',
-      'Noiembrie',
-      'Decembrie',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
-    return '${date.day} ${months[date.month - 1]}';
+    return '${months[date.month - 1]} ${date.day}';
   }
 
   String _formatRequestTitle(DateTime? date) {
-    if (date == null) return 'Cerere învoire';
+    if (date == null) return 'Leave request';
     final dateStr = _formatRequestDate(date);
     final hh = date.hour.toString().padLeft(2, '0');
     final mm = date.minute.toString().padLeft(2, '0');
-    return 'Cerere învoire - $dateStr, $hh:$mm';
+    return 'Leave request - $dateStr, $hh:$mm';
   }
 
   String? _formatSentLabel(DateTime? sentAt) {
@@ -206,7 +191,7 @@ class _InboxScreenState extends State<InboxScreen> {
     final time = '$hour:$minute';
     final diff = today.difference(msgDay).inDays;
     if (diff == 0) return time;
-    if (diff == 1) return 'Ieri';
+    if (diff == 1) return 'Yesterday';
     if (diff > 10) return null;
     return '${sentAt.day}.${sentAt.month.toString().padLeft(2, '0')}.${sentAt.year}';
   }
@@ -235,13 +220,13 @@ class _InboxScreenState extends State<InboxScreen> {
           category: _InboxFilter.requests,
           title: _formatRequestTitle(requestedForDate),
           topLabel: _formatSentLabel(requestedAt),
-          message: message.isEmpty ? 'Cererea a fost aprobată.' : message,
+          message: message.isEmpty ? 'Request has been approved.' : message,
           leadingIcon: Icons.description_rounded,
-          leadingBackground: const Color(0xFFDFEAF2),
+          leadingBackground: const Color(0xFFDDE0EC),
           leadingForeground: _primary,
           statusIcon: Icons.check_circle_rounded,
-          statusLabel: 'Aprobată',
-          statusBackground: const Color(0xFFDEE9F3),
+          statusLabel: 'Approved',
+          statusBackground: const Color(0xFFDDE0EC),
           statusForeground: _primary,
           sortAt: requestedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
         );
@@ -251,14 +236,14 @@ class _InboxScreenState extends State<InboxScreen> {
           category: _InboxFilter.requests,
           title: _formatRequestTitle(requestedForDate),
           topLabel: _formatSentLabel(requestedAt),
-          message: message.isEmpty ? 'Cererea a fost respinsă.' : message,
+          message: message.isEmpty ? 'Request has been rejected.' : message,
           leadingIcon: Icons.description_rounded,
-          leadingBackground: const Color(0xFFF2E4EA),
-          leadingForeground: const Color(0xFF9D345F),
+          leadingBackground: const Color(0xFFF0D0D8),
+          leadingForeground: const Color(0xFFB03040),
           statusIcon: Icons.cancel_rounded,
-          statusLabel: 'Respinsă',
-          statusBackground: const Color(0xFFF4E6EC),
-          statusForeground: const Color(0xFF9D345F),
+          statusLabel: 'Rejected',
+          statusBackground: const Color(0xFFF0D0D8),
+          statusForeground: const Color(0xFFB03040),
           sortAt: requestedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
         );
       case 'expired':
@@ -267,12 +252,12 @@ class _InboxScreenState extends State<InboxScreen> {
           category: _InboxFilter.requests,
           title: _formatRequestTitle(requestedForDate),
           topLabel: _formatSentLabel(requestedAt),
-          message: message.isEmpty ? 'Cererea a expirat automat.' : message,
+          message: message.isEmpty ? 'Request has expired automatically.' : message,
           leadingIcon: Icons.history_toggle_off_rounded,
           leadingBackground: const Color(0xFFF2EEDC),
           leadingForeground: const Color(0xFF8A6A1D),
           statusIcon: Icons.hourglass_bottom_rounded,
-          statusLabel: 'Expirată',
+          statusLabel: 'Expired',
           statusBackground: const Color(0xFFF6F0D9),
           statusForeground: const Color(0xFF8A6A1D),
           sortAt: requestedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
@@ -284,15 +269,15 @@ class _InboxScreenState extends State<InboxScreen> {
           title: _formatRequestTitle(requestedForDate),
           topLabel: _formatSentLabel(requestedAt),
           message: message.isEmpty
-              ? 'Cererea este în așteptarea aprobării.'
+              ? 'Request is pending approval.'
               : message,
           leadingIcon: Icons.history_rounded,
-          leadingBackground: const Color(0xFFDAE6EF),
-          leadingForeground: const Color(0xFF88A2B7),
+          leadingBackground: const Color(0xFFDDE0EC),
+          leadingForeground: const Color(0xFF7A7E9A),
           statusIcon: Icons.watch_later_rounded,
-          statusLabel: 'În așteptare',
-          statusBackground: const Color(0xFFD6E5EF),
-          statusForeground: const Color(0xFF648AA8),
+          statusLabel: 'Pending',
+          statusBackground: const Color(0xFFDDE0EC),
+          statusForeground: const Color(0xFF7A7E9A),
           sortAt: requestedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
         );
     }
@@ -320,31 +305,31 @@ class _InboxScreenState extends State<InboxScreen> {
     switch (categoryKey) {
       case 'competition':
         category = _InboxFilter.competition;
-        fallbackTitle = 'Competiție';
+        fallbackTitle = 'Competition';
         icon = Icons.emoji_events_rounded;
         iconBg = const Color(0xFFFFF3D6);
         iconFg = const Color(0xFFCC8A1A);
         break;
       case 'camp':
         category = _InboxFilter.camp;
-        fallbackTitle = 'Tabără';
+        fallbackTitle = 'Camp';
         icon = Icons.forest_rounded;
         iconBg = const Color(0xFFD9EFD8);
         iconFg = const Color(0xFF3F8B3A);
         break;
       case 'announcement':
         category = _InboxFilter.announcements;
-        fallbackTitle = 'Anunț școlar';
+        fallbackTitle = 'School announcement';
         icon = Icons.campaign_rounded;
-        iconBg = const Color(0xFFDCEFFF);
-        iconFg = const Color(0xFF56A3EB);
+        iconBg = const Color(0xFFDDE0EC);
+        iconFg = const Color(0xFF3460CC);
         break;
       default:
         category = fallbackCategory;
-        fallbackTitle = 'Mesaj Secretariat';
+        fallbackTitle = 'Office message';
         icon = Icons.campaign_rounded;
-        iconBg = const Color(0xFFDCEFFF);
-        iconFg = const Color(0xFF56A3EB);
+        iconBg = const Color(0xFFDDE0EC);
+        iconFg = const Color(0xFF3460CC);
     }
 
     return _InboxCardData(
@@ -352,7 +337,7 @@ class _InboxScreenState extends State<InboxScreen> {
       category: category,
       title: docTitle.isEmpty ? fallbackTitle : docTitle,
       topLabel: _formatSentLabel(createdAt),
-      message: message.isEmpty ? 'Ai primit un mesaj nou.' : message,
+      message: message.isEmpty ? 'You have a new message.' : message,
       leadingIcon: icon,
       leadingBackground: iconBg,
       leadingForeground: iconFg,
@@ -414,8 +399,8 @@ class _InboxScreenState extends State<InboxScreen> {
           children: [
             _InboxHeader(
               onBack: () => _goBack(context),
-              onProfile: () => _openProfile(context),
-              onLogout: _logout,
+              filter: _filter,
+              onFilterChanged: (f) => setState(() => _filter = f),
             ),
             Expanded(child: _buildInboxBody()),
           ],
@@ -426,14 +411,14 @@ class _InboxScreenState extends State<InboxScreen> {
 
   Widget _buildInboxBody() {
     if (_leaveStream == null) {
-      return const Center(child: Text('Sesiune invalidă.'));
+      return const Center(child: Text('Invalid session.'));
     }
 
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: _leaveStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text('Eroare: ${snapshot.error}'));
+          return Center(child: Text('Error: ${snapshot.error}'));
         }
 
         if (!snapshot.hasData) {
@@ -446,14 +431,14 @@ class _InboxScreenState extends State<InboxScreen> {
           stream: _secretariatStream,
           builder: (context, secretariatSnap) {
             if (secretariatSnap.hasError) {
-              return Center(child: Text('Eroare: ${secretariatSnap.error}'));
+              return Center(child: Text('Error: ${secretariatSnap.error}'));
             }
 
             return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: _secretariatGlobalStream,
               builder: (context, globalSnap) {
                 if (globalSnap.hasError) {
-                  return Center(child: Text('Eroare: ${globalSnap.error}'));
+                  return Center(child: Text('Error: ${globalSnap.error}'));
                 }
 
                 return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -613,14 +598,7 @@ class _InboxScreenState extends State<InboxScreen> {
     final horizontalPadding =
         MediaQuery.sizeOf(context).width < 390 ? 14.0 : 18.0;
 
-    return Column(
-      children: [
-        _FilterPillsBar(
-          current: _filter,
-          onChanged: (next) => setState(() => _filter = next),
-        ),
-        Expanded(
-          child: ListView(
+    return ListView(
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(
               parent: BouncingScrollPhysics(),
@@ -670,10 +648,7 @@ class _InboxScreenState extends State<InboxScreen> {
               ],
               const SizedBox(height: 4),
             ],
-          ),
-        ),
-      ],
-    );
+          );
   }
 }
 
@@ -693,80 +668,208 @@ class _InboxRow {
         sortAt = v.when;
 }
 
-class _InboxHeader extends StatelessWidget {
+class _InboxHeader extends StatefulWidget {
   final VoidCallback onBack;
-  final VoidCallback onProfile;
-  final Future<void> Function() onLogout;
+  final _InboxFilter filter;
+  final ValueChanged<_InboxFilter> onFilterChanged;
 
   const _InboxHeader({
     required this.onBack,
-    required this.onProfile,
-    required this.onLogout,
+    required this.filter,
+    required this.onFilterChanged,
   });
+
+  @override
+  State<_InboxHeader> createState() => _InboxHeaderState();
+}
+
+class _InboxHeaderState extends State<_InboxHeader> {
+  final ScrollController _pillsScroll = ScrollController();
+  double _scrollFraction = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pillsScroll.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _pillsScroll.removeListener(_onScroll);
+    _pillsScroll.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final sc = _pillsScroll;
+    if (!sc.hasClients || sc.position.maxScrollExtent <= 0) return;
+    final f = (sc.offset / sc.position.maxScrollExtent).clamp(0.0, 1.0);
+    if ((f - _scrollFraction).abs() > 0.005) {
+      setState(() => _scrollFraction = f);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final width = MediaQuery.sizeOf(context).width;
-    final compact = width < 390;
-    final headerHeight = compact ? 138.0 : 146.0;
-    final titleSize = compact ? 29.0 : 33.0;
+    final topPadding = MediaQuery.of(context).padding.top;
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(52),
-        bottomRight: Radius.circular(52),
-      ),
-      child: Container(
-        height: headerHeight,
-        width: double.infinity,
-        color: _primary,
-        child: Stack(
-          children: [
-            Positioned(
-              right: -56,
-              top: -74,
-              child: _HeaderCircle(size: 220, opacity: 0.08),
+    final pills = <(_InboxFilter, String)>[
+      (_InboxFilter.all, l.inboxFilterAll),
+      (_InboxFilter.requests, 'Requests'),
+      (_InboxFilter.announcements, 'Announcements'),
+      (_InboxFilter.volunteer, 'Volunteering'),
+      (_InboxFilter.competition, 'Competitions'),
+      (_InboxFilter.camp, 'Camps'),
+    ];
+
+    return Column(
+      children: [
+        // Gradient header — same as other pages
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 22),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
             ),
-            Positioned(
-              right: 34,
-              top: 46,
-              child: _HeaderCircle(size: 72, opacity: 0.07),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(28),
+              bottomRight: Radius.circular(28),
             ),
-            Positioned(
-              left: 156,
-              bottom: -28,
-              child: _HeaderCircle(size: 82, opacity: 0.08),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: Center(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _HeaderIconButton(
-                      icon: Icons.arrow_back_rounded,
-                      onTap: onBack,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        l.inboxTitle,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: titleSize,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.8,
-                        ),
-                      ),
-                    ),
-                  ],
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x302848B0),
+                blurRadius: 20,
+                offset: Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  onPressed: widget.onBack,
+                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+                  padding: EdgeInsets.zero,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              Text(
+                l.inboxTitle,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+        // Description on background
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 14, 20, 4),
+          child: Text(
+            'Manage your activities, requests and announcements.',
+            style: TextStyle(
+              color: _textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              height: 1.35,
+            ),
+          ),
+        ),
+        // Filter pills
+        SingleChildScrollView(
+          controller: _pillsScroll,
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+          child: Row(
+            children: [
+              for (int i = 0; i < pills.length; i++) ...[
+                if (i > 0) const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: () => widget.onFilterChanged(pills[i].$1),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: widget.filter == pills[i].$1 ? _primary : _card,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: widget.filter == pills[i].$1 ? _primary : const Color(0xFFCDD1DE),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Text(
+                      pills[i].$2,
+                      style: TextStyle(
+                        color: widget.filter == pills[i].$1 ? Colors.white : _textDark,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        // Scroll position indicator
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 2, 24, 6),
+          child: Row(
+            children: [
+              Icon(Icons.chevron_left_rounded, color: _textMuted.withValues(alpha: 0.35), size: 16),
+              const SizedBox(width: 4),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    const thumbRatio = 0.35;
+                    final trackW = constraints.maxWidth;
+                    final thumbW = trackW * thumbRatio;
+                    final travel = trackW - thumbW;
+                    final offset = travel * _scrollFraction;
+                    return Container(
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD8DAE2),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: offset,
+                            child: Container(
+                              width: thumbW,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF9498AA),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right_rounded, color: _textMuted.withValues(alpha: 0.35), size: 16),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -869,7 +972,7 @@ class _InboxRequestTileState extends State<_InboxRequestTile>
                                   children: [
                                     Text(
                                       widget.data.title.contains(' - ')
-                                          ? 'Cerere învoire'
+                                          ? 'Leave request'
                                           : widget.data.title,
                                       style: const TextStyle(
                                         color: _textDark,
@@ -966,44 +1069,7 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-class _HeaderIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
 
-  const _HeaderIconButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 34,
-        height: 34,
-        child: Center(child: Icon(icon, color: Colors.white, size: 32)),
-      ),
-    );
-  }
-}
-
-class _HeaderCircle extends StatelessWidget {
-  final double size;
-  final double opacity;
-
-  const _HeaderCircle({required this.size, required this.opacity});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: opacity),
-        shape: BoxShape.circle,
-      ),
-    );
-  }
-}
 
 class _InboxCardData {
   final String docId;
@@ -1060,72 +1126,6 @@ class _VolunteerInboxData {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// FILTER PILLS
-// ────────────────────────────────────────────────────────────────────────────
-class _FilterPillsBar extends StatelessWidget {
-  final _InboxFilter current;
-  final ValueChanged<_InboxFilter> onChanged;
-
-  const _FilterPillsBar({required this.current, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    final pills = <(_InboxFilter, String)>[
-      (_InboxFilter.all, l.inboxFilterAll),
-      (_InboxFilter.requests, 'Cereri'),
-      (_InboxFilter.announcements, 'Anunțuri'),
-      (_InboxFilter.volunteer, 'Voluntariate'),
-      (_InboxFilter.competition, 'Competiții'),
-      (_InboxFilter.camp, 'Tabere'),
-    ];
-
-    return SizedBox(
-      height: 52,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-        itemCount: pills.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final (filter, label) = pills[index];
-          final selected = current == filter;
-          return GestureDetector(
-            onTap: () => onChanged(filter),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
-              ),
-              decoration: BoxDecoration(
-                color: selected ? _primary : _card,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: selected
-                      ? _primary
-                      : const Color(0xFFCAD8E3),
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: selected ? Colors.white : _textDark,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
 // VOLUNTEER INBOX TILE — opportunity card with inline "Mă înscriu" button
 // ────────────────────────────────────────────────────────────────────────────
 class _VolunteerInboxTile extends StatelessWidget {
@@ -1136,26 +1136,26 @@ class _VolunteerInboxTile extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     const months = <String>[
-      'Ianuarie',
-      'Februarie',
-      'Martie',
-      'Aprilie',
-      'Mai',
-      'Iunie',
-      'Iulie',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
       'August',
-      'Septembrie',
-      'Octombrie',
-      'Noiembrie',
-      'Decembrie',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
-    return '${date.day} ${months[date.month - 1]}';
+    return '${months[date.month - 1]} ${date.day}';
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final accent = const Color(0xFF1F8BE7);
+    final accent = const Color(0xFF2848B0);
 
     return Container(
       decoration: BoxDecoration(
@@ -1262,10 +1262,10 @@ class _VolunteerInboxTile extends StatelessWidget {
                           : const LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
+                              colors: [Color(0xFF2848B0), Color(0xFF3460CC)],
                             ),
                       color: onSignUp == null
-                          ? const Color(0xFFDEE8F0)
+                          ? const Color(0xFFDDE0EC)
                           : null,
                       borderRadius: BorderRadius.circular(14),
                     ),

@@ -3,11 +3,11 @@ import 'package:firster/core/session.dart';
 import 'package:firster/student/voluntariat_detail_page.dart';
 import 'package:flutter/material.dart';
 
-const _primary = Color(0xFF1F8BE7);
-const _surface = Color(0xFFEFF5FA);
+const _primary = Color(0xFF2848B0);
+const _surface = Color(0xFFF2F4F8);
 const _surfaceLowest = Color(0xFFFFFFFF);
-const _outline = Color(0xFF717B6E);
-const _onSurface = Color(0xFF587F9E);
+const _outline = Color(0xFF7A7E9A);
+const _onSurface = Color(0xFF1A2050);
 
 class VoluntariatPage extends StatefulWidget {
   final VoidCallback? onBack;
@@ -59,7 +59,7 @@ class _VoluntariatPageState extends State<VoluntariatPage> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Te-ai inscris cu succes!')),
+      const SnackBar(content: Text('Successfully signed up!')),
     );
   }
 
@@ -71,7 +71,7 @@ class _VoluntariatPageState extends State<VoluntariatPage> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Inscriere anulata.')),
+      const SnackBar(content: Text('Sign-up cancelled.')),
     );
   }
 
@@ -125,7 +125,7 @@ class _VoluntariatPageState extends State<VoluntariatPage> {
                           _HoursSummaryCard(totalHours: totalHours),
                           const SizedBox(height: 20),
                           const Text(
-                            'Oportunitati disponibile',
+                            'Available opportunities',
                             style: TextStyle(
                               color: _onSurface,
                               fontSize: 18,
@@ -205,7 +205,7 @@ class _Header extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
+            colors: [Color(0xFF2848B0), Color(0xFF3460CC)],
           ),
         ),
         child: Stack(
@@ -261,7 +261,7 @@ class _Header extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Voluntariat',
+                          'Volunteering',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24,
@@ -270,7 +270,7 @@ class _Header extends StatelessWidget {
                         ),
                         SizedBox(height: 2),
                         Text(
-                          'Implica-te in comunitate',
+                          'Get involved in the community',
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 13,
@@ -320,7 +320,7 @@ class _HoursSummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x101F8BE7),
+            color: Color(0x102848B0),
             blurRadius: 16,
             offset: Offset(0, 6),
           ),
@@ -347,7 +347,7 @@ class _HoursSummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$totalHours ore',
+                  '$totalHours hours',
                   style: const TextStyle(
                     color: _primary,
                     fontSize: 28,
@@ -355,7 +355,7 @@ class _HoursSummaryCard extends StatelessWidget {
                   ),
                 ),
                 const Text(
-                  'voluntariat acumulate',
+                  'volunteering accumulated',
                   style: TextStyle(
                     color: _outline,
                     fontSize: 13,
@@ -499,7 +499,7 @@ class _OpportunityCard extends StatelessWidget {
                     color: _outline, size: 14),
                 const SizedBox(width: 4),
                 Text(
-                  '$hoursWorth ore',
+                  '$hoursWorth hrs',
                   style: const TextStyle(color: _outline, fontSize: 12),
                 ),
                 if (maxParticipants > 0) ...[
@@ -530,7 +530,7 @@ class _OpportunityCard extends StatelessWidget {
                         color: _primary, size: 16),
                     SizedBox(width: 6),
                     Text(
-                      'Completat',
+                      'Completed',
                       style: TextStyle(
                         color: _primary,
                         fontSize: 13,
@@ -557,7 +557,7 @@ class _OpportunityCard extends StatelessWidget {
                             color: Color(0xFFE65100), size: 16),
                         SizedBox(width: 6),
                         Text(
-                          'Inscris',
+                          'Signed up',
                           style: TextStyle(
                             color: Color(0xFFE65100),
                             fontSize: 13,
@@ -578,7 +578,7 @@ class _OpportunityCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
-                        'Anuleaza',
+                        'Cancel',
                         style: TextStyle(
                           color: Color(0xFFC62828),
                           fontSize: 13,
@@ -597,7 +597,7 @@ class _OpportunityCard extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
+                      colors: [Color(0xFF2848B0), Color(0xFF3460CC)],
                     ),
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -607,7 +607,7 @@ class _OpportunityCard extends StatelessWidget {
                       Icon(Icons.add_rounded, color: Colors.white, size: 18),
                       SizedBox(width: 6),
                       Text(
-                        'Ma inscriu',
+                        'Sign up',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -644,7 +644,7 @@ class _EmptyState extends StatelessWidget {
               color: _outline.withValues(alpha: 0.4), size: 48),
           const SizedBox(height: 12),
           const Text(
-            'Nicio oportunitate disponibila',
+            'No opportunities available',
             style: TextStyle(
               color: _outline,
               fontSize: 14,
@@ -653,7 +653,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Revino mai tarziu pentru activitati noi',
+            'Check back later for new activities',
             style: TextStyle(color: _outline, fontSize: 12),
           ),
         ],

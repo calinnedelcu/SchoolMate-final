@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firster/core/session.dart';
 import 'package:firster/student/meniu.dart';
 import 'package:firster/student/orar.dart';
+import 'package:firster/student/widgets/profile_bottom_sheet.dart';
 import 'package:firster/student/cereri.dart';
 import 'package:firster/student/inbox.dart';
 import 'package:flutter/material.dart';
@@ -57,6 +59,30 @@ class _AppShellState extends State<AppShell> {
     });
   }
 
+  Widget _buildAvatar() {
+    final photoUrl = FirebaseAuth.instance.currentUser?.photoURL;
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      return Image.network(
+        photoUrl,
+        width: 44,
+        height: 44,
+        fit: BoxFit.cover,
+        errorBuilder: (_, e, s) => Container(
+          width: 44,
+          height: 44,
+          color: const Color(0xFF2848B0),
+          child: const Icon(Icons.person, color: Colors.white, size: 22),
+        ),
+      );
+    }
+    return Container(
+      width: 44,
+      height: 44,
+      color: const Color(0xFF2848B0),
+      child: const Icon(Icons.person, color: Colors.white, size: 22),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
@@ -82,35 +108,31 @@ class _AppShellState extends State<AppShell> {
           ),
           if (_currentIndex == 0)
             Positioned(
-              top: topPadding - 2,
-              right: 14,
+              top: topPadding + 6,
+              right: 16,
               child: GestureDetector(
                 onTapDown: (_) => setState(() => _profilePressed = true),
                 onTapUp: (_) {
                   setState(() => _profilePressed = false);
-                  _setTab(1);
+                  showProfileSheet(context);
                 },
                 onTapCancel: () => setState(() => _profilePressed = false),
                 child: AnimatedScale(
                   scale: _profilePressed ? 0.78 : 1.0,
                   duration: const Duration(milliseconds: 100),
                   curve: Curves.easeOut,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 100),
-                    width: 50,
-                    height: 50,
+                  child: Container(
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: const Color(0x3389BEEB),
-                      borderRadius: BorderRadius.circular(16),
+                      shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0x6DC5E0F6),
-                        width: 1,
+                        color: const Color(0xFF2848B0),
+                        width: 2,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 21,
+                    child: ClipOval(
+                      child: _buildAvatar(),
                     ),
                   ),
                 ),

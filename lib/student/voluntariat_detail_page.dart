@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firster/core/session.dart';
 import 'package:flutter/material.dart';
 
-const _primary = Color(0xFF1F8BE7);
-const _surface = Color(0xFFEFF5FA);
+const _primary = Color(0xFF2848B0);
+const _surface = Color(0xFFF2F4F8);
 const _surfaceLowest = Color(0xFFFFFFFF);
-const _outline = Color(0xFF717B6E);
-const _onSurface = Color(0xFF587F9E);
+const _outline = Color(0xFF7A7E9A);
+const _onSurface = Color(0xFF1A2050);
 
 class VoluntariatDetailPage extends StatefulWidget {
   final String opportunityId;
@@ -55,7 +55,7 @@ class _VoluntariatDetailPageState extends State<VoluntariatDetailPage> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Te-ai inscris cu succes!')),
+      const SnackBar(content: Text('Successfully signed up!')),
     );
   }
 
@@ -104,7 +104,7 @@ class _VoluntariatDetailPageState extends State<VoluntariatDetailPage> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
+                      colors: [Color(0xFF2848B0), Color(0xFF3460CC)],
                     ),
                   ),
                   child: Padding(
@@ -191,7 +191,7 @@ class _VoluntariatDetailPageState extends State<VoluntariatDetailPage> {
                               children: [
                                 if (description.isNotEmpty) ...[
                                   const Text(
-                                    'Descriere',
+                                    'Description',
                                     style: TextStyle(
                                       color: _onSurface,
                                       fontSize: 14,
@@ -211,33 +211,33 @@ class _VoluntariatDetailPageState extends State<VoluntariatDetailPage> {
                                 ],
                                 _InfoRow(
                                   icon: Icons.calendar_today_rounded,
-                                  label: 'Data',
+                                  label: 'Date',
                                   value: dateStr,
                                 ),
                                 if (location.isNotEmpty)
                                   _InfoRow(
                                     icon: Icons.location_on_rounded,
-                                    label: 'Locatie',
+                                    label: 'Location',
                                     value: location,
                                   ),
                                 _InfoRow(
                                   icon: Icons.access_time_rounded,
-                                  label: 'Ore',
-                                  value: '$hoursWorth ore',
+                                  label: 'Hours',
+                                  value: '$hoursWorth hrs',
                                 ),
                                 if (maxParticipants > 0)
                                   _InfoRow(
                                     icon: Icons.people_rounded,
-                                    label: 'Participanti',
+                                    label: 'Participants',
                                     value:
                                         '${activeSignups.length} / $maxParticipants',
                                   ),
                                 _InfoRow(
                                   icon: Icons.person_rounded,
-                                  label: 'Organizator',
+                                  label: 'Organizer',
                                   value: createdByRole == 'admin'
-                                      ? 'Secretariat'
-                                      : 'Diriginte',
+                                      ? 'Office'
+                                      : 'Teacher',
                                 ),
                               ],
                             ),
@@ -248,14 +248,14 @@ class _VoluntariatDetailPageState extends State<VoluntariatDetailPage> {
                           if (myStatus == 'completed')
                             _StatusBanner(
                               icon: Icons.check_circle_rounded,
-                              label: 'Ore validate',
+                              label: 'Hours validated',
                               color: _primary,
                               bgColor: _primary.withValues(alpha: 0.1),
                             )
                           else if (isSignedUp)
                             _StatusBanner(
                               icon: Icons.hourglass_top_rounded,
-                              label: 'Esti inscris — asteapta validarea',
+                              label: 'Signed up — awaiting validation',
                               color: const Color(0xFFE65100),
                               bgColor: const Color(0xFFFFF3E0),
                             )
@@ -263,7 +263,7 @@ class _VoluntariatDetailPageState extends State<VoluntariatDetailPage> {
                               activeSignups.length >= maxParticipants)
                             _StatusBanner(
                               icon: Icons.block_rounded,
-                              label: 'Locuri ocupate',
+                              label: 'No spots left',
                               color: const Color(0xFFC62828),
                               bgColor: const Color(0xFFFCE4EC),
                             )
@@ -277,15 +277,15 @@ class _VoluntariatDetailPageState extends State<VoluntariatDetailPage> {
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFF1F8BE7),
-                                      Color(0xFF328FDF),
+                                      Color(0xFF2848B0),
+                                      Color(0xFF3460CC),
                                     ],
                                   ),
                                   borderRadius:
                                       BorderRadius.circular(16),
                                   boxShadow: const [
                                     BoxShadow(
-                                      color: Color(0x351F8BE7),
+                                      color: Color(0x352848B0),
                                       blurRadius: 16,
                                       offset: Offset(0, 6),
                                     ),
@@ -299,7 +299,7 @@ class _VoluntariatDetailPageState extends State<VoluntariatDetailPage> {
                                         color: Colors.white, size: 20),
                                     SizedBox(width: 8),
                                     Text(
-                                      'Ma inscriu',
+                                      'Sign up',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 16,
@@ -316,7 +316,7 @@ class _VoluntariatDetailPageState extends State<VoluntariatDetailPage> {
                           // Participants list
                           if (activeSignups.isNotEmpty) ...[
                             Text(
-                              'Participanti (${activeSignups.length})',
+                              'Participants (${activeSignups.length})',
                               style: const TextStyle(
                                 color: _onSurface,
                                 fontSize: 16,
