@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firster/l10n/app_localizations.dart';
 import 'package:firster/student/meniu.dart';
+import 'package:firster/student/widgets/school_decor.dart';
 import 'package:firster/core/session.dart';
 import 'package:flutter/material.dart';
 
@@ -728,7 +729,7 @@ class _InboxHeaderState extends State<_InboxHeader> {
         // Gradient header — same as other pages
         Container(
           width: double.infinity,
-          padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 22),
+          clipBehavior: Clip.antiAlias,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -747,29 +748,55 @@ class _InboxHeaderState extends State<_InboxHeader> {
               ),
             ],
           ),
-          child: Row(
+          child: Stack(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: IconButton(
-                  onPressed: widget.onBack,
-                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-                  padding: EdgeInsets.zero,
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: const HeaderSparklesPainter(variant: 2),
                 ),
               ),
-              const SizedBox(width: 16),
-              Text(
-                l.inboxTitle,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.3,
+              Padding(
+                padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 22),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        onPressed: widget.onBack,
+                        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l.inboxTitle,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: 42,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: kPencilYellow,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -951,14 +978,17 @@ class _InboxRequestTileState extends State<_InboxRequestTile>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.white, _card],
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: WhiteCardSparklesPainter(
+                              primary: widget.data.leadingForeground,
+                              variant: widget.data.docId.hashCode % 5,
+                            ),
+                          ),
                         ),
-                      ),
+                        Padding(
                       padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -980,6 +1010,15 @@ class _InboxRequestTileState extends State<_InboxRequestTile>
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: -0.3,
                                         height: 1.2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      width: 36,
+                                      height: 3,
+                                      decoration: BoxDecoration(
+                                        color: kPencilYellow,
+                                        borderRadius: BorderRadius.circular(2),
                                       ),
                                     ),
                                     if (widget.data.title.contains(' - ')) ...[
@@ -1025,6 +1064,8 @@ class _InboxRequestTileState extends State<_InboxRequestTile>
                             _StatusBadge(data: widget.data),
                         ],
                       ),
+                    ),
+                      ],
                     ),
                   ),
                 ],
@@ -1170,7 +1211,17 @@ class _VolunteerInboxTile extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
-          child: Padding(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: WhiteCardSparklesPainter(
+                    primary: accent,
+                    variant: data.docId.hashCode % 5,
+                  ),
+                ),
+              ),
+              Padding(
             padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1227,6 +1278,15 @@ class _VolunteerInboxTile extends StatelessWidget {
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  width: 36,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: kPencilYellow,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1300,6 +1360,8 @@ class _VolunteerInboxTile extends StatelessWidget {
                 ),
               ],
             ),
+              ),
+            ],
           ),
         ),
       ),

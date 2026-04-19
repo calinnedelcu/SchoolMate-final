@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firster/core/session.dart';
 import 'package:firster/student/orar.dart' show showEditProfileDialog;
 import 'package:firster/student/logout_dialog.dart';
+import 'package:firster/student/widgets/school_decor.dart';
 import 'package:flutter/material.dart';
 
 const _primary = Color(0xFF2848B0);
@@ -46,21 +47,33 @@ class _ProfileBottomSheet extends StatelessWidget {
             ? fullName
             : (username.isNotEmpty ? username : 'Student');
 
-        return Container(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            MediaQuery.of(context).padding.bottom + 20,
+        return ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(28),
+            topRight: Radius.circular(28),
           ),
+          child: Container(
           decoration: const BoxDecoration(
             color: _surfaceLowest,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(28),
-              topRight: Radius.circular(28),
-            ),
           ),
-          child: Column(
+          child: Stack(
+            children: [
+              const Positioned.fill(
+                child: CustomPaint(
+                  painter: WhiteCardSparklesPainter(
+                    primary: _primary,
+                    variant: 2,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  20,
+                  20,
+                  MediaQuery.of(context).padding.bottom + 20,
+                ),
+                child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // Handle
@@ -100,6 +113,15 @@ class _ProfileBottomSheet extends StatelessWidget {
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                             height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: 36,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: kPencilYellow,
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                         if (username.isNotEmpty) ...[
@@ -173,7 +195,11 @@ class _ProfileBottomSheet extends StatelessWidget {
                 ),
               ),
             ],
+                ),
+              ),
+            ],
           ),
+        ),
         );
       },
     );

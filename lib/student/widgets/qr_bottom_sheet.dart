@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firster/core/session.dart';
 import 'package:firster/l10n/app_localizations.dart';
+import 'package:firster/student/widgets/school_decor.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -92,21 +93,31 @@ class _QrBottomSheetState extends State<QrBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        20,
-        20,
-        MediaQuery.of(context).padding.bottom + 20,
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(28),
+        topRight: Radius.circular(28),
       ),
-      decoration: const BoxDecoration(
-        color: _surfaceLowest,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(28),
-          topRight: Radius.circular(28),
-        ),
-      ),
-      child: Column(
+      child: Container(
+      decoration: const BoxDecoration(color: _surfaceLowest),
+      child: Stack(
+        children: [
+          const Positioned.fill(
+            child: CustomPaint(
+              painter: WhiteCardSparklesPainter(
+                primary: _primary,
+                variant: 1,
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              MediaQuery.of(context).padding.bottom + 20,
+            ),
+            child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
@@ -124,6 +135,15 @@ class _QrBottomSheetState extends State<QrBottomSheet> {
               color: _onSurface,
               fontSize: 20,
               fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            width: 42,
+            height: 3,
+            decoration: BoxDecoration(
+              color: kPencilYellow,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 6),
@@ -241,6 +261,10 @@ class _QrBottomSheetState extends State<QrBottomSheet> {
             ),
           ),
         ],
+            ),
+          ),
+        ],
+      ),
       ),
     );
   }

@@ -26,7 +26,7 @@ const _surface = Color(0xFFF2F4F8);
 const _surfaceLowest = Color(0xFFFFFFFF);
 const _onSurface = Color(0xFF1A2050);
 const _labelColor = Color(0xFF7A7E9A);
-const _badgeColor = Color(0xFF6D4C2E);
+const _pencilYellow = Color(0xFFF5C518);
 
 class MeniuScreen extends StatefulWidget {
   final ValueChanged<int>? onNavigateTab;
@@ -247,36 +247,71 @@ class _TopHeroHeader extends StatelessWidget {
       height: topPadding + 170,
       child: CustomPaint(
         painter: _HeaderWavePainter(),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(26, topPadding + 16, 70, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l.homeGreeting(displayName),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  height: 1.25,
-                  fontWeight: FontWeight.w900,
-                ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(26, topPadding + 16, 70, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l.homeGreeting(displayName),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      height: 1.25,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 46,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: _pencilYellow,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    dateStr,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                dateStr,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.55),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+void _drawSymbol(
+  Canvas canvas,
+  String text,
+  Offset pos,
+  double fontSize,
+  Color color,
+) {
+  final painter = TextPainter(
+    text: TextSpan(
+      text: text,
+      style: TextStyle(
+        color: color,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+  );
+  painter.layout();
+  painter.paint(canvas, pos - Offset(painter.width / 2, painter.height / 2));
 }
 
 class _HeaderWavePainter extends CustomPainter {
@@ -303,20 +338,74 @@ class _HeaderWavePainter extends CustomPainter {
       ..close();
 
     canvas.drawPath(path, paint);
+    canvas.save();
+    canvas.clipPath(path);
 
-    // Second wave accent
-    final accentPaint = Paint()
-      ..color = const Color(0x0AFFFFFF);
+    // Large soft blob top-right
+    final blobPaint = Paint()..color = Colors.white.withValues(alpha: 0.06);
+    canvas.drawCircle(Offset(size.width - 30, 40), 85, blobPaint);
 
-    final accentPath = Path()
-      ..moveTo(0, size.height - 55)
+    // Outlined ring top-right
+    final ringPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.14)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6;
+    canvas.drawCircle(Offset(size.width - 30, 40), 85, ringPaint);
+
+    // Soft blob bottom-left behind wave
+    canvas.drawCircle(
+      Offset(size.width * 0.12, size.height - 70),
+      55,
+      Paint()..color = Colors.white.withValues(alpha: 0.04),
+    );
+
+    // Math symbols scattered as school-themed sparkles
+    final c1 = Colors.white.withValues(alpha: 0.3);
+    final c2 = Colors.white.withValues(alpha: 0.22);
+    final cy = const Color(0xFFF5C518).withValues(alpha: 0.35);
+    _drawSymbol(canvas, 'π', Offset(size.width * 0.54, 26), 15, cy);
+    _drawSymbol(canvas, '+', Offset(size.width * 0.62, 52), 13, c1);
+    _drawSymbol(canvas, '×', Offset(size.width * 0.48, 72), 11, c2);
+    _drawSymbol(canvas, '√', Offset(size.width * 0.72, 38), 13, c2);
+    _drawSymbol(canvas, '∞', Offset(size.width * 0.82, 65), 14, cy);
+    _drawSymbol(canvas, '÷', Offset(size.width * 0.90, 42), 12, c2);
+    _drawSymbol(canvas, '=', Offset(size.width * 0.22, size.height - 88), 11, c2);
+    _drawSymbol(canvas, '∆', Offset(size.width * 0.38, size.height - 100), 12, cy);
+    _drawSymbol(canvas, '²', Offset(size.width * 0.46, size.height - 75), 11, c2);
+
+    canvas.restore();
+
+    // Wave highlight line
+    final linePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.22)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+
+    final linePath = Path()
+      ..moveTo(0, size.height - 52)
       ..quadraticBezierTo(
-        size.width * 0.35, size.height - 15,
-        size.width * 0.6, size.height - 40,
+        size.width * 0.3, size.height - 12,
+        size.width * 0.55, size.height - 34,
       )
       ..quadraticBezierTo(
-        size.width * 0.8, size.height - 58,
-        size.width, size.height - 25,
+        size.width * 0.78, size.height - 54,
+        size.width, size.height - 22,
+      );
+
+    canvas.drawPath(linePath, linePaint);
+
+    // Second wave accent (filled)
+    final accentPaint = Paint()..color = const Color(0x14FFFFFF);
+
+    final accentPath = Path()
+      ..moveTo(0, size.height - 58)
+      ..quadraticBezierTo(
+        size.width * 0.35, size.height - 16,
+        size.width * 0.6, size.height - 42,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.8, size.height - 60,
+        size.width, size.height - 28,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
@@ -379,27 +468,18 @@ class _AziHeroCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned(
-            right: -20,
-            top: -20,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
-              ),
-            ),
+          Positioned.fill(
+            child: CustomPaint(painter: _AziCardDecorPainter()),
           ),
           Positioned(
-            right: 30,
-            bottom: -10,
-            child: Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.04),
+            right: -18,
+            bottom: -22,
+            child: Transform.rotate(
+              angle: -0.18,
+              child: Icon(
+                Icons.menu_book_rounded,
+                size: 140,
+                color: Colors.white.withValues(alpha: 0.09),
               ),
             ),
           ),
@@ -414,28 +494,71 @@ class _AziHeroCard extends StatelessWidget {
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
+                        color: Colors.white.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(13),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          width: 1,
+                        ),
                       ),
                       child: Icon(
                         Icons.access_time_rounded,
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: Colors.white.withValues(alpha: 0.95),
                         size: 21,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      l.homeTodayCardTitle,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.0,
+                    Expanded(
+                      child: Text(
+                        l.homeTodayCardTitle,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _pencilYellow,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${now.day}/${now.month}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 22),
                 Text(
                   l.homeTodayDayLabel,
                   style: TextStyle(
@@ -455,7 +578,16 @@ class _AziHeroCard extends StatelessWidget {
                     height: 1.15,
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 8),
+                Container(
+                  width: 32,
+                  height: 2.5,
+                  decoration: BoxDecoration(
+                    color: _pencilYellow,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 14),
                 Container(
                   width: double.infinity,
                   height: 1,
@@ -488,6 +620,62 @@ class _AziHeroCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AziCardDecorPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Notebook grid pattern (math squared paper)
+    final gridPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.05)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+    const gridSize = 26.0;
+    for (double x = gridSize; x < size.width; x += gridSize) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+    }
+    for (double y = gridSize; y < size.height; y += gridSize) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    // Large soft circle top-right
+    canvas.drawCircle(
+      Offset(size.width + 10, -10),
+      90,
+      Paint()..color = Colors.white.withValues(alpha: 0.06),
+    );
+
+    // Outlined ring top-right
+    canvas.drawCircle(
+      Offset(size.width + 10, -10),
+      90,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    // Medium soft circle bottom-right
+    canvas.drawCircle(
+      Offset(size.width - 30, size.height + 10),
+      70,
+      Paint()..color = Colors.white.withValues(alpha: 0.05),
+    );
+
+    // Math symbols as school-themed sparkles
+    final c1 = Colors.white.withValues(alpha: 0.3);
+    final c2 = Colors.white.withValues(alpha: 0.22);
+    final cy = const Color(0xFFF5C518).withValues(alpha: 0.35);
+    _drawSymbol(canvas, '∑', Offset(size.width - 28, size.height * 0.42), 14, cy);
+    _drawSymbol(canvas, '=', Offset(size.width * 0.88, size.height - 38), 12, c1);
+    _drawSymbol(canvas, '∫', Offset(size.width * 0.82, size.height * 0.28), 15, c2);
+    _drawSymbol(canvas, 'π', Offset(size.width * 0.93, size.height * 0.55), 13, c2);
+    _drawSymbol(canvas, '+', Offset(size.width * 0.72, size.height * 0.58), 11, cy);
+    _drawSymbol(canvas, '√', Offset(size.width * 0.78, size.height - 28), 12, c2);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -539,7 +727,7 @@ class _CerereInvoireCard extends StatelessWidget {
           onTap: onTap,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 18, 14, 18),
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: _surfaceLowest,
               borderRadius: BorderRadius.circular(20),
@@ -551,57 +739,107 @@ class _CerereInvoireCard extends StatelessWidget {
                 ),
               ],
             ),
-            child: Row(
+            child: Stack(
               children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: _primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: const Icon(
-                    Icons.description_rounded,
-                    color: _primary,
-                    size: 24,
+                Positioned.fill(
+                  child: CustomPaint(painter: _WhiteCardDecorPainter()),
+                ),
+                Positioned(
+                  right: -12,
+                  bottom: -18,
+                  child: Transform.rotate(
+                    angle: -0.12,
+                    child: Icon(
+                      Icons.assignment_rounded,
+                      size: 90,
+                      color: _primary.withValues(alpha: 0.055),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 18, 14, 18),
+                  child: Row(
                     children: [
-                      Text(
-                        l.homeRequestCardTitle,
-                        style: const TextStyle(
-                          color: _onSurface,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  _primary.withValues(alpha: 0.12),
+                                  _primary.withValues(alpha: 0.06),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(
+                                color: _primary.withValues(alpha: 0.1),
+                                width: 1,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.description_rounded,
+                              color: _primary,
+                              size: 24,
+                            ),
+                          ),
+                          Positioned(
+                            right: -2,
+                            top: -2,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: _pencilYellow,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l.homeRequestCardTitle,
+                              style: const TextStyle(
+                                color: _onSurface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              l.homeRequestNoneSubtitle,
+                              style: const TextStyle(
+                                color: _labelColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l.homeRequestNoneSubtitle,
-                        style: const TextStyle(
+                      const SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: Icon(
+                          Icons.chevron_right_rounded,
                           color: _labelColor,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
+                          size: 22,
                         ),
                       ),
                     ],
-                  ),
-                ),
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: _surface,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.chevron_right_rounded,
-                    color: _labelColor,
-                    size: 20,
                   ),
                 ),
               ],
@@ -727,7 +965,26 @@ class _InboxPreviewCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Container(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: _WhiteCardDecorPainter(variant: 4),
+                          ),
+                        ),
+                        Positioned(
+                          right: -10,
+                          bottom: -16,
+                          child: Transform.rotate(
+                            angle: 0.14,
+                            child: Icon(
+                              Icons.mail_rounded,
+                              size: 85,
+                              color: _primary.withValues(alpha: 0.055),
+                            ),
+                          ),
+                        ),
+                        Container(
                       padding: const EdgeInsets.fromLTRB(0, 0, 14, 0),
                       decoration: const BoxDecoration(
                         border: Border(
@@ -738,18 +995,51 @@ class _InboxPreviewCard extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(14, 18, 0, 18),
                         child: Row(
                           children: [
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: _primary.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: const Icon(
-                                Icons.chat_bubble_rounded,
-                                color: _primary,
-                                size: 22,
-                              ),
+                            Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        _primary.withValues(alpha: 0.12),
+                                        _primary.withValues(alpha: 0.06),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(15),
+                                    border: Border.all(
+                                      color: _primary.withValues(alpha: 0.1),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.chat_bubble_rounded,
+                                    color: _primary,
+                                    size: 22,
+                                  ),
+                                ),
+                                if (hasNew)
+                                  Positioned(
+                                    right: -2,
+                                    top: -2,
+                                    child: Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        color: _pencilYellow,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -774,14 +1064,14 @@ class _InboxPreviewCard extends StatelessWidget {
                                             vertical: 3,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: _badgeColor,
+                                            color: _pencilYellow,
                                             borderRadius:
                                                 BorderRadius.circular(6),
                                           ),
                                           child: const Text(
                                             'NEW',
                                             style: TextStyle(
-                                              color: Colors.white,
+                                              color: _onSurface,
                                               fontSize: 10,
                                               fontWeight: FontWeight.w800,
                                               letterSpacing: 0.5,
@@ -805,22 +1095,20 @@ class _InboxPreviewCard extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            Container(
+                            const SizedBox(
                               width: 32,
                               height: 32,
-                              decoration: BoxDecoration(
-                                color: _surface,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.chevron_right_rounded,
                                 color: _labelColor,
-                                size: 20,
+                                size: 22,
                               ),
                             ),
                           ],
                         ),
                       ),
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -836,6 +1124,44 @@ class _InboxPreviewCard extends StatelessWidget {
 class _PreviewEntry {
   final DateTime when;
   const _PreviewEntry({required this.when});
+}
+
+class _WhiteCardDecorPainter extends CustomPainter {
+  final int variant;
+  const _WhiteCardDecorPainter({this.variant = 0});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Soft primary-tinted blob bottom-right
+    canvas.drawCircle(
+      Offset(size.width - 20, size.height + 10),
+      40,
+      Paint()..color = _primary.withValues(alpha: 0.035),
+    );
+
+    // Math symbols scattered — yellow symbol varies per card
+    final c1 = _primary.withValues(alpha: 0.1);
+    final c2 = _primary.withValues(alpha: 0.07);
+    final cy = const Color(0xFFF5C518).withValues(alpha: 0.4);
+
+    final entries = [
+      ('π', Offset(size.width - 58, 16), 11.0),
+      ('+', Offset(size.width - 42, 24), 10.0),
+      ('×', Offset(size.width - 72, 28), 10.0),
+      ('=', Offset(size.width - 50, size.height - 14), 10.0),
+      ('√', Offset(size.width - 78, size.height - 20), 11.0),
+    ];
+    final yellowIdx = variant % entries.length;
+    for (int i = 0; i < entries.length; i++) {
+      final (text, pos, fs) = entries[i];
+      final color = i == yellowIdx ? cy : (i.isEven ? c1 : c2);
+      _drawSymbol(canvas, text, pos, fs, color);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _WhiteCardDecorPainter oldDelegate) =>
+      oldDelegate.variant != variant;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -894,7 +1220,7 @@ class _QuickActionTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: _surfaceLowest,
           borderRadius: BorderRadius.circular(20),
@@ -906,35 +1232,49 @@ class _QuickActionTile extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: gradientColors,
-                ),
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: gradientColors.first.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+            Positioned.fill(
+              child: CustomPaint(painter: _QuickTileDecorPainter()),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: gradientColors,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 22),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: _onSurface,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Container(
+                    width: 16,
+                    height: 2,
+                    decoration: BoxDecoration(
+                      color: _pencilYellow,
+                      borderRadius: BorderRadius.circular(1),
+                    ),
                   ),
                 ],
-              ),
-              child: Icon(icon, color: Colors.white, size: 22),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              label,
-              style: const TextStyle(
-                color: _onSurface,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -942,4 +1282,32 @@ class _QuickActionTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class _QuickTileDecorPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Notebook grid pattern
+    final gridPaint = Paint()
+      ..color = _primary.withValues(alpha: 0.04)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.7;
+    const gridSize = 22.0;
+    for (double x = gridSize; x < size.width; x += gridSize) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+    }
+    for (double y = gridSize; y < size.height; y += gridSize) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    // Soft corner blob bottom-right
+    canvas.drawCircle(
+      Offset(size.width + 5, size.height + 5),
+      28,
+      Paint()..color = _primary.withValues(alpha: 0.05),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

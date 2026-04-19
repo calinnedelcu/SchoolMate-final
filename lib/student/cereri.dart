@@ -1,4 +1,5 @@
 import 'package:firster/student/meniu.dart';
+import 'package:firster/student/widgets/school_decor.dart';
 import 'package:firster/core/session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -711,7 +712,7 @@ class _CereriScreenState extends State<CereriScreen> {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 22),
+                    clipBehavior: Clip.antiAlias,
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -730,29 +731,55 @@ class _CereriScreenState extends State<CereriScreen> {
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: Stack(
                       children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: IconButton(
-                            onPressed: _goBack,
-                            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-                            padding: EdgeInsets.zero,
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: const HeaderSparklesPainter(variant: 0),
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Text(
-                          'Leave requests',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: titleSize,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.3,
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 22),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: IconButton(
+                                  onPressed: _goBack,
+                                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+                                  padding: EdgeInsets.zero,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Leave requests',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: titleSize,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    width: 42,
+                                    height: 3,
+                                    decoration: BoxDecoration(
+                                      color: kPencilYellow,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -1148,6 +1175,9 @@ class _RecipientPill extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? _primary : _cardMuted,
           borderRadius: BorderRadius.circular(14),
+          border: selected
+              ? Border.all(color: kPencilYellow, width: 1.5)
+              : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1166,6 +1196,17 @@ class _RecipientPill extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            if (selected) ...[
+              const SizedBox(width: 8),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: kPencilYellow,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
           ],
         ),
       ),
