@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import '../core/session.dart';
 
-const _kHeaderGreen = Color(0xFF1F8BE7);
+const _kHeaderGreen = Color(0xFF2848B0);
 const _kPageBg = Color(0xFFEFF5FA);
 const _kCardBg = Color(0xFFF8F8F8);
 
@@ -390,7 +390,7 @@ class _MesajeDirPageState extends State<MesajeDirPage> {
         child: Column(
           children: [
             _TopHeader(
-              title: 'Mesaje',
+              title: 'Messages',
               onBack: () => Navigator.of(context).maybePop(),
             ),
             Expanded(
