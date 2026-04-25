@@ -1,4 +1,3 @@
-import 'package:firster/l10n/app_localizations.dart';
 import 'package:firster/services/accessibility_service.dart';
 import 'package:flutter/material.dart';
 
@@ -38,7 +37,6 @@ class _AccessibilitySettingsPageState extends State<AccessibilitySettingsPage> {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
-    final l = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: _surface,
@@ -46,38 +44,42 @@ class _AccessibilitySettingsPageState extends State<AccessibilitySettingsPage> {
         children: [
           _Header(
             topPadding: topPadding,
-            title: l.accessibilityHeaderTitle,
-            subtitle: l.accessibilityHeaderSubtitle,
+            title: 'Accessibility',
+            subtitle: 'Customize your visual experience',
             onBack: () => Navigator.pop(context),
           ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
               children: [
-                _SectionTitle(l.accessibilitySectionDisplay),
+                const _SectionTitle('Display'),
                 const SizedBox(height: 12),
                 _SettingTile(
                   icon: Icons.format_size_rounded,
-                  title: l.accessibilityLargeFontTitle,
-                  subtitle: l.accessibilityLargeFontSubtitle,
+                  title: 'Larger text',
+                  subtitle: 'Increase text size for easier reading.',
                   value: _service.largeFont,
                   onChanged: (v) => _service.setLargeFont(v),
                 ),
                 const SizedBox(height: 12),
                 _SettingTile(
                   icon: Icons.contrast_rounded,
-                  title: l.accessibilityHighContrastTitle,
-                  subtitle: l.accessibilityHighContrastSubtitle,
+                  title: 'High contrast',
+                  subtitle: 'Use black and white for maximum visibility.',
                   value: _service.highContrast,
                   onChanged: (v) => _service.setHighContrast(v),
                 ),
                 const SizedBox(height: 24),
-                _PreviewCard(
-                  title: l.accessibilityPreviewTitle,
-                  body: l.accessibilityPreviewBody,
+                const _PreviewCard(
+                  title: 'Preview',
+                  body:
+                      'This is an example text. Changes you make above are applied immediately across the app.',
                 ),
                 const SizedBox(height: 24),
-                _InfoBanner(text: l.accessibilityInfoBanner),
+                const _InfoBanner(
+                  text:
+                      'Settings are stored on this device and stay active the next time you open the app.',
+                ),
               ],
             ),
           ),

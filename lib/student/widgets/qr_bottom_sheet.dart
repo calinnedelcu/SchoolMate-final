@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firster/core/session.dart';
-import 'package:firster/l10n/app_localizations.dart';
 import 'package:firster/student/widgets/school_decor.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -92,7 +91,6 @@ class _QrBottomSheetState extends State<QrBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
     return ClipRRect(
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(28),
@@ -129,9 +127,9 @@ class _QrBottomSheetState extends State<QrBottomSheet> {
             ),
           ),
           const SizedBox(height: 18),
-          Text(
-            l.qrSheetTitle,
-            style: const TextStyle(
+          const Text(
+            'Code for the gate',
+            style: TextStyle(
               color: _onSurface,
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -150,7 +148,7 @@ class _QrBottomSheetState extends State<QrBottomSheet> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
-              l.qrSheetSubtitle,
+              'Show this code to the gate keeper to verify your leave permission.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: _outline.withValues(alpha: 0.95),
@@ -227,7 +225,7 @@ class _QrBottomSheetState extends State<QrBottomSheet> {
                 const Icon(Icons.refresh_rounded, color: _primary, size: 16),
                 const SizedBox(width: 8),
                 Text(
-                  l.qrSheetExpiresIn(_secondsLeft),
+                  'Refreshes in ${_secondsLeft}s',
                   style: const TextStyle(
                     color: _primary,
                     fontSize: 12,
@@ -249,9 +247,9 @@ class _QrBottomSheetState extends State<QrBottomSheet> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Center(
-                child: Text(
-                  l.qrSheetClose,
-                  style: const TextStyle(
+                child: const Text(
+                  'Close',
+                  style: TextStyle(
                     color: _onSurface,
                     fontSize: 14,
                     fontWeight: FontWeight.w800,

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firster/admin/services/admin_api.dart';
 import 'package:firster/common/accessibility_settings_page.dart';
-import 'package:firster/common/language_picker.dart';
 import 'package:firster/student/logout_dialog.dart';
 import 'package:firster/core/session.dart';
 import 'package:firster/student/widgets/qr_bottom_sheet.dart';
@@ -276,7 +275,11 @@ class _OrarHeroHeader extends StatelessWidget {
                   ),
                   child: IconButton(
                     onPressed: onBack,
-                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                     padding: EdgeInsets.zero,
                   ),
                 ),
@@ -328,9 +331,7 @@ class _QrAccessCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: _surfaceLowest,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: _primary.withValues(alpha: 0.12),
-            ),
+            border: Border.all(color: _primary.withValues(alpha: 0.12)),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(22),
@@ -461,129 +462,129 @@ class _ProfileIdentityCard extends StatelessWidget {
               ),
             ),
             Padding(
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+              padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Profile picture + class badge below
-                  Column(
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      GestureDetector(
-                        onTap: profilePictureUrl.isNotEmpty
-                            ? () => _openFullScreenImage(
-                                context,
-                                profilePictureUrl,
-                              )
-                            : null,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(18),
-                          child: profilePictureUrl.isNotEmpty
-                              ? Image.network(
-                                  profilePictureUrl,
-                                  width: 64,
-                                  height: 64,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
-                                    width: 64,
-                                    height: 64,
-                                    color: _surfaceContainerHigh,
-                                    child: const Icon(
-                                      Icons.person,
-                                      color: _outline,
-                                      size: 34,
+                      // Profile picture + class badge below
+                      Column(
+                        children: [
+                          GestureDetector(
+                            onTap: profilePictureUrl.isNotEmpty
+                                ? () => _openFullScreenImage(
+                                    context,
+                                    profilePictureUrl,
+                                  )
+                                : null,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(18),
+                              child: profilePictureUrl.isNotEmpty
+                                  ? Image.network(
+                                      profilePictureUrl,
+                                      width: 64,
+                                      height: 64,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(
+                                        width: 64,
+                                        height: 64,
+                                        color: _surfaceContainerHigh,
+                                        child: const Icon(
+                                          Icons.person,
+                                          color: _outline,
+                                          size: 34,
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 64,
+                                      height: 64,
+                                      color: _surfaceContainerHigh,
+                                      child: const Icon(
+                                        Icons.person,
+                                        color: _outline,
+                                        size: 34,
+                                      ),
                                     ),
-                                  ),
-                                )
-                              : Container(
-                                  width: 64,
-                                  height: 64,
-                                  color: _surfaceContainerHigh,
-                                  child: const Icon(
-                                    Icons.person,
-                                    color: _outline,
-                                    size: 34,
-                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              displayName,
+                              style: const TextStyle(
+                                color: _onSurface,
+                                fontSize: 26,
+                                fontWeight: FontWeight.w800,
+                                height: 1.1,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              width: 42,
+                              height: 3,
+                              decoration: BoxDecoration(
+                                color: kPencilYellow,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            if (username.isNotEmpty) ...[
+                              Text(
+                                '@$username',
+                                style: const TextStyle(
+                                  color: _primary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
                                 ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(14),
+                          onTap: () => _showSettingsSheet(context),
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: _surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.settings_outlined,
+                              color: _primary,
+                              size: 26,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          displayName,
-                          style: const TextStyle(
-                            color: _onSurface,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            height: 1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          width: 42,
-                          height: 3,
-                          decoration: BoxDecoration(
-                            color: kPencilYellow,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        if (username.isNotEmpty) ...[
-                          Text(
-                            '@$username',
-                            style: const TextStyle(
-                              color: _primary,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                  const SizedBox(height: 26),
+                  Container(height: 1, color: const Color(0xFFE8EAF2)),
+                  const SizedBox(height: 22),
+                  _PersonInfoBox(
+                    label: 'HOMEROOM TEACHER',
+                    icon: Icons.school,
+                    teacherUid: teacherUid,
+                    teacherUsername: teacherUsername,
                   ),
-                  const SizedBox(width: 12),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () => _showSettingsSheet(context),
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: _surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(
-                          Icons.settings_outlined,
-                          color: _primary,
-                          size: 26,
-                        ),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 12),
+                  const _ParentInfoBox(),
                 ],
               ),
-              const SizedBox(height: 26),
-              Container(height: 1, color: const Color(0xFFE8EAF2)),
-              const SizedBox(height: 22),
-              _PersonInfoBox(
-                label: 'HOMEROOM TEACHER',
-                icon: Icons.school,
-                teacherUid: teacherUid,
-                teacherUsername: teacherUsername,
-              ),
-              const SizedBox(height: 12),
-              const _ParentInfoBox(),
-            ],
-          ),
             ),
           ],
         ),
@@ -723,15 +724,6 @@ class _SettingsSheet extends StatelessWidget {
                   builder: (_) => const AccessibilitySettingsPage(),
                 ),
               );
-            },
-          ),
-          const SizedBox(height: 10),
-          _SettingsTile(
-            icon: Icons.language_rounded,
-            label: 'Language',
-            onTap: () {
-              Navigator.pop(ctx);
-              showLanguagePickerSheet(ctx);
             },
           ),
           const SizedBox(height: 10),
@@ -2100,7 +2092,13 @@ List<_ScheduleRowData> _buildScheduleRows(Map<String, dynamic> classData) {
     return const [];
   }
 
-  const dayMap = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday'};
+  const dayMap = {
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+  };
 
   final normalizedDays = oldDays.whereType<int>().toList()..sort();
   return normalizedDays

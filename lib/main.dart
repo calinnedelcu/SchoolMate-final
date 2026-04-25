@@ -8,10 +8,8 @@ import 'package:firster/admin/secretariat_raw_page.dart'
 import 'package:firster/gate/gate_scan_page.dart';
 import 'package:firster/teacher/teacher_dashboard_page.dart';
 import 'package:firster/parent/parent_home_page.dart';
-import 'package:firster/l10n/app_localizations.dart';
 import 'package:firster/services/security_flags_service.dart';
 import 'package:firster/services/accessibility_service.dart';
-import 'package:firster/services/locale_service.dart';
 import 'package:firster/core/session.dart';
 import 'package:firster/auth/onboarding_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -38,7 +36,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await AccessibilityService.instance.load();
-  await LocaleService.instance.load();
   await FirebaseAuth.instance.signOut(); // TEMP: force logout
   if (kIsWeb) {
     FirebaseFirestore.instance.settings = const Settings(
@@ -223,13 +220,9 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([
-        AccessibilityService.instance,
-        LocaleService.instance,
-      ]),
+      animation: AccessibilityService.instance,
       builder: (context, _) {
         final a11y = AccessibilityService.instance;
-        final localeSvc = LocaleService.instance;
         final theme = a11y.highContrast
             ? ThemeData(
                 useMaterial3: true,
@@ -259,11 +252,8 @@ class _MyAppState extends State<MyApp> {
               );
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Aegis',
+          title: 'SchoolMate',
           theme: theme,
-          locale: localeSvc.locale,
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
           builder: (context, child) {
             final mq = MediaQuery.of(context);
             return MediaQuery(

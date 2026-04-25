@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firster/l10n/app_localizations.dart';
 import 'package:firster/student/meniu.dart';
 import 'package:firster/student/widgets/school_decor.dart';
 import 'package:firster/core/session.dart';
@@ -383,9 +382,8 @@ class _InboxScreenState extends State<InboxScreen> {
     });
 
     if (!mounted) return;
-    final l = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l.inboxVolunteerSignupSuccess)),
+      const SnackBar(content: Text('Successfully signed up!')),
     );
   }
 
@@ -478,8 +476,6 @@ class _InboxScreenState extends State<InboxScreen> {
     required List<QueryDocumentSnapshot<Map<String, dynamic>>> volunteerDocs,
     required List<QueryDocumentSnapshot<Map<String, dynamic>>> signupDocs,
   }) {
-    final l = AppLocalizations.of(context);
-
     final leaveItems = leaveDocs
         .where((doc) {
           final data = doc.data();
@@ -618,10 +614,10 @@ class _InboxScreenState extends State<InboxScreen> {
                     color: _card,
                     borderRadius: BorderRadius.circular(28),
                   ),
-                  child: Text(
-                    l.inboxEmpty,
+                  child: const Text(
+                    'No messages in this category.',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: _textMuted,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -712,11 +708,10 @@ class _InboxHeaderState extends State<_InboxHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
     final topPadding = MediaQuery.of(context).padding.top;
 
     final pills = <(_InboxFilter, String)>[
-      (_InboxFilter.all, l.inboxFilterAll),
+      (_InboxFilter.all, 'All'),
       (_InboxFilter.requests, 'Requests'),
       (_InboxFilter.announcements, 'Announcements'),
       (_InboxFilter.volunteer, 'Volunteering'),
@@ -776,9 +771,9 @@ class _InboxHeaderState extends State<_InboxHeader> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          l.inboxTitle,
-                          style: const TextStyle(
+                        const Text(
+                          'Messages',
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
@@ -1195,7 +1190,6 @@ class _VolunteerInboxTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
     final accent = const Color(0xFF2848B0);
 
     return Container(
@@ -1248,7 +1242,7 @@ class _VolunteerInboxTile extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            l.inboxVolunteerLabel.toUpperCase(),
+                            'VOLUNTEERING',
                             style: TextStyle(
                               color: accent,
                               fontSize: 10,
@@ -1306,7 +1300,7 @@ class _VolunteerInboxTile extends StatelessWidget {
                     if (data.hoursWorth > 0)
                       _MetaChip(
                         icon: Icons.schedule_rounded,
-                        text: l.inboxVolunteerHours(data.hoursWorth),
+                        text: '${data.hoursWorth}h',
                       ),
                   ],
                 ),
@@ -1343,9 +1337,7 @@ class _VolunteerInboxTile extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          onSignUp == null
-                              ? l.inboxVolunteerSignedUp
-                              : l.inboxVolunteerSignUp,
+                          onSignUp == null ? 'Signed up' : 'Sign up',
                           style: TextStyle(
                             color: onSignUp == null
                                 ? accent

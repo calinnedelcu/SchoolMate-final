@@ -20,7 +20,6 @@ import 'admin_voluntariat_page.dart';
 import 'admin_post_composer_page.dart';
 // import 'secretariat_global_messages_page.dart'; // unused after menu cleanup
 import '../common/accessibility_settings_page.dart';
-import '../common/language_picker.dart';
 import '../services/security_flags_service.dart';
 import '../core/session.dart';
 
@@ -619,12 +618,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                                           ),
                                         );
                                       },
-                                    ),
-                                    _buildSidebarItem(
-                                      icon: Icons.language_rounded,
-                                      label: "Limbă",
-                                      onTap: () =>
-                                          showLanguagePickerSheet(context),
                                     ),
                                     _buildSidebarItem(
                                       icon: Icons.code_rounded,

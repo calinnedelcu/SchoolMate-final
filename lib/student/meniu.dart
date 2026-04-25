@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firster/core/session.dart';
-import 'package:firster/l10n/app_localizations.dart';
 import 'package:firster/student/cereri.dart';
 import 'package:firster/student/inbox.dart';
 import 'package:firster/student/widgets/qr_bottom_sheet.dart';
@@ -238,7 +237,6 @@ class _TopHeroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
-    final l = AppLocalizations.of(context);
     final now = DateTime.now();
     final dateStr = '${now.day} ${_months[now.month]} ${now.year}';
 
@@ -255,7 +253,7 @@ class _TopHeroHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l.homeGreeting(displayName),
+                    'Welcome, $displayName',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,
@@ -427,10 +425,6 @@ class _AziHeroCard extends StatelessWidget {
 
   const _AziHeroCard({required this.schedule});
 
-  static const _dayNames = {
-    1: 'Luni', 2: 'Marți', 3: 'Miercuri', 4: 'Joi',
-    5: 'Vineri', 6: 'Sâmbătă', 7: 'Duminică',
-  };
   static const _dayNamesEn = {
     1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday',
     5: 'Friday', 6: 'Saturday', 7: 'Sunday',
@@ -438,12 +432,8 @@ class _AziHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
     final now = DateTime.now();
-    final locale = Localizations.localeOf(context).languageCode;
-    final dayName = locale == 'ro'
-        ? (_dayNames[now.weekday] ?? '')
-        : (_dayNamesEn[now.weekday] ?? '');
+    final dayName = _dayNamesEn[now.weekday] ?? '';
     final intervalText = schedule != null
         ? '${schedule!.startText} - ${schedule!.endText}'
         : '—';
@@ -510,7 +500,7 @@ class _AziHeroCard extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        l.homeTodayCardTitle,
+                        "TODAY'S SCHEDULE",
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 13,
@@ -560,7 +550,7 @@ class _AziHeroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 22),
                 Text(
-                  l.homeTodayDayLabel,
+                  'Current day',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.55),
                     fontSize: 12,
@@ -595,7 +585,7 @@ class _AziHeroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  l.homeTodayIntervalLabel,
+                  'Class interval',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.55),
                     fontSize: 12,
@@ -696,8 +686,6 @@ class _CerereInvoireCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: leaveStream,
       builder: (context, snapshot) {
@@ -810,18 +798,18 @@ class _CerereInvoireCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              l.homeRequestCardTitle,
-                              style: const TextStyle(
+                            const Text(
+                              'Leave requests',
+                              style: TextStyle(
                                 color: _onSurface,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              l.homeRequestNoneSubtitle,
-                              style: const TextStyle(
+                            const Text(
+                              'Manage your absences',
+                              style: TextStyle(
                                 color: _labelColor,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
@@ -884,8 +872,6 @@ class _InboxPreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-
     return GestureDetector(
       onTap: onTap,
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -1048,9 +1034,9 @@ class _InboxPreviewCard extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
-                                      Text(
-                                        l.homeInboxPreviewTitle,
-                                        style: const TextStyle(
+                                      const Text(
+                                        'Messages',
+                                        style: TextStyle(
                                           color: _onSurface,
                                           fontSize: 16,
                                           fontWeight: FontWeight.w800,
@@ -1084,8 +1070,10 @@ class _InboxPreviewCard extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   Text(
                                     hasNew
-                                        ? l.homeInboxUnreadCount(unread)
-                                        : l.homeInboxNoMessages,
+                                        ? (unread == 1
+                                              ? '1 new message'
+                                              : '$unread new messages')
+                                        : 'No new messages',
                                     style: TextStyle(
                                       color: hasNew ? _primary : _labelColor,
                                       fontSize: 13,
