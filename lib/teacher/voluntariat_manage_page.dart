@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../core/session.dart';
 
-const _kHeaderGreen = Color(0xFF1F8BE7);
+const _kHeaderGreen = Color(0xFF2848B0);
 const _kPageBg = Color(0xFFEFF5FA);
 const _kCardBg = Color(0xFFFFFFFF);
 const _kOutline = Color(0xFF717B6E);
@@ -145,7 +145,7 @@ class _VoluntariatManagePageState extends State<VoluntariatManagePage> {
         child: Column(
           children: [
             _TopHeader(
-              title: 'Voluntariat',
+              title: 'Volunteering',
               onBack: () => Navigator.of(context).maybePop(),
             ),
             Expanded(
