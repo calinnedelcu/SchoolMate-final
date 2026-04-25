@@ -3,6 +3,53 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { randomBytes, createHash } = require("crypto");
 const nodemailer = require("nodemailer");
+
+function buildEmailHtml({ preheader, title, subtitle, code, expiryText, footerNote, iconEmoji }) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F0F3FA;font-family:'Segoe UI',Arial,sans-serif;">
+  <!-- preheader -->
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#F0F3FA;">
+    ${preheader}&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+  </div>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0F3FA;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+
+        <!-- HEADER -->
+        <tr><td style="background:linear-gradient(135deg,#1E3CA0 0%,#2E58D0 60%,#4070E0 100%);border-radius:16px 16px 0 0;padding:32px 40px 28px;text-align:center;">
+          <p style="margin:0 0 6px;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.3px;">MyStudentApp</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:0.4px;">Digital School Platform</p>
+        </td></tr>
+
+        <!-- BODY -->
+        <tr><td style="background:#ffffff;padding:40px 40px 32px;border-left:1px solid #E2E8F4;border-right:1px solid #E2E8F4;">
+          <p style="margin:0 0 8px;font-size:26px;">${iconEmoji}</p>
+          <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1A2340;">${title}</h1>
+          <p style="margin:0 0 28px;font-size:14px;color:#5A6480;line-height:1.6;">${subtitle}</p>
+
+          <!-- CODE BOX -->
+          <div style="background:#F0F3FA;border:2px solid #D0D9F0;border-radius:12px;padding:24px 16px;text-align:center;margin:0 0 24px;">
+            <p style="margin:0 0 6px;font-size:11px;font-weight:600;color:#7A87AA;letter-spacing:1.2px;text-transform:uppercase;">Your code</p>
+            <p style="margin:0;font-size:38px;font-weight:800;letter-spacing:10px;color:#2848B0;font-family:'Courier New',monospace;">${code}</p>
+          </div>
+
+          <p style="margin:0 0 8px;font-size:14px;color:#5A6480;text-align:center;">${expiryText}</p>
+        </td></tr>
+
+        <!-- FOOTER NOTE -->
+        <tr><td style="background:#F7F9FE;border:1px solid #E2E8F4;border-top:none;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;">
+          <p style="margin:0;font-size:12px;color:#9BA5C0;line-height:1.6;">${footerNote}</p>
+          <p style="margin:12px 0 0;font-size:11px;color:#BFC6D8;">© ${new Date().getFullYear()} MyStudentApp · All rights reserved</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -482,9 +529,11 @@ exports.authRequestPasswordReset = onCall(async (request) => {
     const smtpPort = Number(process.env.SMTP_PORT || 587);
     const smtpUser = String(process.env.SMTP_USER || "").trim();
     const smtpPass = String(process.env.SMTP_PASS || "").trim();
-    const smtpFrom = String(process.env.SMTP_FROM || smtpUser).trim();
+    const smtpFromEmail = String(process.env.SMTP_FROM || smtpUser).trim();
+    const smtpFromName = String(process.env.SMTP_FROM_NAME || "MyStudentApp").trim();
+    const smtpFrom = `"${smtpFromName}" <${smtpFromEmail}>`;
 
-    if (!smtpHost || !smtpUser || !smtpPass || !smtpFrom) {
+    if (!smtpHost || !smtpUser || !smtpPass || !smtpFromEmail) {
         throw new HttpsError(
             "failed-precondition",
             "SMTP neconfigurat. Seteaza SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM."
@@ -505,17 +554,17 @@ exports.authRequestPasswordReset = onCall(async (request) => {
     await transporter.sendMail({
         from: smtpFrom,
         to: toEmail,
-        subject: "Resetare parola Firster",
+        subject: "Resetare parolă — MyStudentApp",
         text: `Codul tau pentru resetarea parolei este ${code}. Codul expira in 30 de minute.`,
-        html: `
-          <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #1f2937;">
-            <h2 style="margin: 0 0 12px;">Resetare parola Firster</h2>
-            <p>Codul tau de resetare este:</p>
-            <p style="font-size: 28px; font-weight: 700; letter-spacing: 4px; margin: 8px 0 16px; color: #16a34a;">${code}</p>
-            <p>Codul expira in <strong>30 de minute</strong>.</p>
-            <p style="color: #6b7280; font-size: 12px; margin-top: 16px;">Daca nu ai solicitat resetarea, ignora acest email.</p>
-          </div>
-        `,
+        html: buildEmailHtml({
+            preheader: `Your MyStudentApp password reset code is ${code}. Expires in 30 minutes.`,
+            title: "Password Reset",
+            subtitle: "You requested a password reset for your account. Use the code below to continue.",
+            code,
+            expiryText: "This code expires in <strong style=\"color:#1A2340;\">30 minutes</strong>.",
+            footerNote: "If you didn't request a password reset, you can safely ignore this email.<br>Your account remains secure.",
+            iconEmoji: "🔐",
+        }),
     });
 
     return { ok: true, sent: true };
@@ -1972,9 +2021,14 @@ exports.sendVerificationEmail = onCall(async (request) => {
     const smtpPort = Number(process.env.SMTP_PORT || 587);
     const smtpUser = String(process.env.SMTP_USER || "").trim();
     const smtpPass = String(process.env.SMTP_PASS || "").trim();
-    const smtpFrom = String(process.env.SMTP_FROM || smtpUser).trim();
+    const smtpFromEmail = String(process.env.SMTP_FROM || smtpUser).trim();
+    const smtpFromName = String(process.env.SMTP_FROM_NAME || "MyStudentApp").trim();
+    const smtpFrom = `"${smtpFromName}" <${smtpFromEmail}>`;
 
-    if (!smtpHost || !smtpUser || !smtpPass || !smtpFrom) {
+    console.log(`[sendVerificationEmail] SMTP config: host=${smtpHost} port=${smtpPort} user=${smtpUser} from=${smtpFrom} to=${email}`);
+
+    if (!smtpHost || !smtpUser || !smtpPass || !smtpFromEmail) {
+        console.error("[sendVerificationEmail] SMTP neconfigurat");
         throw new HttpsError(
             "failed-precondition",
             "SMTP neconfigurat. Seteaza SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM."
@@ -1992,20 +2046,27 @@ exports.sendVerificationEmail = onCall(async (request) => {
         },
     });
 
-    await transporter.sendMail({
-        from: smtpFrom,
-        to: email,
-        subject: "Cod verificare cont Firster",
-        text: `Codul tau de verificare este ${code}. Codul expira in 60 de minute.`,
-        html: `
-          <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #1f2937;">
-            <h2 style="margin: 0 0 12px;">Verificare email Firster</h2>
-            <p>Codul tau de verificare este:</p>
-            <p style="font-size: 28px; font-weight: 700; letter-spacing: 4px; margin: 8px 0 16px;">${code}</p>
-            <p>Codul expira in 60 de minute.</p>
-          </div>
-        `,
-    });
+    try {
+        const info = await transporter.sendMail({
+            from: smtpFrom,
+            to: email,
+            subject: "Verify your email — MyStudentApp",
+            text: `Your verification code is ${code}. It expires in 60 minutes.`,
+            html: buildEmailHtml({
+                preheader: `Your MyStudentApp verification code is ${code}. Expires in 60 minutes.`,
+                title: "Verify your email address",
+                subtitle: "Welcome to MyStudentApp! Enter the code below in the app to confirm your email address.",
+                code,
+                expiryText: "This code expires in <strong style=\"color:#1A2340;\">60 minutes</strong>.",
+                footerNote: "If you didn't create a MyStudentApp account, you can safely ignore this email.<br>Your email address will not be registered.",
+                iconEmoji: "✉️",
+            }),
+        });
+        console.log(`[sendVerificationEmail] Email trimis OK: messageId=${info.messageId} response=${info.response}`);
+    } catch (smtpErr) {
+        console.error(`[sendVerificationEmail] SMTP error: ${smtpErr.message}`, smtpErr);
+        throw new HttpsError("internal", `Nu am putut trimite emailul: ${smtpErr.message}`);
+    }
 
     return { success: true };
 });
@@ -2186,17 +2247,17 @@ async function sendTwoFactorEmail(to, code) {
     await transporter.sendMail({
         from: smtpFrom,
         to,
-        subject: "Cod autentificare in doi pasi Firster",
-        text: `Codul tau de autentificare este ${code}. Codul expira in 10 minute.`,
-        html: `
-          <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #1f2937;">
-            <h2 style="margin: 0 0 12px;">Autentificare in doi pasi Firster</h2>
-            <p>Codul tau de autentificare este:</p>
-            <p style="font-size: 32px; font-weight: 700; letter-spacing: 6px; margin: 8px 0 16px; color: #16a34a;">${code}</p>
-            <p>Codul expira in <strong>10 minute</strong>.</p>
-            <p style="color: #6b7280; font-size: 12px; margin-top: 16px;">Daca nu ai solicitat acest cod, ignora acest email.</p>
-          </div>
-        `,
+        subject: "Your sign-in code — MyStudentApp",
+        text: `Your two-factor authentication code is ${code}. It expires in 10 minutes.`,
+        html: buildEmailHtml({
+            preheader: `Your MyStudentApp 2FA code is ${code}. Expires in 10 minutes.`,
+            title: "Two-Factor Authentication",
+            subtitle: "Someone is signing in to your account. Enter the code below to confirm it's you.",
+            code,
+            expiryText: "This code expires in <strong style=\"color:#1A2340;\">10 minutes</strong>.",
+            footerNote: "If you didn't attempt to sign in, change your password immediately.<br>Never share this code with anyone.",
+            iconEmoji: "🛡️",
+        }),
     });
 }
 

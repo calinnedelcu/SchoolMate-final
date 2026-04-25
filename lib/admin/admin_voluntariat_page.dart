@@ -2,12 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../core/session.dart';
 
-const _primaryGreen = Color(0xFF6AA2CE);
-const _headerGreen = Color(0xFF1F8BE7);
-const _surfaceColor = Color(0xFFF5FBFF);
+const _headerGreen = Color(0xFF2848B0);
+const _surfaceColor = Color(0xFFF2F4F8);
 const _cardBg = Color(0xFFFFFFFF);
-const _outline = Color(0xFF717B6E);
-const _onSurface = Color(0xFF587F9E);
+const _outline = Color(0xFFC0C4D8);
+const _onSurface = Color(0xFF7A7E9A);
 
 class AdminVoluntariatPage extends StatefulWidget {
   const AdminVoluntariatPage({super.key});
@@ -49,7 +48,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
     final title = _titleCtrl.text.trim();
     if (title.isEmpty || _selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Completeaza titlul si data')),
+        const SnackBar(content: Text('Please fill in the title and date')),
       );
       return;
     }
@@ -83,7 +82,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Oportunitate creata cu succes!')),
+      const SnackBar(content: Text('Opportunity created successfully!')),
     );
   }
 
@@ -116,7 +115,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Voluntariat',
+              'Volunteering',
               style: TextStyle(
                 color: _onSurface,
                 fontSize: 26,
@@ -126,7 +125,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
             ),
             const SizedBox(height: 4),
             const Text(
-              'Gestioneaza oportunitatile de voluntariat la nivel de scoala',
+              'Manage volunteering opportunities at school level',
               style: TextStyle(color: _outline, fontSize: 13),
             ),
             const SizedBox(height: 20),
@@ -135,7 +134,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
             _buildCreateForm(),
             const SizedBox(height: 24),
             const Text(
-              'Toate oportunitatile',
+              'All opportunities',
               style: TextStyle(
                 color: _onSurface,
                 fontSize: 18,
@@ -187,7 +186,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
               return _StatCard(
                 icon: Icons.access_time_rounded,
                 value: '$totalHours',
-                label: 'Ore totale',
+                label: 'Total hours',
                 color: const Color(0xFF48A3EF),
               );
             },
@@ -207,7 +206,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
               return _StatCard(
                 icon: Icons.people_rounded,
                 value: '${uniqueStudents.length}',
-                label: 'Voluntari',
+                label: 'Volunteers',
                 color: const Color(0xFFE65100),
               );
             },
@@ -222,7 +221,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
         ? '${_selectedDate!.day.toString().padLeft(2, '0')}.'
           '${_selectedDate!.month.toString().padLeft(2, '0')}.'
           '${_selectedDate!.year}'
-        : 'Alege data';
+        : 'Choose date';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -245,7 +244,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
               Icon(Icons.add_circle_rounded, color: _headerGreen, size: 20),
               SizedBox(width: 8),
               Text(
-                'Oportunitate noua (nivel scoala)',
+                'New opportunity (school level)',
                 style: TextStyle(
                   color: _onSurface,
                   fontSize: 15,
@@ -255,12 +254,12 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
             ],
           ),
           const SizedBox(height: 14),
-          _AdminInput(controller: _titleCtrl, hint: 'Titlu *'),
+          _AdminInput(controller: _titleCtrl, hint: 'Title *'),
           const SizedBox(height: 8),
           _AdminInput(
-              controller: _descCtrl, hint: 'Descriere', maxLines: 3),
+              controller: _descCtrl, hint: 'Description', maxLines: 3),
           const SizedBox(height: 8),
-          _AdminInput(controller: _locationCtrl, hint: 'Locatie'),
+          _AdminInput(controller: _locationCtrl, hint: 'Location'),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -271,7 +270,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 11),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE7F0F6),
+                      color: const Color(0xFFE8EAF2),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -297,7 +296,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
               SizedBox(
                 width: 65,
                 child:
-                    _AdminInput(controller: _hoursCtrl, hint: 'Ore', isNum: true),
+                    _AdminInput(controller: _hoursCtrl, hint: 'Hours', isNum: true),
               ),
               const SizedBox(width: 8),
               SizedBox(
@@ -326,7 +325,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
                             strokeWidth: 2, color: Colors.white),
                       )
                     : const Text(
-                        'Creeaza',
+                        'Create',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -361,7 +360,7 @@ class _AdminVoluntariatPageState extends State<AdminVoluntariatPage> {
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Text(
-              'Nicio oportunitate inca',
+              'No opportunities yet',
               textAlign: TextAlign.center,
               style: TextStyle(color: _outline, fontSize: 13),
             ),
@@ -478,7 +477,7 @@ class _AdminOppCardState extends State<_AdminOppCard> {
           '${dateTs.toDate().year}'
         : '';
     final isArchived = status == 'archived';
-    final scope = classId != null ? 'Clasa $classId' : 'Toata scoala';
+    final scope = classId != null ? 'Class $classId' : 'Whole school';
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -527,7 +526,7 @@ class _AdminOppCardState extends State<_AdminOppCard> {
                       ),
                     ),
                     Text(
-                      '$dateStr  •  $hoursWorth ore  •  $scope  •  ${createdByRole == 'admin' ? 'Secretariat' : 'Diriginte'}',
+                      '$dateStr  •  $hoursWorth hours  •  $scope  •  ${createdByRole == 'admin' ? 'Secretariat' : 'Homeroom Teacher'}',
                       style: const TextStyle(
                         color: _outline,
                         fontSize: 11,
@@ -561,7 +560,7 @@ class _AdminOppCardState extends State<_AdminOppCard> {
                     color: _outline.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text('Arhivat',
+                  child: const Text('Archived',
                       style: TextStyle(color: _outline, fontSize: 10)),
                 ),
             ],
@@ -583,7 +582,7 @@ class _AdminOppCardState extends State<_AdminOppCard> {
                     .toList();
 
                 if (active.isEmpty) {
-                  return const Text('Nicio inscriere',
+                  return const Text('No registrations',
                       style: TextStyle(color: _outline, fontSize: 12));
                 }
 
@@ -634,7 +633,7 @@ class _AdminOppCardState extends State<_AdminOppCard> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: const Text(
-                                  'Valideaza',
+                                  'Validate',
                                   style: TextStyle(
                                       color: Colors.white, fontSize: 10,
                                       fontWeight: FontWeight.w600),
@@ -682,7 +681,7 @@ class _AdminInput extends StatelessWidget {
         hintText: hint,
         hintStyle: const TextStyle(color: _outline, fontSize: 12),
         filled: true,
-        fillColor: const Color(0xFFE7F0F6),
+        fillColor: const Color(0xFFE8EAF2),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         border: OutlineInputBorder(

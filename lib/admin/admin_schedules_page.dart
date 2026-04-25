@@ -11,9 +11,9 @@ class AdminSchedulesPage extends StatefulWidget {
 }
 
 class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
-  final Color primaryGreen = const Color(0xFF84B0D2);
-  final Color darkGreen = const Color(0xFF699FC9);
-  final Color lightGreen = const Color(0xFFF5FBFF);
+  final Color primaryGreen = const Color(0xFF2848B0);
+  final Color darkGreen = const Color(0xFF7A7E9A);
+  final Color lightGreen = const Color(0xFFF2F4F8);
   String? selectedClassId;
   final _classSearchC = TextEditingController();
   String _classQuery = "";
@@ -142,7 +142,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
             // LEFT SIDEBAR - Classes List
             Container(
               width: 280,
-              color: const Color(0xFF699FC9),
+              color: const Color(0xFF7A7E9A),
               child: Column(
                 children: [
                   Padding(
@@ -328,7 +328,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF333333),
+                              color: Color(0xFF1A2050),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -355,10 +355,11 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
     return Scaffold(
       backgroundColor: lightGreen,
       appBar: AppBar(
+        toolbarHeight: 88,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF84B0D2), Color(0xFF6AA2CE)],
+              colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -367,14 +368,14 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Orar Clasă',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 20,
+            fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
         ),

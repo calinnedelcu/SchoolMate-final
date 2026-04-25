@@ -7,7 +7,7 @@ class _AdminNotificationItem {
 }
 
 const _adminNotifications = <_AdminNotificationItem>[
-  _AdminNotificationItem(message: 'Prima versiune este gata!'),
+  _AdminNotificationItem(message: 'First version is ready!'),
 ];
 
 class AdminNotificationBell extends StatefulWidget {
@@ -73,11 +73,11 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Notificări',
+                          'Notifications',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF4083BE),
+                            color: Color(0xFF2848B0),
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -85,16 +85,16 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF2F6F9),
+                            color: const Color(0xFFF2F4F8),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFD1DFEA)),
+                            border: Border.all(color: const Color(0xFFE8EAF2)),
                           ),
                           child: const Text(
-                            'Prima versiune este gata!',
+                            'First version is ready!',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF5185B3),
+                              color: Color(0xFF7A7E9A),
                             ),
                           ),
                         ),
@@ -105,7 +105,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                             onPressed: () =>
                                 Navigator.of(menuContext).pop('all'),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF1C8EF0),
+                              foregroundColor: const Color(0xFF2848B0),
                               side: const BorderSide(color: Color(0xFFB7CBDC)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
@@ -113,7 +113,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                               ),
                             ),
                             child: const Text(
-                              'Vezi toate notificările',
+                              'View all notifications',
                               style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
@@ -157,11 +157,11 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                   children: [
                     const Expanded(
                       child: Text(
-                        'Notificări',
+                        'Notifications',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF4083BE),
+                          color: Color(0xFF2848B0),
                         ),
                       ),
                     ),
@@ -195,7 +195,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                             width: 38,
                             height: 38,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1C8EF0),
+                              color: const Color(0xFF2848B0),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(
@@ -210,7 +210,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  'Mesaj',
+                                  'Message',
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
@@ -241,7 +241,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                 child: FilledButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF1C8EF0),
+                    backgroundColor: const Color(0xFF2848B0),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -249,7 +249,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                     ),
                   ),
                   child: const Text(
-                    'Închide',
+                    'Close',
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
