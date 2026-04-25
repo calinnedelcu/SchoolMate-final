@@ -9,9 +9,11 @@ import 'package:flutter/material.dart';
 import '../core/session.dart';
 import 'admin_api.dart';
 import 'services/admin_store.dart';
+import 'widgets/admin_create_user_dialog.dart';
 
 class AdminStudentsPage extends StatefulWidget {
-  const AdminStudentsPage({super.key});
+  const AdminStudentsPage({super.key, this.searchQuery});
+  final String? searchQuery;
 
   @override
   State<AdminStudentsPage> createState() => _AdminStudentsPageState();
@@ -20,10 +22,39 @@ class AdminStudentsPage extends StatefulWidget {
 class _AdminStudentsPageState extends State<AdminStudentsPage> {
   final store = AdminStore();
   final Random _rng = Random.secure();
+  final TextEditingController _searchController = TextEditingController();
   int _currentPage = 0;
   static const int _pageSize = 7;
-  final String _searchQuery = '';
+  String _searchQuery = '';
   final String _sortBy = 'name';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
+      _searchQuery = widget.searchQuery!.toLowerCase();
+      _searchController.text = widget.searchQuery!;
+    }
+  }
+
+  @override
+  void didUpdateWidget(AdminStudentsPage old) {
+    super.didUpdateWidget(old);
+    final q = widget.searchQuery ?? '';
+    if (q != (old.searchQuery ?? '')) {
+      setState(() {
+        _searchQuery = q.trim().toLowerCase();
+        _searchController.text = q;
+        _currentPage = 0;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   String _randPassword(int len) {
     const chars =
@@ -40,32 +71,19 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FBFF),
+      backgroundColor: const Color(0xFFF2F4F8),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Elevi',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF4B83B2),
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Gestionează și monitorizează înscrierile elevilor, starea prezenței și detaliile conturilor acestora dintr-o vizualizare centrală.',
-              style: TextStyle(fontSize: 13, color: Color(0xFF659BC5)),
-            ),
-            const SizedBox(height: 20),
+            _buildStudentStats(),
+            const SizedBox(height: 16),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFD4E2EC), width: 1),
+                  border: Border.all(color: const Color(0xFFE8EAF2), width: 1),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.04),
@@ -77,32 +95,101 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(40, 16, 40, 16),
-                      decoration: const BoxDecoration(color: Color(0xFFF2F6FA)),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(32, 28, 32, 0),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Expanded(flex: 5, child: _colHeader('NUME ELEV')),
-                          Expanded(
-                            flex: 2,
-                            child: Center(child: _colHeader('CLASĂ')),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Student directory',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Manage enrollments, attendance and account details.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF7A7E9A),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
-                          Expanded(
-                            flex: 4,
-                            child: Center(child: _colHeader('EMAIL')),
+                          const Spacer(),
+                          SizedBox(
+                            width: 260,
+                            height: 40,
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (val) => setState(() {
+                                _searchQuery = val.trim().toLowerCase();
+                                _currentPage = 0;
+                              }),
+                              decoration: InputDecoration(
+                                hintText: 'Search...',
+                                hintStyle: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFFB0B8C8),
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.search_rounded,
+                                  size: 18,
+                                  color: Color(0xFFB0B8C8),
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFFF2F4F8),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 0,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                            ),
                           ),
-                          Expanded(
-                            flex: 2,
-                            child: Center(child: _colHeader('STATUS')),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Center(child: _colHeader('SETĂRI')),
+                          const SizedBox(width: 12),
+                          TextButton(
+                            onPressed: () => showAdminCreateUserDialog(context, lockedRole: 'student'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color(0xFF2848B0),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                            child: const Text(
+                              '+ Add student',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const Divider(height: 1, color: Color(0xFFDEECF7)),
+                    const SizedBox(height: 18),
+                    const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(32, 14, 32, 14),
+                      child: Row(
+                        children: [
+                          Expanded(flex: 5, child: _colHeader('STUDENT')),
+                          Expanded(flex: 2, child: _colHeader('CLASS')),
+                          Expanded(flex: 4, child: Center(child: _colHeader('EMAIL'))),
+                          const SizedBox(width: 30),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFE8EAF2)),
                     Expanded(
                       child: StreamBuilder<QuerySnapshot>(
                         stream: FirebaseFirestore.instance
@@ -211,15 +298,12 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                             children: [
                               Expanded(
                                 child: ListView.separated(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    40,
-                                    16,
-                                    40,
-                                    0,
-                                  ),
+                                  padding: EdgeInsets.zero,
                                   itemCount: visibleDocs.length,
-                                  separatorBuilder: (_, _) =>
-                                      const SizedBox(height: 12),
+                                  separatorBuilder: (_, _) => const Divider(
+                                    height: 1,
+                                    color: Color(0xFFE8EAF2),
+                                  ),
                                   itemBuilder: (_, i) {
                                     final d = visibleDocs[i];
                                     final data =
@@ -256,14 +340,31 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                 '')
                                             .toString();
 
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
+                                    return InkWell(
+                                      onTap: () => _openStudentDialog(
+                                        context,
+                                        uid: uid,
+                                        username: username,
+                                        fullName: fullName,
+                                        classId: classId,
+                                        inSchool: inSchool,
+                                        status: status,
+                                        onboardingComplete: onboardingComplete,
+                                        emailVerified: emailVerified,
+                                        passwordChanged: passwordChanged,
+                                        email: email,
+                                        parentUsernames: parentUsernames,
+                                        photoUrl: photoUrl,
                                       ),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
+                                      hoverColor: const Color(0xFFF7F8FA),
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          32, 16, 32, 16,
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
                                           Expanded(
                                             flex: 5,
                                             child: Row(
@@ -330,13 +431,13 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                           Expanded(
                                             flex: 2,
                                             child: Align(
-                                              alignment: Alignment.center,
+                                              alignment: Alignment.centerLeft,
                                               child: classId.isNotEmpty
                                                   ? Container(
                                                       padding:
                                                           const EdgeInsets.symmetric(
-                                                            horizontal: 14,
-                                                            vertical: 6,
+                                                            horizontal: 12,
+                                                            vertical: 5,
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
@@ -374,82 +475,20 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(
                                                 fontSize: 13,
-                                                color: Color(0xFF5789B2),
+                                                color: Color(0xFF111111),
                                               ),
                                             ),
                                           ),
-                                          Expanded(
-                                            flex: 2,
-                                            child: Align(
-                                              alignment: Alignment.center,
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 14,
-                                                      vertical: 6,
-                                                    ),
-                                                decoration: BoxDecoration(
-                                                  color: inSchool
-                                                      ? const Color(0xFFD9E6F1)
-                                                      : const Color(0xFFFDEBEB),
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                ),
-                                                child: Text(
-                                                  inSchool
-                                                      ? 'ÎN INCINTĂ'
-                                                      : 'ÎN AFARA INCINTEI',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: inSchool
-                                                        ? const Color(
-                                                            0xFF5094CD,
-                                                          )
-                                                        : const Color(
-                                                            0xFFD32F2F,
-                                                          ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 1,
-                                            child: Center(
-                                              child: IconButton(
-                                                icon: const Icon(
-                                                  Icons.settings_outlined,
-                                                  color: Color(0xFF424242),
-                                                  size: 22,
-                                                ),
-                                                onPressed: () =>
-                                                    _openStudentDialog(
-                                                      context,
-                                                      uid: uid,
-                                                      username: username,
-                                                      fullName: fullName,
-                                                      classId: classId,
-                                                      inSchool: inSchool,
-                                                      status: status,
-                                                      onboardingComplete:
-                                                          onboardingComplete,
-                                                      emailVerified:
-                                                          emailVerified,
-                                                      passwordChanged:
-                                                          passwordChanged,
-                                                      email: email,
-                                                      parentUsernames:
-                                                          parentUsernames,
-                                                      photoUrl: photoUrl,
-                                                    ),
-                                              ),
-                                            ),
+                                          const SizedBox(width: 8),
+                                          const Icon(
+                                            Icons.chevron_right_rounded,
+                                            color: Color(0xFFB0B8C8),
+                                            size: 22,
                                           ),
                                         ],
                                       ),
-                                    );
+                                    ),
+                                  );
                                   },
                                 ),
                               ),
@@ -656,11 +695,183 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
       style: const TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
-        color: Color(0xFF0688FF),
+        color: Color(0xFF111111),
         letterSpacing: 1.2,
       ),
     );
   }
+
+  Widget _buildStudentStats() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .where('role', isEqualTo: 'student')
+          .snapshots(),
+      builder: (context, studentSnap) {
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .where('role', isEqualTo: 'parent')
+              .snapshots(),
+          builder: (context, parentSnap) {
+            final students = studentSnap.data?.docs ?? [];
+            final parents = parentSnap.data?.docs ?? [];
+            final loaded = studentSnap.hasData && parentSnap.hasData;
+
+            final total = students.length;
+            final configured = students
+                .where((d) =>
+                    (d.data() as Map<String, dynamic>)['onboardingComplete'] ==
+                    true)
+                .length;
+            final notConfigured = total - configured;
+
+            final linkedIds = <String>{};
+            for (final p in parents) {
+              final children = (p.data() as Map<String, dynamic>)['children'];
+              if (children is List) {
+                for (final id in children) {
+                  linkedIds.add(id.toString());
+                }
+              }
+            }
+            final withParent = students
+                .where((d) => linkedIds.contains(d.id))
+                .length;
+
+            return Row(
+              children: [
+                Expanded(
+                  child: _statCard(
+                    icon: Icons.people_rounded,
+                    iconBg: const Color(0xFFEEF1FB),
+                    iconColor: const Color(0xFF2848B0),
+                    label: 'TOTAL STUDENTS',
+                    value: loaded ? '$total' : '—',
+                    subtitle: 'Enrolled this year',
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: _statCard(
+                    icon: Icons.verified_user_rounded,
+                    iconBg: const Color(0xFFEDF7F0),
+                    iconColor: const Color(0xFF2E8B57),
+                    label: 'ACCOUNT CONFIGURED',
+                    value: loaded ? '$configured' : '—',
+                    subtitle: loaded && total > 0
+                        ? '${((configured / total) * 100).round()}% done'
+                        : 'No data',
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: _statCard(
+                    icon: Icons.family_restroom_rounded,
+                    iconBg: const Color(0xFFF3EDFB),
+                    iconColor: const Color(0xFF7B4FCC),
+                    label: 'PARENT LINKED',
+                    value: loaded ? '$withParent' : '—',
+                    subtitle: loaded && total > 0
+                        ? '${total - withParent} without parent'
+                        : 'No data',
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: _statCard(
+                    icon: Icons.warning_amber_rounded,
+                    iconBg: const Color(0xFFFFF8E8),
+                    iconColor: const Color(0xFFF5A623),
+                    label: 'NOT CONFIGURED',
+                    value: loaded ? '$notConfigured' : '—',
+                    subtitle: notConfigured == 0 ? 'All set up' : 'Pending setup',
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _statCard({
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+    required String label,
+    required String value,
+    required String subtitle,
+  }) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2848B0).withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF9BA3B8),
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF111111),
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF9BA3B8),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
 
   Future<void> _openStudentDialog(
     BuildContext context, {

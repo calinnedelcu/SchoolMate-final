@@ -29,12 +29,12 @@ class _SecretariatGlobalMessagesPageState
   Future<void> _sendGlobalMessage() async {
     final message = _messageController.text.trim();
     if (message.isEmpty) {
-      _showSnack('Scrie un mesaj înainte de trimitere.');
+      _showSnack('Write a message before sending.');
       return;
     }
 
     if (!_sendToStudents && !_sendToParents && !_sendToTeachers) {
-      _showSnack('Selectează cel puțin un destinatar.');
+      _showSnack('Select at least one recipient.');
       return;
     }
 
@@ -65,7 +65,7 @@ class _SecretariatGlobalMessagesPageState
             senderName: senderName,
             createdAt: now,
             broadcastId: broadcastId,
-            audienceLabel: 'Toți elevii',
+            audienceLabel: 'All students',
           ),
         );
       }
@@ -84,7 +84,7 @@ class _SecretariatGlobalMessagesPageState
             senderName: senderName,
             createdAt: now,
             broadcastId: broadcastId,
-            audienceLabel: 'Toți părinții',
+            audienceLabel: 'All parents',
           ),
         );
       }
@@ -103,7 +103,7 @@ class _SecretariatGlobalMessagesPageState
             senderName: senderName,
             createdAt: now,
             broadcastId: broadcastId,
-            audienceLabel: 'Toți diriginții',
+            audienceLabel: 'All homeroom teachers',
           ),
         );
       }
@@ -111,11 +111,11 @@ class _SecretariatGlobalMessagesPageState
       await _writeInChunks(drafts);
 
       if (!mounted) return;
-      _showSnack('Mesaj global trimis către rolurile selectate.');
+      _showSnack('Global message sent to selected roles.');
       _messageController.clear();
     } catch (error) {
       if (!mounted) return;
-      _showSnack('Eroare la trimitere: $error');
+      _showSnack('Error sending: $error');
     } finally {
       if (mounted) {
         setState(() => _sending = false);
@@ -155,14 +155,19 @@ class _SecretariatGlobalMessagesPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF84B0D2),
+      backgroundColor: const Color(0xFF2848B0),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF84B0D2),
-        iconTheme: const IconThemeData(color: Colors.white),
+        toolbarHeight: 88,
+        backgroundColor: const Color(0xFF2848B0),
+        iconTheme: const IconThemeData(color: Colors.white, size: 28),
         elevation: 0,
         title: const Text(
-          'Mesagerie Globală',
-          style: TextStyle(color: Colors.white),
+          'Global Messaging',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: Container(
@@ -192,7 +197,7 @@ class _SecretariatGlobalMessagesPageState
                   ],
                 ),
                 child: const Text(
-                  'Mesajul va fi trimis în căsuțele existente de mesaje, exact ca fluxul de cereri.',
+                  'The message will be sent to existing inboxes, just like the requests flow.',
                   style: TextStyle(
                     fontSize: 14,
                     color: Color(0xFF5A80AD),
@@ -219,7 +224,7 @@ class _SecretariatGlobalMessagesPageState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Destinatari',
+                      'Recipients',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -230,7 +235,7 @@ class _SecretariatGlobalMessagesPageState
                     CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
                       value: _sendToStudents,
-                      title: const Text('Elevi'),
+                      title: const Text('Students'),
                       onChanged: (value) {
                         setState(() => _sendToStudents = value ?? false);
                       },
@@ -238,7 +243,7 @@ class _SecretariatGlobalMessagesPageState
                     CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
                       value: _sendToParents,
-                      title: const Text('Părinți'),
+                      title: const Text('Parents'),
                       onChanged: (value) {
                         setState(() => _sendToParents = value ?? false);
                       },
@@ -246,7 +251,7 @@ class _SecretariatGlobalMessagesPageState
                     CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
                       value: _sendToTeachers,
-                      title: const Text('Diriginți'),
+                      title: const Text('Homeroom Teachers'),
                       onChanged: (value) {
                         setState(() => _sendToTeachers = value ?? false);
                       },
@@ -257,8 +262,8 @@ class _SecretariatGlobalMessagesPageState
                       minLines: 5,
                       maxLines: 10,
                       decoration: InputDecoration(
-                        labelText: 'Mesaj',
-                        hintText: 'Scrie mesajul ce va apărea în inbox.',
+                        labelText: 'Message',
+                        hintText: 'Write the message that will appear in inbox.',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -280,12 +285,12 @@ class _SecretariatGlobalMessagesPageState
                               )
                             : const Icon(Icons.send_rounded),
                         label: Text(
-                          'Trimite global',
+                          'Send globally',
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6AA2CE),
+                          backgroundColor: const Color(0xFF2848B0),
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: const Color(0xFF6AA2CE),
+                          disabledBackgroundColor: const Color(0xFF2848B0),
                           disabledForegroundColor: Colors.white,
                           minimumSize: const Size.fromHeight(50),
                           shape: RoundedRectangleBorder(
@@ -347,7 +352,7 @@ class _SecretariatMessageDraft {
       'recipientName': '',
       'recipientUsername': '',
       'message': message,
-      'title': 'Mesaj Secretariat',
+      'title': 'Secretariat Message',
       'createdAt': createdAt,
       'senderUid': senderUid,
       'senderName': senderName,

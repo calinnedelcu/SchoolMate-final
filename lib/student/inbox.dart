@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show ImageFilter;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firster/student/meniu.dart';
@@ -229,6 +230,7 @@ class _InboxScreenState extends State<InboxScreen> {
           statusBackground: const Color(0xFFDDE0EC),
           statusForeground: _primary,
           sortAt: requestedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+          raw: data,
         );
       case 'rejected':
         return _InboxCardData(
@@ -245,6 +247,7 @@ class _InboxScreenState extends State<InboxScreen> {
           statusBackground: const Color(0xFFF0D0D8),
           statusForeground: const Color(0xFFB03040),
           sortAt: requestedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+          raw: data,
         );
       case 'expired':
         return _InboxCardData(
@@ -261,6 +264,7 @@ class _InboxScreenState extends State<InboxScreen> {
           statusBackground: const Color(0xFFF6F0D9),
           statusForeground: const Color(0xFF8A6A1D),
           sortAt: requestedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+          raw: data,
         );
       default:
         return _InboxCardData(
@@ -279,6 +283,7 @@ class _InboxScreenState extends State<InboxScreen> {
           statusBackground: const Color(0xFFDDE0EC),
           statusForeground: const Color(0xFF7A7E9A),
           sortAt: requestedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+          raw: data,
         );
     }
   }
@@ -346,6 +351,7 @@ class _InboxScreenState extends State<InboxScreen> {
       statusBackground: iconBg,
       statusForeground: iconFg,
       sortAt: createdAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+      raw: data,
     );
   }
 
@@ -359,6 +365,67 @@ class _InboxScreenState extends State<InboxScreen> {
     final myClass = (AppSession.classId ?? '').trim();
     if (myClass.isEmpty) return false;
     return audience.contains(myClass);
+  }
+
+  void _showCardDetailSheet(BuildContext context, _InboxCardData data) {
+    showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Close',
+      barrierColor: const Color(0xCC0A0F2A),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (_, _, _) => _InboxCardDetailDialog(data: data),
+      transitionBuilder: (_, anim, _, child) {
+        final curved = CurvedAnimation(
+          parent: anim,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.92, end: 1.0).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  void _showVolunteerDetailSheet(
+    BuildContext context,
+    _VolunteerInboxData data,
+  ) {
+    showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Close',
+      barrierColor: const Color(0xCC0A0F2A),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (dlgCtx, _, _) => _VolunteerDetailDialog(
+        data: data,
+        onSignUp: data.alreadySignedUp
+            ? null
+            : () async {
+                Navigator.of(dlgCtx).pop();
+                await _signUpVolunteer(data.docId, data.raw);
+              },
+      ),
+      transitionBuilder: (_, anim, _, child) {
+        final curved = CurvedAnimation(
+          parent: anim,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.92, end: 1.0).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _signUpVolunteer(
@@ -630,6 +697,7 @@ class _InboxScreenState extends State<InboxScreen> {
                     key: _itemKeys.putIfAbsent(row.card!.docId, GlobalKey.new),
                     data: row.card!,
                     highlighted: _activeHighlightId == row.card!.docId,
+                    onTap: () => _showCardDetailSheet(context, row.card!),
                   ),
                 if (row.volunteer != null)
                   _VolunteerInboxTile(
@@ -640,6 +708,10 @@ class _InboxScreenState extends State<InboxScreen> {
                               row.volunteer!.docId,
                               row.volunteer!.raw,
                             ),
+                    onTap: () => _showVolunteerDetailSheet(
+                      context,
+                      row.volunteer!,
+                    ),
                   ),
                 const SizedBox(height: 12),
               ],
@@ -899,11 +971,13 @@ class _InboxHeaderState extends State<_InboxHeader> {
 class _InboxRequestTile extends StatefulWidget {
   final _InboxCardData data;
   final bool highlighted;
+  final VoidCallback? onTap;
 
   const _InboxRequestTile({
     super.key,
     required this.data,
     this.highlighted = false,
+    this.onTap,
   });
 
   @override
@@ -961,12 +1035,13 @@ class _InboxRequestTileState extends State<_InboxRequestTile>
           borderRadius: BorderRadius.circular(16),
         ),
         padding: const EdgeInsets.only(left: 4),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
+        child: Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            onTap: widget.onTap,
             borderRadius: BorderRadius.circular(16),
-          ),
-          child: ClipRRect(
+            child: ClipRRect(
             borderRadius: BorderRadius.circular(14),
             child: IntrinsicHeight(
               child: Row(
@@ -1067,6 +1142,7 @@ class _InboxRequestTileState extends State<_InboxRequestTile>
               ),
             ),
           ),
+          ),
         ),
       ),
     );
@@ -1121,6 +1197,7 @@ class _InboxCardData {
   final Color? statusBackground;
   final Color? statusForeground;
   final DateTime sortAt;
+  final Map<String, dynamic> raw;
 
   const _InboxCardData({
     required this.docId,
@@ -1136,6 +1213,7 @@ class _InboxCardData {
     this.statusBackground,
     this.statusForeground,
     required this.sortAt,
+    this.raw = const <String, dynamic>{},
   });
 }
 
@@ -1167,8 +1245,13 @@ class _VolunteerInboxData {
 class _VolunteerInboxTile extends StatelessWidget {
   final _VolunteerInboxData data;
   final VoidCallback? onSignUp;
+  final VoidCallback? onTap;
 
-  const _VolunteerInboxTile({required this.data, required this.onSignUp});
+  const _VolunteerInboxTile({
+    required this.data,
+    required this.onSignUp,
+    this.onTap,
+  });
 
   String _formatDate(DateTime date) {
     const months = <String>[
@@ -1198,12 +1281,13 @@ class _VolunteerInboxTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.only(left: 4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-        ),
-        child: ClipRRect(
+          child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: Stack(
             children: [
@@ -1355,6 +1439,7 @@ class _VolunteerInboxTile extends StatelessWidget {
               ),
             ],
           ),
+          ),
         ),
       ),
     );
@@ -1380,6 +1465,612 @@ class _MetaChip extends StatelessWidget {
             color: _textMuted,
             fontSize: 12,
             fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// DETAIL SHEETS — bottom sheets shown on tap to display the full message body
+// and any extra fields (location, dates, link, audience, sender).
+// ────────────────────────────────────────────────────────────────────────────
+
+String _formatLongDate(DateTime d) {
+  const months = <String>[
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+  return '${months[d.month - 1]} ${d.day}, ${d.year}';
+}
+
+String _formatLongDateTime(DateTime d) {
+  final hh = d.hour.toString().padLeft(2, '0');
+  final mm = d.minute.toString().padLeft(2, '0');
+  return '${_formatLongDate(d)} · $hh:$mm';
+}
+
+String _categoryLabel(_InboxFilter f) {
+  switch (f) {
+    case _InboxFilter.requests:
+      return 'REQUEST';
+    case _InboxFilter.announcements:
+      return 'ANNOUNCEMENT';
+    case _InboxFilter.competition:
+      return 'COMPETITION';
+    case _InboxFilter.camp:
+      return 'CAMP';
+    case _InboxFilter.volunteer:
+      return 'VOLUNTEERING';
+    case _InboxFilter.all:
+      return '';
+  }
+}
+
+Widget _dialogShell({
+  required BuildContext context,
+  required Color accent,
+  required Color accentBg,
+  required IconData icon,
+  required String categoryText,
+  required String title,
+  required Widget body,
+  Widget? footer,
+}) {
+  final size = MediaQuery.sizeOf(context);
+  final maxW = size.width < 460 ? size.width - 32 : 420.0;
+  final maxH = size.height * 0.82;
+
+  return BackdropFilter(
+    filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+    child: Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxW, maxHeight: maxH),
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x40000000),
+                    blurRadius: 40,
+                    offset: Offset(0, 16),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Colored top header
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [accent, _lighten(accent, 0.12)],
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: const HeaderSparklesPainter(variant: 2),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 18, 12, 18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.20,
+                                      ),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          icon,
+                                          size: 14,
+                                          color: Colors.white,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          categoryText,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 0.8,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  IconButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).maybePop(),
+                                    splashRadius: 22,
+                                    icon: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.18,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(
+                                        Icons.close_rounded,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Text(
+                                  title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.3,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                width: 40,
+                                height: 3,
+                                decoration: BoxDecoration(
+                                  color: kPencilYellow,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Scrollable body
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                      child: body,
+                    ),
+                  ),
+                  if (footer != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+                      child: footer,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Color _lighten(Color c, double amount) {
+  final hsl = HSLColor.fromColor(c);
+  final l = (hsl.lightness + amount).clamp(0.0, 1.0);
+  return hsl.withLightness(l).toColor();
+}
+
+class _InboxCardDetailDialog extends StatelessWidget {
+  final _InboxCardData data;
+
+  const _InboxCardDetailDialog({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final raw = data.raw;
+    final eventDate = (raw['eventDate'] as Timestamp?)?.toDate();
+    final eventEndDate = (raw['eventEndDate'] as Timestamp?)?.toDate();
+    final requestedForDate =
+        (raw['requestedForDate'] as Timestamp?)?.toDate();
+    final createdAt = (raw['createdAt'] as Timestamp?)?.toDate();
+    final requestedAt = (raw['requestedAt'] as Timestamp?)?.toDate();
+    final location = (raw['location'] ?? '').toString().trim();
+    final link = (raw['link'] ?? '').toString().trim();
+    final senderName = (raw['senderName'] ?? '').toString().trim();
+    final audienceLabel = (raw['audienceLabel'] ?? '').toString().trim();
+
+    final accent = data.leadingForeground;
+
+    return _dialogShell(
+      context: context,
+      accent: accent,
+      accentBg: data.leadingBackground,
+      icon: data.leadingIcon,
+      categoryText: _categoryLabel(data.category),
+      title: data.title,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (eventDate != null ||
+              requestedForDate != null ||
+              location.isNotEmpty) ...[
+            Wrap(
+              spacing: 14,
+              runSpacing: 8,
+              children: [
+                if (eventDate != null)
+                  _MetaChip(
+                    icon: Icons.calendar_month_rounded,
+                    text: eventEndDate != null
+                        ? '${_formatLongDate(eventDate)} → ${_formatLongDate(eventEndDate)}'
+                        : _formatLongDate(eventDate),
+                  ),
+                if (requestedForDate != null)
+                  _MetaChip(
+                    icon: Icons.event_rounded,
+                    text: _formatLongDate(requestedForDate),
+                  ),
+                if (location.isNotEmpty)
+                  _MetaChip(
+                    icon: Icons.place_outlined,
+                    text: location,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+          Text(
+            data.message,
+            style: const TextStyle(
+              color: _textDark,
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+            ),
+          ),
+          if (link.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            _DetailLinkBlock(link: link, accent: accent),
+          ],
+          const SizedBox(height: 14),
+          _DetailFooterMeta(
+            senderName: senderName,
+            audienceLabel: audienceLabel,
+            sentAt: createdAt ?? requestedAt,
+            statusLabel: data.statusLabel,
+            statusIcon: data.statusIcon,
+            statusBackground: data.statusBackground,
+            statusForeground: data.statusForeground,
+            isRequest: data.category == _InboxFilter.requests,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VolunteerDetailDialog extends StatelessWidget {
+  final _VolunteerInboxData data;
+  final VoidCallback? onSignUp;
+
+  const _VolunteerDetailDialog({required this.data, required this.onSignUp});
+
+  @override
+  Widget build(BuildContext context) {
+    const accent = Color(0xFF2848B0);
+    const accentBg = Color(0xFFE5EBF8);
+
+    final raw = data.raw;
+    final description = (raw['description'] ?? '').toString().trim();
+    final link = (raw['link'] ?? '').toString().trim();
+    final maxParticipants = (raw['maxParticipants'] as num?)?.toInt();
+    final createdByName = (raw['createdByName'] ?? '').toString().trim();
+
+    return _dialogShell(
+      context: context,
+      accent: accent,
+      accentBg: accentBg,
+      icon: Icons.volunteer_activism_rounded,
+      categoryText: 'VOLUNTEERING',
+      title: data.title,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 14,
+            runSpacing: 8,
+            children: [
+              _MetaChip(
+                icon: Icons.calendar_month_rounded,
+                text: _formatLongDateTime(data.when),
+              ),
+              if (data.location.isNotEmpty)
+                _MetaChip(
+                  icon: Icons.place_outlined,
+                  text: data.location,
+                ),
+              if (data.hoursWorth > 0)
+                _MetaChip(
+                  icon: Icons.schedule_rounded,
+                  text: '${data.hoursWorth}h',
+                ),
+              if (maxParticipants != null && maxParticipants > 0)
+                _MetaChip(
+                  icon: Icons.groups_rounded,
+                  text: 'max $maxParticipants',
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            description.isEmpty
+                ? 'No additional description.'
+                : description,
+            style: const TextStyle(
+              color: _textDark,
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+            ),
+          ),
+          if (link.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            _DetailLinkBlock(link: link, accent: accent),
+          ],
+          if (createdByName.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                const Icon(
+                  Icons.person_outline_rounded,
+                  size: 16,
+                  color: _textMuted,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Posted by $createdByName',
+                    style: const TextStyle(
+                      color: _textMuted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+      footer: GestureDetector(
+        onTap: onSignUp,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            gradient: onSignUp == null
+                ? null
+                : const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF2848B0), Color(0xFF3460CC)],
+                  ),
+            color: onSignUp == null ? const Color(0xFFDDE0EC) : null,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                onSignUp == null
+                    ? Icons.check_circle_rounded
+                    : Icons.add_rounded,
+                color: onSignUp == null ? accent : Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                onSignUp == null ? 'Signed up' : 'Sign up',
+                style: TextStyle(
+                  color: onSignUp == null ? accent : Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DetailLinkBlock extends StatelessWidget {
+  final String link;
+  final Color accent;
+
+  const _DetailLinkBlock({required this.link, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2F4F8),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.link_rounded, size: 18, color: accent),
+          const SizedBox(width: 10),
+          Expanded(
+            child: SelectableText(
+              link,
+              style: TextStyle(
+                color: accent,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailFooterMeta extends StatelessWidget {
+  final String senderName;
+  final String audienceLabel;
+  final DateTime? sentAt;
+  final String? statusLabel;
+  final IconData? statusIcon;
+  final Color? statusBackground;
+  final Color? statusForeground;
+  final bool isRequest;
+
+  const _DetailFooterMeta({
+    required this.senderName,
+    required this.audienceLabel,
+    required this.sentAt,
+    required this.statusLabel,
+    required this.statusIcon,
+    required this.statusBackground,
+    required this.statusForeground,
+    required this.isRequest,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+
+    if (senderName.isNotEmpty) {
+      rows.add(
+        _FooterRow(
+          icon: Icons.person_outline_rounded,
+          text: senderName,
+        ),
+      );
+    }
+    if (audienceLabel.isNotEmpty) {
+      rows.add(
+        _FooterRow(
+          icon: Icons.groups_2_outlined,
+          text: audienceLabel,
+        ),
+      );
+    }
+    if (sentAt != null) {
+      rows.add(
+        _FooterRow(
+          icon: Icons.access_time_rounded,
+          text: _formatLongDateTime(sentAt!),
+        ),
+      );
+    }
+    if (isRequest && statusLabel != null) {
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: statusBackground ?? const Color(0xFFDDE0EC),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (statusIcon != null)
+                  Icon(
+                    statusIcon,
+                    size: 15,
+                    color: statusForeground ?? _primary,
+                  ),
+                const SizedBox(width: 6),
+                Text(
+                  statusLabel!,
+                  style: TextStyle(
+                    color: statusForeground ?? _primary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8FB),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (int i = 0; i < rows.length; i++) ...[
+            if (i > 0) const SizedBox(height: 8),
+            rows[i],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _FooterRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _FooterRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: _textMuted),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: _textDark,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              height: 1.35,
+            ),
           ),
         ),
       ],

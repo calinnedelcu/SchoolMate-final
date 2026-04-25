@@ -58,10 +58,10 @@ Widget _buildDialogStatusBanner(String message, bool isError) {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: isError ? const Color(0xFFFFEBEB) : const Color(0xFFDEECF7),
+        color: isError ? const Color(0xFFF0D0D8) : const Color(0xFFE8EAF2),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: isError ? const Color(0xFFE57373) : const Color(0xFF86B2D6),
+          color: isError ? const Color(0xFFB03040) : const Color(0xFF2848B0),
         ),
       ),
       child: Row(
@@ -69,7 +69,7 @@ Widget _buildDialogStatusBanner(String message, bool isError) {
           Icon(
             isError ? Icons.error_outline : Icons.check_circle_outline,
             size: 16,
-            color: isError ? const Color(0xFFE53935) : const Color(0xFF5F9CCF),
+            color: isError ? const Color(0xFFB03040) : const Color(0xFF5F9CCF),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -80,7 +80,7 @@ Widget _buildDialogStatusBanner(String message, bool isError) {
                 fontWeight: FontWeight.w600,
                 color: isError
                     ? const Color(0xFFB71C1C)
-                    : const Color(0xFF378BD2),
+                    : const Color(0xFF2848B0),
               ),
             ),
           ),
@@ -154,12 +154,12 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                           width: 52,
                           height: 52,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFDEBEB),
+                            color: const Color(0xFFF0D0D8),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Icon(
                             Icons.delete_outline_rounded,
-                            color: Color(0xFFD92D20),
+                            color: Color(0xFFB03040),
                             size: 26,
                           ),
                         ),
@@ -173,7 +173,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF4B83B2),
+                                  color: Color(0xFF2848B0),
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -182,7 +182,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                                 style: const TextStyle(
                                   fontSize: 13,
                                   height: 1.4,
-                                  color: Color(0xFF93ABBD),
+                                  color: Color(0xFF7A7E9A),
                                 ),
                               ),
                             ],
@@ -195,9 +195,9 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F9FC),
+                        color: const Color(0xFFF2F4F8),
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: const Color(0xFFD8E5EF)),
+                        border: Border.all(color: const Color(0xFFE8EAF2)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +208,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1,
-                              color: Color(0xFF89A2B7),
+                              color: Color(0xFF7A7E9A),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -218,7 +218,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFE9E7),
+                              color: const Color(0xFFF0D0D8),
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
@@ -226,7 +226,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFFB42318),
+                                color: Color(0xFFB03040),
                               ),
                             ),
                           ),
@@ -235,7 +235,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                             selectedSubtitle,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF869FB4),
+                              color: Color(0xFF7A7E9A),
                               height: 1.4,
                             ),
                           ),
@@ -250,7 +250,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                             onPressed: () => Navigator.of(context).pop(false),
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              side: const BorderSide(color: Color(0xFFCDDDEA)),
+                              side: const BorderSide(color: Color(0xFFE8EAF2)),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
@@ -263,7 +263,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                           child: FilledButton(
                             onPressed: () => Navigator.of(context).pop(true),
                             style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFFD92D20),
+                              backgroundColor: const Color(0xFFB03040),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -397,7 +397,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
       Color(0xFFFF8A65),
       Color(0xFFADCAE3),
       Color(0xFFCE93D8),
-      Color(0xFF80DEEA),
+      Color(0xFF84D0E4),
       Color(0xFFFFCC80),
       Color(0xFF8FAFC4),
     ];
@@ -500,7 +500,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               width: 52,
                               height: 52,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE6EFF7),
+                                color: const Color(0xFFE8EAF2),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Icon(
@@ -519,7 +519,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF4B83B2),
+                                      color: Color(0xFF2848B0),
                                     ),
                                   ),
                                   SizedBox(height: 6),
@@ -528,7 +528,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     style: TextStyle(
                                       fontSize: 13,
                                       height: 1.4,
-                                      color: Color(0xFF93ABBD),
+                                      color: Color(0xFF7A7E9A),
                                     ),
                                   ),
                                 ],
@@ -541,9 +541,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF5F9FC),
+                            color: const Color(0xFFF2F4F8),
                             borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: const Color(0xFFD8E5EF)),
+                            border: Border.all(color: const Color(0xFFE8EAF2)),
                           ),
                           child: const Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -554,7 +554,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1,
-                                  color: Color(0xFF89A2B7),
+                                  color: Color(0xFF7A7E9A),
                                 ),
                               ),
                               SizedBox(height: 10),
@@ -571,7 +571,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 'Actiunea va inchide sesiunea curenta si te va duce inapoi la ecranul principal de autentificare.',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF869FB4),
+                                  color: Color(0xFF7A7E9A),
                                   height: 1.4,
                                 ),
                               ),
@@ -591,7 +591,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     vertical: 16,
                                   ),
                                   side: const BorderSide(
-                                    color: Color(0xFFCDDDEA),
+                                    color: Color(0xFFE8EAF2),
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
@@ -614,7 +614,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         ).popUntil((route) => route.isFirst);
                                       },
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFF238DE8),
+                                  backgroundColor: const Color(0xFF2848B0),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
@@ -771,12 +771,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             width: 52,
                             height: 52,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE6EFF7),
+                              color: const Color(0xFFE8EAF2),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(
                               Icons.add_business_rounded,
-                              color: Color(0xFF378BD2),
+                              color: Color(0xFF2848B0),
                               size: 26,
                             ),
                           ),
@@ -790,7 +790,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF4B83B2),
+                                    color: Color(0xFF2848B0),
                                   ),
                                 ),
                                 SizedBox(height: 6),
@@ -799,7 +799,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   style: TextStyle(
                                     fontSize: 13,
                                     height: 1.4,
-                                    color: Color(0xFF93ABBD),
+                                    color: Color(0xFF7A7E9A),
                                   ),
                                 ),
                               ],
@@ -817,7 +817,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           hintText: 'Ex: 9A, 10B, 11 INFO',
                           errorText: errorText,
                           filled: true,
-                          fillColor: const Color(0xFFF2F6FA),
+                          fillColor: const Color(0xFFF2F4F8),
                           prefixIcon: const Icon(
                             Icons.class_outlined,
                             color: Color(0xFF85A7C2),
@@ -837,7 +837,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: const BorderSide(
-                              color: Color(0xFF699FC9),
+                              color: Color(0xFF7A7E9A),
                               width: 1.5,
                             ),
                           ),
@@ -863,7 +863,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   vertical: 16,
                                 ),
                                 side: const BorderSide(
-                                  color: Color(0xFFCDDDEA),
+                                  color: Color(0xFFE8EAF2),
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
@@ -913,7 +913,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       }
                                     },
                               style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFF238DE8),
+                                backgroundColor: const Color(0xFF2848B0),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
@@ -1156,14 +1156,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               style: TextStyle(
                                 fontSize: 27,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF4B83B2),
+                                color: Color(0xFF2848B0),
                               ),
                             ),
                             const Spacer(),
                             TextButton(
                               onPressed: busy ? null : () => Navigator.pop(ctx),
                               style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFF809CB3),
+                                foregroundColor: const Color(0xFF7A7E9A),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20,
                                   vertical: 14,
@@ -1222,7 +1222,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       if (ctx.mounted) Navigator.pop(ctx);
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4C8EC5),
+                                backgroundColor: const Color(0xFF2848B0),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(
@@ -1276,7 +1276,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w800,
-                                                  color: Color(0xFF4B83B2),
+                                                  color: Color(0xFF2848B0),
                                                 ),
                                               ),
                                               const Spacer(),
@@ -1288,8 +1288,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: onboardingComplete
-                                                      ? const Color(0xFFE3EBF2)
-                                                      : const Color(0xFFFFEBEB),
+                                                      ? const Color(0xFFE8EAF2)
+                                                      : const Color(0xFFF0D0D8),
                                                   border: Border.all(
                                                     color: onboardingComplete
                                                         ? const Color(
@@ -1357,7 +1357,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF4B8BC1),
+                                              color: Color(0xFF2848B0),
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -1369,7 +1369,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFE2EBF2),
+                                              color: const Color(0xFFE8EAF2),
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -1459,7 +1459,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
                                                         color: Color(
-                                                          0xFF4B8BC1,
+                                                          0xFF2848B0,
                                                         ),
                                                       ),
                                                     ),
@@ -1474,7 +1474,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
-                                                          0xFFF2F6FA,
+                                                          0xFFF2F4F8,
                                                         ),
                                                         borderRadius:
                                                             BorderRadius.circular(
@@ -1486,7 +1486,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                         style: const TextStyle(
                                                           fontSize: 16,
                                                           color: Color(
-                                                            0xFF555555,
+                                                            0xFF1A2050,
                                                           ),
                                                         ),
                                                       ),
@@ -1508,7 +1508,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
                                                         color: Color(
-                                                          0xFF4B8BC1,
+                                                          0xFF2848B0,
                                                         ),
                                                       ),
                                                     ),
@@ -1523,7 +1523,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
-                                                          0xFFF2F6FA,
+                                                          0xFFF2F4F8,
                                                         ),
                                                         borderRadius:
                                                             BorderRadius.circular(
@@ -1535,7 +1535,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                         style: const TextStyle(
                                                           fontSize: 16,
                                                           color: Color(
-                                                            0xFF555555,
+                                                            0xFF1A2050,
                                                           ),
                                                         ),
                                                       ),
@@ -1739,7 +1739,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                             ),
                                                         decoration: BoxDecoration(
                                                           color: const Color(
-                                                            0xFFE2EBF2,
+                                                            0xFFE8EAF2,
                                                           ),
                                                           borderRadius:
                                                               BorderRadius.circular(
@@ -1785,7 +1785,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                   .keyboard_arrow_down_rounded,
                                                               size: 20,
                                                               color: Color(
-                                                                0xFF8BAFCB,
+                                                                0xFF7A7E9A,
                                                               ),
                                                             ),
                                                             items: [
@@ -1800,7 +1800,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                     fontSize:
                                                                         16,
                                                                     color: Color(
-                                                                      0xFF8BAFCB,
+                                                                      0xFF7A7E9A,
                                                                     ),
                                                                   ),
                                                                 ),
@@ -1863,7 +1863,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                 FontWeight.w700,
                                                             letterSpacing: 1,
                                                             color: Color(
-                                                              0xFF4B8BC1,
+                                                              0xFF2848B0,
                                                             ),
                                                           ),
                                                         ),
@@ -1967,7 +1967,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                 FontWeight.w700,
                                                             letterSpacing: 1,
                                                             color: Color(
-                                                              0xFF4B8BC1,
+                                                              0xFF2848B0,
                                                             ),
                                                           ),
                                                         ),
@@ -1985,7 +1985,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                               ),
                                                           decoration: BoxDecoration(
                                                             color: const Color(
-                                                              0xFFF2F6FA,
+                                                              0xFFF2F4F8,
                                                             ),
                                                             borderRadius:
                                                                 BorderRadius.circular(
@@ -2001,7 +2001,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                     fontSize:
                                                                         16,
                                                                     color: Color(
-                                                                      0xFF555555,
+                                                                      0xFF1A2050,
                                                                     ),
                                                                   ),
                                                                 ),
@@ -2011,7 +2011,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                     .keyboard_arrow_down_rounded,
                                                                 size: 18,
                                                                 color: Color(
-                                                                  0xFF8BAFCB,
+                                                                  0xFF7A7E9A,
                                                                 ),
                                                               ),
                                                             ],
@@ -2027,7 +2027,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                             fontStyle: FontStyle
                                                                 .italic,
                                                             color: Color(
-                                                              0xFF555555,
+                                                              0xFF1A2050,
                                                             ),
                                                           ),
                                                         ),
@@ -2045,7 +2045,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF4B8BC1),
+                                              color: Color(0xFF2848B0),
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -2077,7 +2077,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: const Color(
-                                                    0xFFE2EBF2,
+                                                    0xFFE8EAF2,
                                                   ),
                                                   borderRadius:
                                                       BorderRadius.circular(10),
@@ -2110,7 +2110,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       Icons
                                                           .keyboard_arrow_down_rounded,
                                                       size: 20,
-                                                      color: Color(0xFF8BAFCB),
+                                                      color: Color(0xFF7A7E9A),
                                                     ),
                                                     items: allClassesList
                                                         .map(
@@ -2215,7 +2215,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               ? Text(
                                                   _initials(currentFullName),
                                                   style: const TextStyle(
-                                                    color: Color(0xFF1A1A1A),
+                                                    color: Color(0xFF1A2050),
                                                     fontWeight: FontWeight.w800,
                                                     fontSize: 34,
                                                   ),
@@ -2253,7 +2253,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       ),
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF7B2D5E),
+                                      backgroundColor: const Color(0xFFB03040),
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       padding: const EdgeInsets.symmetric(
@@ -2343,7 +2343,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               const SizedBox(height: 44),
                               const Divider(
                                 height: 1,
-                                color: Color(0xFFEEEEEE),
+                                color: Color(0xFFE8EAF2),
                               ),
                               const SizedBox(height: 28),
                               SizedBox(
@@ -2356,7 +2356,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             height: 16,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              color: Color(0xFFD92D20),
+                                              color: Color(0xFFB03040),
                                             ),
                                           )
                                         : const Icon(
@@ -2372,9 +2372,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             if (states.contains(
                                               WidgetState.disabled,
                                             )) {
-                                              return const Color(0xFFED8F88);
+                                              return const Color(0xFFB03040);
                                             }
-                                            return const Color(0xFFD92D20);
+                                            return const Color(0xFFB03040);
                                           }),
                                       backgroundColor:
                                           WidgetStateProperty.resolveWith((
@@ -2383,12 +2383,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             if (states.contains(
                                               WidgetState.hovered,
                                             )) {
-                                              return const Color(0xFFF8E4E2);
+                                              return const Color(0xFFF0D0D8);
                                             }
                                             if (states.contains(
                                               WidgetState.pressed,
                                             )) {
-                                              return const Color(0xFFF3D6D3);
+                                              return const Color(0xFFF0D0D8);
                                             }
                                             return Colors.transparent;
                                           }),
@@ -2559,14 +2559,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             style: TextStyle(
                               fontSize: 27,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF4B83B2),
+                              color: Color(0xFF2848B0),
                             ),
                           ),
                           const Spacer(),
                           TextButton(
                             onPressed: busy ? null : () => Navigator.pop(ctx),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF809CB3),
+                              foregroundColor: const Color(0xFF7A7E9A),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
                                 vertical: 14,
@@ -2625,7 +2625,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     if (ctx.mounted) Navigator.pop(ctx);
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4C8EC5),
+                              backgroundColor: const Color(0xFF2848B0),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
@@ -2677,7 +2677,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.w800,
-                                              color: Color(0xFF4B83B2),
+                                              color: Color(0xFF2848B0),
                                             ),
                                           ),
                                           const Spacer(),
@@ -2688,8 +2688,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: onboardingComplete
-                                                  ? const Color(0xFFE3EBF2)
-                                                  : const Color(0xFFFFEBEB),
+                                                  ? const Color(0xFFE8EAF2)
+                                                  : const Color(0xFFF0D0D8),
                                               border: Border.all(
                                                 color: onboardingComplete
                                                     ? const Color(0xFFBFD1E1)
@@ -2750,7 +2750,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: 1,
-                                          color: Color(0xFF4B8BC1),
+                                          color: Color(0xFF2848B0),
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -2762,7 +2762,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         ),
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFE2EBF2),
+                                          color: const Color(0xFFE8EAF2),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -2847,7 +2847,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.w700,
                                                     letterSpacing: 1,
-                                                    color: Color(0xFF4B8BC1),
+                                                    color: Color(0xFF2848B0),
                                                   ),
                                                 ),
                                                 const SizedBox(height: 6),
@@ -2861,7 +2861,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       ),
                                                   decoration: BoxDecoration(
                                                     color: const Color(
-                                                      0xFFF2F6FA,
+                                                      0xFFF2F4F8,
                                                     ),
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -2872,7 +2872,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     username,
                                                     style: const TextStyle(
                                                       fontSize: 16,
-                                                      color: Color(0xFF555555),
+                                                      color: Color(0xFF1A2050),
                                                     ),
                                                   ),
                                                 ),
@@ -2891,7 +2891,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.w700,
                                                     letterSpacing: 1,
-                                                    color: Color(0xFF4B8BC1),
+                                                    color: Color(0xFF2848B0),
                                                   ),
                                                 ),
                                                 const SizedBox(height: 6),
@@ -2905,7 +2905,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       ),
                                                   decoration: BoxDecoration(
                                                     color: const Color(
-                                                      0xFFF2F6FA,
+                                                      0xFFF2F4F8,
                                                     ),
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -2916,7 +2916,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     email ?? '-',
                                                     style: const TextStyle(
                                                       fontSize: 16,
-                                                      color: Color(0xFF555555),
+                                                      color: Color(0xFF1A2050),
                                                     ),
                                                   ),
                                                 ),
@@ -2932,7 +2932,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: 1,
-                                          color: Color(0xFF4B8BC1),
+                                          color: Color(0xFF2848B0),
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -3002,7 +3002,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               vertical: 10,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFE2EBF2),
+                                              color: const Color(0xFFE8EAF2),
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -3031,7 +3031,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   Icons
                                                       .keyboard_arrow_down_rounded,
                                                   size: 20,
-                                                  color: Color(0xFF8BAFCB),
+                                                  color: Color(0xFF7A7E9A),
                                                 ),
                                                 items: availableClassIds
                                                     .map(
@@ -3116,7 +3116,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           ? Text(
                                               _initials(currentFullName),
                                               style: const TextStyle(
-                                                color: Color(0xFF1A1A1A),
+                                                color: Color(0xFF1A2050),
                                                 fontWeight: FontWeight.w800,
                                                 fontSize: 32,
                                               ),
@@ -3153,7 +3153,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF7B2D5E),
+                                    backgroundColor: const Color(0xFFB03040),
                                     foregroundColor: Colors.white,
                                     elevation: 0,
                                     padding: const EdgeInsets.symmetric(
@@ -3238,7 +3238,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               ),
                             ),
                             const SizedBox(height: 44),
-                            const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                            const Divider(height: 1, color: Color(0xFFE8EAF2)),
                             const SizedBox(height: 18),
                             SizedBox(
                               width: double.infinity,
@@ -3250,7 +3250,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           height: 16,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            color: Color(0xFFD92D20),
+                                            color: Color(0xFFB03040),
                                           ),
                                         )
                                       : const Icon(
@@ -3266,9 +3266,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           if (states.contains(
                                             WidgetState.disabled,
                                           )) {
-                                            return const Color(0xFFED8F88);
+                                            return const Color(0xFFB03040);
                                           }
-                                          return const Color(0xFFD92D20);
+                                          return const Color(0xFFB03040);
                                         }),
                                     backgroundColor:
                                         WidgetStateProperty.resolveWith((
@@ -3277,12 +3277,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           if (states.contains(
                                             WidgetState.hovered,
                                           )) {
-                                            return const Color(0xFFF8E4E2);
+                                            return const Color(0xFFF0D0D8);
                                           }
                                           if (states.contains(
                                             WidgetState.pressed,
                                           )) {
-                                            return const Color(0xFFF3D6D3);
+                                            return const Color(0xFFF0D0D8);
                                           }
                                           return Colors.transparent;
                                         }),
@@ -3409,12 +3409,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFDEBEB),
+                        color: const Color(0xFFF0D0D8),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
                         Icons.delete_outline_rounded,
-                        color: Color(0xFFD92D20),
+                        color: Color(0xFFB03040),
                         size: 26,
                       ),
                     ),
@@ -3428,7 +3428,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF4B83B2),
+                              color: Color(0xFF2848B0),
                             ),
                           ),
                           SizedBox(height: 6),
@@ -3437,7 +3437,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             style: TextStyle(
                               fontSize: 13,
                               height: 1.4,
-                              color: Color(0xFF93ABBD),
+                              color: Color(0xFF7A7E9A),
                             ),
                           ),
                         ],
@@ -3450,9 +3450,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F9FC),
+                    color: const Color(0xFFF2F4F8),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFD8E5EF)),
+                    border: Border.all(color: const Color(0xFFE8EAF2)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -3463,7 +3463,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1,
-                          color: Color(0xFF89A2B7),
+                          color: Color(0xFF7A7E9A),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -3473,7 +3473,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFE9E7),
+                          color: const Color(0xFFF0D0D8),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
@@ -3481,7 +3481,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFFB42318),
+                            color: Color(0xFFB03040),
                           ),
                         ),
                       ),
@@ -3490,7 +3490,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                         'Actiunea va elimina clasa din lista si va sterge datele asociate acesteia.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF869FB4),
+                          color: Color(0xFF7A7E9A),
                           height: 1.4,
                         ),
                       ),
@@ -3505,7 +3505,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                         onPressed: () => Navigator.of(ctx).pop(false),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Color(0xFFCDDDEA)),
+                          side: const BorderSide(color: Color(0xFFE8EAF2)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -3517,7 +3517,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                     Expanded(
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFFD92D20),
+                          backgroundColor: const Color(0xFFB03040),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -3594,468 +3594,1056 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
       );
     }
 
-    final body = Container(
-      color: const Color(0xFFF5FBFF),
-      child: Column(
-        children: [
-          if (!widget.embedded) const _ClassesTopBar(),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('classes')
-                  .snapshots(),
-              builder: (context, snap) {
-                if (snap.hasError) {
-                  return Center(
-                    child: SelectableText('Eroare clase:\n${snap.error}'),
-                  );
-                }
-                if (!snap.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final docs = [...snap.data!.docs]
-                  ..sort(
-                    (a, b) => _compareClassLabels(
-                      _classLabelFromDoc(a),
-                      _classLabelFromDoc(b),
-                    ),
-                  );
-
-                final snapshotIds = docs.map((doc) => doc.id).toSet();
-                _optimisticDeletedClassIds.removeWhere(
-                  (id) => !snapshotIds.contains(id),
-                );
-
-                final visibleDocs = docs
-                    .where(
-                      (doc) => !_optimisticDeletedClassIds.contains(doc.id),
-                    )
-                    .toList();
-
-                final classOptions =
-                    <String>{
-                          ...visibleDocs.map((doc) => doc.id),
-                          ..._optimisticClassIds,
-                        }
-                        .where(
-                          (classId) =>
-                              !_optimisticDeletedClassIds.contains(classId),
-                        )
-                        .toList()
-                      ..sort(_compareClassLabels);
-
-                _syncSelectedClass(visibleDocs);
-
-                final selectedId = selectedClassId;
-                QueryDocumentSnapshot? selectedDoc;
-                for (final d in visibleDocs) {
-                  if (d.id == selectedId) {
-                    selectedDoc = d;
-                    break;
-                  }
-                }
-
-                final activeClassId = selectedDoc?.id;
-                final activeClassData =
-                    selectedDoc?.data() as Map<String, dynamic>?;
-                final activeClassName = selectedDoc == null
-                    ? null
-                    : _classLabelFromDoc(selectedDoc);
-                final displayedClassId = selectedClassId;
-                final displayedClassData = activeClassData ?? selectedClassData;
-                final displayedClassName =
-                    (displayedClassData?['name'] ?? displayedClassId)
-                        ?.toString()
-                        .trim();
-
-                if (classOptions.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Nu exista clase configurate.',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF7A99B1),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton.icon(
-                          onPressed: _showCreateClassDialog,
-                          icon: const Icon(
-                            Icons.add_circle_outline_rounded,
-                            size: 22,
-                          ),
-                          label: const Text('Creează Clasă Nouă'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4C8EC5),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 22,
-                              vertical: 14,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(22, 28, 22, 24),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final vertical = constraints.maxWidth < 1080;
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (vertical) ...[
-                            const Text(
-                              'Gestiune Clase',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF5284AF),
-                                letterSpacing: -0.4,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              'Administrarea elevilor si configurarea programului operational.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF659BC5),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                          ] else
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Gestiune Clase',
-                                        style: TextStyle(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFF5284AF),
-                                          letterSpacing: -0.4,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      const Text(
-                                        'Administrarea elevilor si configurarea programului operational.',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Color(0xFF659BC5),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                    ],
+    return Scaffold(
+      body: Container(
+        color: const Color(0xFFF2F4F8),
+        child: Column(
+          children: [
+            const SizedBox(height: 32),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Color(0xFFE8EAF2)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(32, 28, 32, 0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'Classes',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.black,
                                   ),
                                 ),
-                                const SizedBox(width: 16),
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ElevatedButton.icon(
-                                      onPressed: _showCreateClassDialog,
-                                      icon: const Icon(
-                                        Icons.add_circle_outline_rounded,
-                                        size: 22,
-                                      ),
-                                      label: const Text('Creează Clasă Nouă'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(
-                                          0xFF238DE8,
-                                        ),
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 22,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                        textStyle: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                  ],
+                                SizedBox(height: 2),
+                                Text(
+                                  'Create, rename, assign form masters',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF7A7E9A),
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ],
                             ),
-                          const SizedBox(height: 12),
-                          if (vertical) ...[
-                            _ClassSelectorCard(
-                              selectedClassId: selectedClassId,
-                              classOptions: classOptions,
-                              onDelete: activeClassId == null
-                                  ? null
-                                  : () => _deleteSelectedClass(
-                                      classId: activeClassId,
-                                      className:
-                                          activeClassName ?? activeClassId,
-                                    ),
-                              onChanged: (newClassId) {
-                                QueryDocumentSnapshot? doc;
-                                for (final d in visibleDocs) {
-                                  if (d.id == newClassId) {
-                                    doc = d;
-                                    break;
-                                  }
-                                }
-                                setState(() {
-                                  selectedClassId = doc?.id;
-                                  selectedClassData = doc == null
-                                      ? (newClassId == null
-                                            ? null
-                                            : <String, dynamic>{
-                                                'name': newClassId,
-                                              })
-                                      : Map<String, dynamic>.from(
-                                          doc.data() as Map<String, dynamic>,
-                                        );
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 14),
-                            _ClassTeacherCard(
-                              classId: displayedClassId,
-                              teacherUsername:
-                                  (displayedClassData?['teacherUsername'] ?? '')
-                                      .toString(),
-                              onOpenTeacherDialog: _openTeacherDialog,
-                            ),
-                            const SizedBox(height: 14),
-                            _ClassStudentsCard(
-                              classId: displayedClassId,
-                              className: displayedClassName,
-                              onOpenStudentDialog: _openStudentDialog,
-                            ),
-                            const SizedBox(height: 14),
-                            ElevatedButton.icon(
+                            const Spacer(),
+                            TextButton(
                               onPressed: _showCreateClassDialog,
-                              icon: const Icon(
-                                Icons.add_circle_outline_rounded,
-                                size: 22,
-                              ),
-                              label: const Text('Creează Clasă Nouă'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF238DE8),
-                                foregroundColor: Colors.white,
-                                minimumSize: const Size.fromHeight(56),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Color(0xFF2848B0),
+                                backgroundColor: Colors.transparent,
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 22,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  horizontal: 22,
+                                  vertical: 16,
                                 ),
                                 textStyle: const TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 14,
+                                  fontSize: 15,
+                                ),
+                                elevation: 0,
+                                shadowColor: Colors.transparent,
+                              ),
+                              child: const Text(
+                                '+ Create new class',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  color: Color(0xFF2848B0),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 14),
-                            _ScheduleCard(
-                              key: ValueKey('schedule-$displayedClassId'),
-                              classId: displayedClassId,
-                              selectedClassData: displayedClassData,
-                              dayNames: _dayNames,
-                              scheduleBuilder: _existingSchedule,
-                              onSave: displayedClassId == null
-                                  ? null
-                                  : (schedule) => _saveSchedule(
-                                      classId: displayedClassId,
-                                      schedule: schedule,
-                                    ),
-                            ),
-                            const SizedBox(height: 14),
-                            _ExportBar(
-                              enabled: displayedClassId != null,
-                              busy: _exportBusy,
-                              onExport: _exportSelectedClassStudentsReport,
-                            ),
-                          ] else ...[
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  flex: 6,
-                                  child: Column(
-                                    children: [
-                                      _ClassSelectorCard(
-                                        selectedClassId: selectedClassId,
-                                        classOptions: classOptions,
-                                        onDelete: activeClassId == null
-                                            ? null
-                                            : () => _deleteSelectedClass(
-                                                classId: activeClassId,
-                                                className:
-                                                    activeClassName ??
-                                                    activeClassId,
-                                              ),
-                                        onChanged: (newClassId) {
-                                          QueryDocumentSnapshot? doc;
-                                          for (final d in visibleDocs) {
-                                            if (d.id == newClassId) {
-                                              doc = d;
-                                              break;
-                                            }
-                                          }
-                                          setState(() {
-                                            selectedClassId = doc?.id;
-                                            selectedClassData = doc == null
-                                                ? (newClassId == null
-                                                      ? null
-                                                      : <String, dynamic>{
-                                                          'name': newClassId,
-                                                        })
-                                                : Map<String, dynamic>.from(
-                                                    doc.data()
-                                                        as Map<String, dynamic>,
-                                                  );
-                                          });
-                                        },
-                                      ),
-                                      const SizedBox(height: 14),
-                                      _ClassTeacherCard(
-                                        classId: displayedClassId,
-                                        teacherUsername:
-                                            (displayedClassData?['teacherUsername'] ??
-                                                    '')
-                                                .toString(),
-                                        onOpenTeacherDialog: _openTeacherDialog,
-                                      ),
-                                      const SizedBox(height: 14),
-                                      _ClassStudentsCard(
-                                        classId: displayedClassId,
-                                        className: displayedClassName,
-                                        onOpenStudentDialog: _openStudentDialog,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  flex: 5,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      _ScheduleCard(
-                                        key: ValueKey(
-                                          'schedule-desktop-$displayedClassId',
-                                        ),
-                                        classId: displayedClassId,
-                                        selectedClassData: displayedClassData,
-                                        dayNames: _dayNames,
-                                        scheduleBuilder: _existingSchedule,
-                                        onSave: displayedClassId == null
-                                            ? null
-                                            : (schedule) => _saveSchedule(
-                                                classId: displayedClassId,
-                                                schedule: schedule,
-                                              ),
-                                      ),
-                                      const SizedBox(height: 14),
-                                      _ExportBar(
-                                        enabled: displayedClassId != null,
-                                        busy: _exportBusy,
-                                        onExport:
-                                            _exportSelectedClassStudentsReport,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
                           ],
-                        ],
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(32, 18, 32, 12),
+                        child: Row(
+                          children: const [
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                'CLASS',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  color: Color(0xFF7A7E9A),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                'FORM MASTER',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  color: Color(0xFF7A7E9A),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                'STUDENTS',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  color: Color(0xFF7A7E9A),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            SizedBox(width: 80),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                      Expanded(
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('classes')
+                              .snapshots(),
+                          builder: (context, snap) {
+                            if (snap.hasError) {
+                              return Center(
+                                child: SelectableText(
+                                  'Eroare clase:\n${snap.error}',
+                                ),
+                              );
+                            }
+                            if (!snap.hasData) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
 
-    if (widget.embedded) return body;
+                            final docs = [...snap.data!.docs]
+                              ..sort(
+                                (a, b) => _compareClassLabels(
+                                  _classLabelFromDoc(a),
+                                  _classLabelFromDoc(b),
+                                ),
+                              );
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5FBFF),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: SizedBox.expand(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _ClassesSidebar(
-                    onMenuTap: () => Navigator.of(context).pop(),
-                    onStudentsTap: () =>
-                        _replacePage(const AdminStudentsPage()),
-                    onPersonalTap: () =>
-                        _replacePage(const AdminTeachersPage()),
-                    onTurnichetiTap: () => _replacePage(AdminTurnstilesPage()),
-                    onClaseTap: () {},
-                    onVacanteTap: () =>
-                        _replacePage(const admin_vacante.AdminClassesPage()),
-                    onParintiTap: () => _replacePage(const AdminParentsPage()),
-                    onLogoutTap: _showLogoutDialog,
+                            final snapshotIds = docs
+                                .map((doc) => doc.id)
+                                .toSet();
+                            _optimisticDeletedClassIds.removeWhere(
+                              (id) => !snapshotIds.contains(id),
+                            );
+
+                            final visibleDocs = docs
+                                .where(
+                                  (doc) => !_optimisticDeletedClassIds.contains(
+                                    doc.id,
+                                  ),
+                                )
+                                .toList();
+
+                            if (visibleDocs.isEmpty) {
+                              return const Center(
+                                child: Text(
+                                  'No classes configured.',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF7A7E9A),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return ListView.separated(
+                              padding: const EdgeInsets.fromLTRB(32, 4, 32, 16),
+                              itemCount: visibleDocs.length,
+                              separatorBuilder: (_, __) => const Divider(
+                                height: 1,
+                                color: Color(0xFFE8EAF2),
+                              ),
+                              itemBuilder: (_, i) {
+                                final doc = visibleDocs[i];
+                                final data = doc.data() as Map<String, dynamic>;
+                                final classId = doc.id;
+                                final name = (data['name'] ?? classId)
+                                    .toString()
+                                    .trim();
+                                final teacherUsername =
+                                    (data['teacherUsername'] ?? '').toString();
+                                return _ClassListRow(
+                                  classId: classId,
+                                  name: name,
+                                  teacherUsername: teacherUsername,
+                                  onOpen: () => _openClassDetailDialog(
+                                    context,
+                                    classId: classId,
+                                    classData: data,
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  Expanded(child: body),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> createUser({
-    required String username,
-    required String password,
-    required String role,
-    String? classId,
-    required String fullName,
-  }) async {
-    final callable = FirebaseFunctions.instance.httpsCallable(
-      'adminCreateUser',
-    );
+  Widget _colHeader(String text) => Text(
+    text,
+    style: const TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+      color: Colors.black,
+      letterSpacing: 1.2,
+    ),
+  );
 
-    await callable.call({
-      'username': username,
-      'password': password,
-      'role': role,
-      'classId': classId,
-      'fullName': fullName,
-    });
+  Future<void> _openClassDetailDialog(
+    BuildContext context, {
+    required String classId,
+    required Map<String, dynamic> classData,
+  }) {
+    final className = (classData['name'] ?? classId).toString().trim();
+    final teacherUsername = (classData['teacherUsername'] ?? '').toString();
+
+    return _showBlurDialog<void>(
+      context: context,
+      builder: (ctx) {
+        int currentPage = 0;
+        const int pageSize = 7;
+
+        return StatefulBuilder(
+          builder: (ctx, setS) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 40,
+                vertical: 20,
+              ),
+              child: Container(
+                constraints: const BoxConstraints(
+                  maxWidth: 1000,
+                  maxHeight: 720,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.14),
+                      blurRadius: 32,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // ── HEADER ───────────────────────────────────────────
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(28, 20, 20, 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
+                        border: Border(
+                          bottom: BorderSide(color: Colors.grey.shade200),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 9,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF2848B0), Color(0xFF4070E0)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    className,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                FutureBuilder<Map<String, dynamic>?>(
+                                  future: teacherUsername.isNotEmpty
+                                      ? FirebaseFirestore.instance
+                                            .collection('users')
+                                            .where(
+                                              'username',
+                                              isEqualTo: teacherUsername,
+                                            )
+                                            .limit(1)
+                                            .get()
+                                            .then(
+                                              (s) => s.docs.isEmpty
+                                                  ? null
+                                                  : {
+                                                      'uid': s.docs.first.id,
+                                                      ...s.docs.first.data(),
+                                                    },
+                                            )
+                                      : Future.value(null),
+                                  builder: (_, snap) {
+                                    final td = snap.data;
+                                    final teacherName = td != null
+                                        ? (td['fullName'] ?? teacherUsername).toString()
+                                        : (snap.connectionState == ConnectionState.done
+                                            ? '—'
+                                            : '…');
+                                    return Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Text(
+                                              'DIRIGINTE',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w700,
+                                                color: Color(0xFF7A7E9A),
+                                                letterSpacing: 1,
+                                              ),
+                                            ),
+                                            Text(
+                                              teacherName,
+                                              style: const TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w700,
+                                                color: Color(0xFF1A2050),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (td != null) ...[
+                                          const SizedBox(width: 8),
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.settings_outlined,
+                                              color: Color(0xFF1A2050),
+                                              size: 18,
+                                            ),
+                                            style: IconButton.styleFrom(
+                                              backgroundColor: const Color(0xFFF2F4F8),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              padding: const EdgeInsets.all(6),
+                                              minimumSize: Size.zero,
+                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                            ),
+                                            onPressed: () => _openTeacherDialog(
+                                              ctx,
+                                              uid: td['uid'].toString(),
+                                              username: (td['username'] ?? teacherUsername).toString(),
+                                              fullName: teacherName,
+                                              classId: (td['classId'] ?? classId).toString(),
+                                              status: (td['status'] ?? 'active').toString(),
+                                              onboardingComplete: td['onboardingComplete'] as bool? ?? false,
+                                              email: (td['personalEmail'] ?? td['email'])?.toString(),
+                                              photoUrl: (td['photoUrl'] ?? td['avatarUrl'] ?? '').toString(),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          if ((classData['schedule'] as Map?)?.isNotEmpty == true) ...[
+                            IconButton(
+                              tooltip: 'Șterge orar',
+                              icon: const Icon(
+                                Icons.calendar_month_outlined,
+                                size: 18,
+                                color: Color(0xFFD32F2F),
+                              ),
+                              style: IconButton.styleFrom(
+                                backgroundColor: const Color(0xFFFFEEEE),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final confirmed = await showDialog<bool>(
+                                  context: ctx,
+                                  builder: (dctx) => AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    title: const Text('Șterge orar'),
+                                    content: Text(
+                                      'Sigur vrei să ștergi orarul clasei $className?',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(dctx, false),
+                                        child: const Text('Anulează'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(dctx, true),
+                                        child: const Text(
+                                          'Șterge',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirmed == true) {
+                                  try {
+                                    await FirebaseFirestore.instance
+                                        .collection('classes')
+                                        .doc(classId)
+                                        .update({'schedule': FieldValue.delete()});
+                                    if (context.mounted) {
+                                      Navigator.pop(ctx);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Orarul clasei $className a fost șters.',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Eroare la ștergere: $e'),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          IconButton(
+                            tooltip: 'Șterge clasa',
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 18,
+                              color: Color(0xFFD32F2F),
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: const Color(0xFFFFEEEE),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () async {
+                              Navigator.pop(ctx);
+                              await _deleteSelectedClass(
+                                classId: classId,
+                                className: className,
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              color: Color(0xFF7A7E9A),
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: const Color(0xFFF2F4F8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // ── STUDENT TABLE ─────────────────────────────────────
+                    Expanded(
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('users')
+                            .where('role', isEqualTo: 'student')
+                            .where('classId', isEqualTo: classId)
+                            .snapshots(),
+                        builder: (ctx2, snap) {
+                          if (snap.hasError) {
+                            return Center(
+                              child: SelectableText('Eroare: ${snap.error}'),
+                            );
+                          }
+                          if (!snap.hasData) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          final docs = [...snap.data!.docs];
+                          docs.sort((a, b) {
+                            final ad = a.data() as Map;
+                            final bd = b.data() as Map;
+                            return (ad['fullName'] ?? '')
+                                .toString()
+                                .toLowerCase()
+                                .compareTo(
+                                  (bd['fullName'] ?? '')
+                                      .toString()
+                                      .toLowerCase(),
+                                );
+                          });
+
+                          if (docs.isEmpty) {
+                            return const Center(
+                              child: Text(
+                                'Nu există elevi în această clasă.',
+                                style: TextStyle(
+                                  color: Color(0xFF7A7E9A),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            );
+                          }
+
+                          final totalPages = (docs.length / pageSize).ceil();
+                          final visibleStudents = docs
+                              .skip(currentPage * pageSize)
+                              .take(pageSize)
+                              .toList();
+
+                          return Column(
+                            children: [
+                              // Column headers
+                              Container(
+                                padding: const EdgeInsets.fromLTRB(
+                                  36,
+                                  12,
+                                  36,
+                                  12,
+                                ),
+                                color: Colors.white,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 5,
+                                      child: _colHeader('NUME ELEV'),
+                                    ),
+                                    Expanded(
+                                      flex: 4,
+                                      child: Center(child: _colHeader('EMAIL')),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Center(
+                                        child: _colHeader('PARINTE PRINCIPAL'),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 52,
+                                      child: Center(
+                                        child: Text(
+                                          'SETĂRI',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.black,
+                                            letterSpacing: 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Divider(
+                                height: 1,
+                                color: Color(0xFFE8EAF2),
+                              ),
+                              Expanded(
+                                child: ListView.separated(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    36,
+                                    6,
+                                    36,
+                                    6,
+                                  ),
+                                  itemCount: visibleStudents.length,
+                                  separatorBuilder: (_, _) =>
+                                      const SizedBox(height: 2),
+                                  itemBuilder: (_, i) {
+                                    final d = visibleStudents[i];
+                                    final data =
+                                        d.data() as Map<String, dynamic>;
+                                    final uid = d.id;
+                                    final username = (data['username'] ?? uid)
+                                        .toString();
+                                    final fullName =
+                                        (data['fullName'] ?? username)
+                                            .toString();
+                                    final inSchool =
+                                        data['inSchool'] as bool? ?? false;
+                                    final status = (data['status'] ?? 'active')
+                                        .toString();
+                                    final onboardingComplete =
+                                        data['onboardingComplete'] as bool? ??
+                                        false;
+                                    final emailVerified =
+                                        data['emailVerified'] as bool? ?? false;
+                                    final passwordChanged =
+                                        data['passwordChanged'] as bool? ??
+                                        false;
+                                    final email =
+                                        (data['personalEmail'] ?? data['email'])
+                                            ?.toString();
+                                    final parents = List<String>.from(
+                                      data['parents'] ?? [],
+                                    );
+                                    final photoUrl =
+                                        (data['photoUrl'] ??
+                                                data['avatarUrl'] ??
+                                                '')
+                                            .toString();
+
+                                    const avatarColors = [
+                                      Color(0xFF7FA8D9),
+                                      Color(0xFF7CAAD6),
+                                      Color(0xFFFF8A65),
+                                      Color(0xFFADCAE3),
+                                      Color(0xFFCE93D8),
+                                      Color(0xFF84D0E4),
+                                      Color(0xFFFFCC80),
+                                      Color(0xFF8FAFC4),
+                                    ];
+                                    final avatarBg =
+                                        avatarColors[fullName.hashCode.abs() %
+                                            avatarColors.length];
+
+                                    String ini(String n) {
+                                      final t = n.trim();
+                                      final si = t.indexOf(' ');
+                                      if (si > 0 && si < t.length - 1) {
+                                        return '${t[0]}${t[si + 1]}'
+                                            .toUpperCase();
+                                      }
+                                      return t.isNotEmpty
+                                          ? t[0].toUpperCase()
+                                          : '?';
+                                    }
+
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            flex: 5,
+                                            child: Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  radius: 18,
+                                                  backgroundColor: avatarBg,
+                                                  backgroundImage:
+                                                      photoUrl.isNotEmpty
+                                                      ? NetworkImage(photoUrl)
+                                                            as ImageProvider
+                                                      : null,
+                                                  child: photoUrl.isEmpty
+                                                      ? Text(
+                                                          ini(fullName),
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Color(
+                                                                  0xFF1A2050,
+                                                                ),
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w800,
+                                                                fontSize: 11,
+                                                              ),
+                                                        )
+                                                      : null,
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        fullName,
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          fontSize: 13,
+                                                          color: Color(
+                                                            0xFF111111,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        username,
+                                                        style: const TextStyle(
+                                                          fontSize: 11,
+                                                          color: Color(
+                                                            0xFF7A7E9A,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 4,
+                                            child: Text(
+                                              email?.isNotEmpty == true
+                                                  ? email!
+                                                  : '—',
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Color(0xFF2848B0),
+                                              ),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 3,
+                                            child: Center(
+                                              child: parents.isNotEmpty
+                                                  ? FutureBuilder<String>(
+                                                      future: FirebaseFirestore
+                                                          .instance
+                                                          .collection('users')
+                                                          .doc(parents.first)
+                                                          .get()
+                                                          .then(
+                                                            (s) => !s.exists
+                                                                ? parents.first
+                                                                : (s.data()?['fullName'] ?? parents.first).toString(),
+                                                          ),
+                                                      builder: (_, snap) => Text(
+                                                        snap.data ?? '…',
+                                                        textAlign: TextAlign.center,
+                                                        style: const TextStyle(
+                                                          fontSize: 12,
+                                                          color: Color(0xFF1A2050),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : const Text(
+                                                      '—',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Color(0xFF1A2050),
+                                                      ),
+                                                    ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: 52,
+                                            child: Center(
+                                              child: IconButton(
+                                                icon: const Icon(
+                                                  Icons.settings_outlined,
+                                                  color: Color(0xFF1A2050),
+                                                  size: 20,
+                                                ),
+                                                onPressed: () =>
+                                                    _openStudentDialog(
+                                                      ctx2,
+                                                      uid: uid,
+                                                      username: username,
+                                                      fullName: fullName,
+                                                      classId: classId,
+                                                      inSchool: inSchool,
+                                                      status: status,
+                                                      onboardingComplete:
+                                                          onboardingComplete,
+                                                      emailVerified:
+                                                          emailVerified,
+                                                      passwordChanged:
+                                                          passwordChanged,
+                                                      email: email,
+                                                      parentUsernames: parents,
+                                                      photoUrl: photoUrl,
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              if (totalPages > 1)
+                                Container(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    36,
+                                    12,
+                                    36,
+                                    12,
+                                  ),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFF2F4F8),
+                                    border: Border(
+                                      top: BorderSide(color: Color(0xFFE8EAF2)),
+                                    ),
+                                    borderRadius: BorderRadius.vertical(
+                                      bottom: Radius.circular(24),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '${docs.length} elevi',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Color(0xFF7A7E9A),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.chevron_left_rounded,
+                                        ),
+                                        onPressed: currentPage > 0
+                                            ? () => setS(() => currentPage--)
+                                            : null,
+                                        color: const Color(0xFF1A2050),
+                                        disabledColor: const Color(0xFFC0C4D8),
+                                      ),
+                                      Text(
+                                        '${currentPage + 1} / $totalPages',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF1A2050),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.chevron_right_rounded,
+                                        ),
+                                        onPressed: currentPage < totalPages - 1
+                                            ? () => setS(() => currentPage++)
+                                            : null,
+                                        color: const Color(0xFF1A2050),
+                                        disabledColor: const Color(0xFFC0C4D8),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _ClassListRow extends StatelessWidget {
+  final String classId;
+  final String name;
+  final String teacherUsername;
+  final VoidCallback onOpen;
+
+  const _ClassListRow({
+    required this.classId,
+    required this.name,
+    required this.teacherUsername,
+    required this.onOpen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Class badge
+          Expanded(
+            flex: 2,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: IntrinsicWidth(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2848B0), Color(0xFF4070E0)],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Teacher name
+          Expanded(
+            flex: 4,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FutureBuilder<String>(
+                future: teacherUsername.isNotEmpty
+                    ? FirebaseFirestore.instance
+                          .collection('users')
+                          .where('username', isEqualTo: teacherUsername)
+                          .limit(1)
+                          .get()
+                          .then(
+                            (s) => s.docs.isEmpty
+                                ? teacherUsername
+                                : (s.docs.first.data()['fullName'] ??
+                                          teacherUsername)
+                                      .toString(),
+                          )
+                    : Future.value('—'),
+                builder: (_, snap) {
+                  return Text(
+                    snap.data ?? '…',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF1A2050),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          // Student count
+          Expanded(
+            flex: 2,
+            child: Align(
+              alignment: Alignment.center,
+              child: StreamBuilder<int>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .where('role', isEqualTo: 'student')
+                    .where('classId', isEqualTo: classId)
+                    .snapshots()
+                    .map((s) => s.docs.length),
+                builder: (_, snap) {
+                  return Text(
+                    snap.data?.toString() ?? '—',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A2050),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          // Open button
+          SizedBox(
+            width: 80,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton(
+                onPressed: onOpen,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF2848B0),
+                  side: const BorderSide(color: Color(0xFF2848B0)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -4071,7 +4659,7 @@ class _ClassesTopBar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1C8EF0), Color(0xFF178BEF)],
+          colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
         ),
       ),
       child: Row(
@@ -4098,13 +4686,13 @@ class _ClassesTopBar extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: const Row(
                     children: [
-                      Icon(Icons.search, color: Color(0xFFA9CAE7), size: 18),
+                      Icon(Icons.search, color: Color(0xFFC0C4D8), size: 18),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Cauta inregistrari...',
                           style: TextStyle(
-                            color: Color(0xFFA9CAE7),
+                            color: Color(0xFFC0C4D8),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -4157,7 +4745,7 @@ class _ClassesSidebar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF1D8EEF), Color(0xFF1D8CE9)],
+          colors: [Color(0xFF2848B0), Color(0xFF2848B0)],
         ),
       ),
       child: Column(
@@ -4272,7 +4860,7 @@ class _ClassesSidebar extends StatelessWidget {
                       const Text(
                         'Liceul Central',
                         style: TextStyle(
-                          color: Color(0xFFC4D9EB),
+                          color: Color(0xFFE8EAF2),
                           fontSize: 11,
                         ),
                       ),
@@ -4320,12 +4908,12 @@ class _SidebarTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFFCBE0F3), size: 18),
+                Icon(icon, color: const Color(0xFFE8EAF2), size: 18),
                 const SizedBox(width: 10),
                 Text(
                   label,
                   style: const TextStyle(
-                    color: Color(0xFFE4EFF8),
+                    color: Color(0xFFE8EAF2),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -4364,7 +4952,7 @@ class _ClassSelectorCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFD9E5EF)),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -4380,7 +4968,7 @@ class _ClassSelectorCard extends StatelessWidget {
             'SELECTEAZA CLASA',
             style: TextStyle(
               fontSize: 10,
-              color: Color(0xFF89A2B7),
+              color: Color(0xFF7A7E9A),
               fontWeight: FontWeight.w800,
               letterSpacing: 1,
             ),
@@ -4414,7 +5002,7 @@ class _ClassSelectorCard extends StatelessWidget {
                     'Alege o clasă',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF93ABBD),
+                      color: Color(0xFF7A7E9A),
                     ),
                   ),
                   decoration: InputDecoration(
@@ -4592,7 +5180,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF4B83B2),
+                    color: Color(0xFF2848B0),
                   ),
                 ),
                 content: Column(
@@ -4655,7 +5243,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                       Text(
                         error!,
                         style: const TextStyle(
-                          color: Color(0xFFD32F2F),
+                          color: Color(0xFFB03040),
                           fontSize: 12,
                         ),
                       ),
@@ -4669,7 +5257,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4C8EC5),
+                      backgroundColor: const Color(0xFF2848B0),
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () {
@@ -4789,7 +5377,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFD9E5EF)),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -4808,7 +5396,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF4F82AC),
+                color: Color(0xFF2848B0),
               ),
             ),
           ),
@@ -4846,7 +5434,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
                   label: const Text('Creeaza orar'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF238DE8),
+                    backgroundColor: const Color(0xFF2848B0),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -4869,7 +5457,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                       _editing ? 'Selecteaza zilele si orele' : 'Orarul clasei',
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF89A2B7),
+                        color: Color(0xFF7A7E9A),
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.5,
                       ),
@@ -4884,7 +5472,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                 ],
               ),
             ),
-            const Divider(height: 16, thickness: 1, color: Color(0xFFD9E5EF)),
+            const Divider(height: 16, thickness: 1, color: Color(0xFFE8EAF2)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Wrap(
@@ -4899,10 +5487,10 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                         ? (value) => _toggleDay(entry.key, value)
                         : null,
                     selectedColor: const Color(0xFFD2E5F3),
-                    checkmarkColor: const Color(0xFF378BD2),
+                    checkmarkColor: const Color(0xFF2848B0),
                     labelStyle: TextStyle(
                       color: selected
-                          ? const Color(0xFF378BD2)
+                          ? const Color(0xFF2848B0)
                           : const Color(0xFF7B9AB2),
                       fontWeight: FontWeight.w700,
                     ),
@@ -4918,7 +5506,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                 child: Text(
                   'Selecteaza cel putin o zi pentru orar.',
                   style: TextStyle(
-                    color: Color(0xFF869FB4),
+                    color: Color(0xFF7A7E9A),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -4938,7 +5526,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   widgets.add(
                     Container(
                       decoration: isToday
-                          ? const BoxDecoration(color: Color(0xFFE6EFF7))
+                          ? const BoxDecoration(color: Color(0xFFE8EAF2))
                           : null,
                       padding: const EdgeInsets.symmetric(
                         vertical: 16,
@@ -4952,7 +5540,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                 ? const Icon(
                                     Icons.play_arrow_rounded,
                                     size: 14,
-                                    color: Color(0xFF5094CD),
+                                    color: Color(0xFF2848B0),
                                   )
                                 : null,
                           ),
@@ -4963,7 +5551,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF378BD2),
+                                color: Color(0xFF2848B0),
                               ),
                             ),
                           ),
@@ -4984,7 +5572,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFECF2F6),
+                                    color: const Color(0xFFF2F4F8),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
@@ -4994,7 +5582,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                         start,
                                         style: const TextStyle(
                                           fontSize: 14,
-                                          color: Color(0xFF0D0D0D),
+                                          color: Color(0xFF1A2050),
                                           letterSpacing: 1.5,
                                         ),
                                       ),
@@ -5002,7 +5590,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                       const Icon(
                                         Icons.access_time_rounded,
                                         size: 14,
-                                        color: Color(0xFF0D0D0D),
+                                        color: Color(0xFF1A2050),
                                       ),
                                     ],
                                   ),
@@ -5028,7 +5616,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFECF2F6),
+                                    color: const Color(0xFFF2F4F8),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
@@ -5038,7 +5626,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                         end,
                                         style: const TextStyle(
                                           fontSize: 14,
-                                          color: Color(0xFF0D0D0D),
+                                          color: Color(0xFF1A2050),
                                           letterSpacing: 1.5,
                                         ),
                                       ),
@@ -5046,7 +5634,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                       const Icon(
                                         Icons.access_time_rounded,
                                         size: 14,
-                                        color: Color(0xFF0D0D0D),
+                                        color: Color(0xFF1A2050),
                                       ),
                                     ],
                                   ),
@@ -5063,7 +5651,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                       const Divider(
                         height: 1,
                         thickness: 1,
-                        color: Color(0xFFD9E5EF),
+                        color: Color(0xFFE8EAF2),
                       ),
                     );
                   }
@@ -5108,7 +5696,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                               : 'Creeaza orar',
                         ),
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF238DE8),
+                          backgroundColor: const Color(0xFF2848B0),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
@@ -5162,7 +5750,7 @@ class _ClassTeacherCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFD9E5EF)),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -5178,7 +5766,7 @@ class _ClassTeacherCard extends StatelessWidget {
             'DIRIGINTELE CLASEI',
             style: TextStyle(
               fontSize: 10,
-              color: Color(0xFF89A2B7),
+              color: Color(0xFF7A7E9A),
               fontWeight: FontWeight.w800,
               letterSpacing: 1,
             ),
@@ -5263,7 +5851,7 @@ class _ClassTeacherCard extends StatelessWidget {
                     IconButton(
                       icon: const Icon(
                         Icons.settings_outlined,
-                        color: Color(0xFF424242),
+                        color: Color(0xFF1A2050),
                         size: 22,
                       ),
                       onPressed: teacherDoc == null
@@ -5335,7 +5923,7 @@ class _ClassStudentsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFD9E5EF)),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -5356,7 +5944,7 @@ class _ClassStudentsCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF4F82AC),
+                    color: Color(0xFF2848B0),
                   ),
                 ),
                 const Spacer(),
@@ -5548,7 +6136,7 @@ class _ClassStudentsList extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: inSchool
-                          ? const Color(0xFFE6EFF7)
+                          ? const Color(0xFFE8EAF2)
                           : const Color(0xFFFFEBEE),
                       borderRadius: BorderRadius.circular(999),
                       border: Border.all(
@@ -5563,7 +6151,7 @@ class _ClassStudentsList extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: inSchool
-                            ? const Color(0xFF5094CD)
+                            ? const Color(0xFF2848B0)
                             : const Color(0xFFC62828),
                       ),
                     ),
@@ -5675,7 +6263,7 @@ class _ExportBar extends StatelessWidget {
               : const Icon(Icons.description_outlined, size: 18),
           label: Text(busy ? 'Export...' : 'Exportă conturi elevi'),
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF238DE8),
+            backgroundColor: const Color(0xFF2848B0),
             foregroundColor: Colors.white,
             disabledBackgroundColor: const Color(0xFFD3E1EC),
             disabledForegroundColor: const Color(0xFF7F9AAF),

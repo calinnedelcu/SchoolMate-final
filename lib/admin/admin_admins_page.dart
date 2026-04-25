@@ -24,21 +24,22 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryGreen = Color(0xFF84B0D2);
+    const Color primaryGreen = Color(0xFF2848B0);
 
     if (!AppSession.isAdmin) {
       return const Scaffold(
-        body: Center(child: Text("Acces interzis (doar admin).")),
+        body: Center(child: Text("Access denied (admin only).")),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FBFF),
+      backgroundColor: const Color(0xFFF2F4F8),
       appBar: AppBar(
+        toolbarHeight: 88,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF84B0D2), Color(0xFF6AA2CE)],
+              colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -47,7 +48,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
           onPressed: () => Navigator.pop(context),
         ),
         title: StreamBuilder<QuerySnapshot>(
@@ -61,18 +62,18 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  "Administratori",
+                  "Administrators",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
-                    fontSize: 20,
+                    fontSize: 24,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+                    horizontal: 12,
+                    vertical: 5,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.18),
@@ -83,7 +84,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
-                      fontSize: 13,
+                      fontSize: 15,
                     ),
                   ),
                 ),
@@ -106,8 +107,8 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
             child: TextField(
               controller: searchC,
               decoration: InputDecoration(
-                hintText: "Caută admin (utilizator / nume)...",
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF84B0D2)),
+                hintText: "Search admin (username / name)...",
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF2848B0)),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
@@ -125,7 +126,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: const BorderSide(
-                    color: Color(0xFF84B0D2),
+                    color: Color(0xFF2848B0),
                     width: 2,
                   ),
                 ),
@@ -134,7 +135,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
             ),
           ),
 
-          const Divider(height: 1, color: Color(0xFFACD0EC)),
+          const Divider(height: 1, color: Color(0xFFC0C4D8)),
 
           /// ADMINS LIST
           Expanded(
@@ -146,7 +147,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
               builder: (context, snap) {
                 if (snap.hasError) {
                   return Center(
-                    child: SelectableText("Eroare:\n${snap.error}"),
+                    child: SelectableText("Error:\n${snap.error}"),
                   );
                 }
                 if (!snap.hasData) {
@@ -177,7 +178,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                 }).toList();
 
                 if (filtered.isEmpty) {
-                  return const Center(child: Text("Nu există rezultate"));
+                  return const Center(child: Text("No results found"));
                 }
 
                 return ListView.builder(
@@ -195,7 +196,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: const Color(0xFFACD0EC)),
+                        border: Border.all(color: const Color(0xFFC0C4D8)),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.04),
@@ -250,7 +251,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
             label,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF809CB3),
+              color: Color(0xFF7A7E9A),
               fontSize: 13,
             ),
           ),
@@ -301,7 +302,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                     padding: const EdgeInsets.all(20),
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF84B0D2), Color(0xFF6AA2CE)],
+                        colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -325,13 +326,13 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildDetailRow("Username Administrator", username),
-                        _buildDetailRow("Rol Sistem", "Administrator General"),
+                        _buildDetailRow("Admin Username", username),
+                        _buildDetailRow("System Role", "General Administrator"),
                         _buildDetailRow(
-                          "Status Cont",
+                          "Account Status",
                           status == 'disabled'
-                              ? 'Dezactivat'
-                              : 'Activ (Enabled)',
+                              ? 'Disabled'
+                              : 'Active (Enabled)',
                         ),
                       ],
                     ),
@@ -374,8 +375,8 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                                       },
                                 child: Text(
                                   status == 'disabled'
-                                      ? "Activează"
-                                      : "Dezactivează",
+                                      ? "Enable"
+                                      : "Disable",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -387,7 +388,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE53935),
+                                  backgroundColor: const Color(0xFFB03040),
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   padding: const EdgeInsets.symmetric(
@@ -404,10 +405,10 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                                           context: context,
                                           builder: (_) => AlertDialog(
                                             title: const Text(
-                                              "Confirmare Ștergere",
+                                              "Confirm Deletion",
                                             ),
                                             content: Text(
-                                              "Sigur vrei să ștergi administratorul $username? Această acțiune este ireversibilă.",
+                                              "Are you sure you want to delete administrator $username? This action is irreversible.",
                                             ),
                                             actions: [
                                               TextButton(
@@ -415,7 +416,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                                                   context,
                                                   false,
                                                 ),
-                                                child: const Text("Anulează"),
+                                                child: const Text("Cancel"),
                                               ),
                                               ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
@@ -427,7 +428,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                                                   true,
                                                 ),
                                                 child: const Text(
-                                                  "Șterge definitiv",
+                                                  "Delete permanently",
                                                 ),
                                               ),
                                             ],
@@ -453,7 +454,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                                         ),
                                       )
                                     : const Text(
-                                        "Șterge",
+                                        "Delete",
                                         style: TextStyle(
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -478,7 +479,7 @@ class _AdminAdminsPageState extends State<AdminAdminsPage> {
                             ),
                             onPressed: () => Navigator.pop(context),
                             child: const Text(
-                              "Închide",
+                              "Close",
                               style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),

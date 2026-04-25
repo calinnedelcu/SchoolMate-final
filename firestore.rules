@@ -238,6 +238,12 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    match /secretariatActivity/{activityId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
     match /accessEvents/{eventId} {
       allow read: if canReadAccessEvent();
       allow create: if isGate() || isAdmin();
@@ -280,6 +286,16 @@ service cloud.firestore {
            request.resource.data.status == 'cancelled') ||
           (isTeacher() && isTeacherForClass(resource.data.classId));
       allow delete: if isAdmin();
+    }
+
+    match /subjects/{subjectId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /timetables/{classId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     match /{document=**} {

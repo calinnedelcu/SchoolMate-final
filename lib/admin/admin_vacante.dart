@@ -107,12 +107,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     await _showBlurDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Deconectare'),
-        content: const Text('Esti sigur ca vrei sa te deloghezi?'),
+        title: const Text('Log out'),
+        content: const Text('Are you sure you want to log out?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Nu'),
+            child: const Text('No'),
           ),
           TextButton(
             onPressed: () async {
@@ -120,7 +120,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
               if (!context.mounted) return;
               Navigator.of(context).popUntil((route) => route.isFirst);
             },
-            child: const Text('Da'),
+            child: const Text('Yes'),
           ),
         ],
       ),
@@ -136,7 +136,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     }
 
     final content = Container(
-      color: const Color(0xFFF5FBFF),
+      color: const Color(0xFFF2F4F8),
       child: Column(
         children: [
           if (!widget.embedded) const _TopBar(),
@@ -154,7 +154,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
               : 'Secretariat');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FBFF),
+      backgroundColor: const Color(0xFFF2F4F8),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
@@ -173,7 +173,6 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                   onTurnichetiTap: () =>
                       _openSidebarPage(AdminTurnstilesPage()),
                   onClaseTap: () => _openSidebarPage(const AdminClassesPage()),
-                  onVacanteTap: () {},
                   onParintiTap: () =>
                       _openSidebarPage(const AdminParentsPage()),
                   onLogoutTap: _showLogoutDialog,
@@ -195,7 +194,6 @@ class _Sidebar extends StatelessWidget {
   final VoidCallback onPersonalTap;
   final VoidCallback onTurnichetiTap;
   final VoidCallback onClaseTap;
-  final VoidCallback onVacanteTap;
   final VoidCallback onParintiTap;
   final VoidCallback onLogoutTap;
 
@@ -206,7 +204,6 @@ class _Sidebar extends StatelessWidget {
     required this.onPersonalTap,
     required this.onTurnichetiTap,
     required this.onClaseTap,
-    required this.onVacanteTap,
     required this.onParintiTap,
     required this.onLogoutTap,
   });
@@ -219,7 +216,7 @@ class _Sidebar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF1D8EEF), Color(0xFF1D8CE9)],
+          colors: [Color(0xFF2040A0), Color(0xFF2848B0), Color(0xFF2E58D0)],
         ),
       ),
       child: Column(
@@ -237,39 +234,33 @@ class _Sidebar extends StatelessWidget {
             ),
           ),
           _SidebarTile(
-            label: 'Meniu',
+            label: 'Menu',
             icon: Icons.grid_view_rounded,
             selected: false,
             onTap: onMenuTap,
           ),
           _SidebarTile(
-            label: 'Elevi',
+            label: 'Students',
             icon: Icons.school_rounded,
             onTap: onStudentsTap,
           ),
           _SidebarTile(
-            label: 'Personal',
+            label: 'Staff',
             icon: Icons.badge_rounded,
             onTap: onPersonalTap,
           ),
           _SidebarTile(
-            label: 'Parinti',
+            label: 'Parents',
             icon: Icons.family_restroom_rounded,
             onTap: onParintiTap,
           ),
           _SidebarTile(
-            label: 'Clase',
+            label: 'Classes',
             icon: Icons.table_chart_rounded,
             onTap: onClaseTap,
           ),
           _SidebarTile(
-            label: 'Vacante',
-            icon: Icons.event_available_rounded,
-            selected: true,
-            onTap: onVacanteTap,
-          ),
-          _SidebarTile(
-            label: 'Turnicheti',
+            label: 'Turnstiles',
             icon: Icons.door_front_door_rounded,
             onTap: onTurnichetiTap,
           ),
@@ -286,7 +277,7 @@ class _Sidebar extends StatelessWidget {
                 ),
                 onPressed: onLogoutTap,
                 icon: const Icon(Icons.logout_rounded),
-                label: const Text('Delogheaza-te'),
+                label: const Text('Log out'),
               ),
             ),
           ),
@@ -335,7 +326,7 @@ class _Sidebar extends StatelessWidget {
                       const Text(
                         'Liceul Central',
                         style: TextStyle(
-                          color: Color(0xFFC4D9EB),
+                          color: Color(0xFFE8EAF2),
                           fontSize: 11,
                         ),
                       ),
@@ -383,12 +374,12 @@ class _SidebarTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFFCBE0F3), size: 18),
+                Icon(icon, color: const Color(0xFFE8EAF2), size: 18),
                 const SizedBox(width: 10),
                 Text(
                   label,
                   style: const TextStyle(
-                    color: Color(0xFFE4EFF8),
+                    color: Color(0xFFE8EAF2),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -414,13 +405,13 @@ class _TopBar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1C8EF0), Color(0xFF178BEF)],
+          colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
         ),
       ),
       child: Row(
         children: [
           const Text(
-            'Vacante Școlare',
+            'School Vacations',
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w800,
@@ -441,13 +432,13 @@ class _TopBar extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: const Row(
                     children: [
-                      Icon(Icons.search, color: Color(0xFFA9CAE7), size: 18),
+                      Icon(Icons.search, color: Color(0xFFC0C4D8), size: 18),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Cauta inregistrari...',
+                          'Search records...',
                           style: TextStyle(
-                            color: Color(0xFFA9CAE7),
+                            color: Color(0xFFC0C4D8),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -499,17 +490,17 @@ class _VacanciesContentState extends State<_VacanciesContent> {
 
   String _formatDateLong(DateTime date) {
     const months = [
-      'ian',
+      'jan',
       'feb',
       'mar',
       'apr',
-      'mai',
-      'iun',
-      'iul',
+      'may',
+      'jun',
+      'jul',
       'aug',
       'sep',
       'oct',
-      'noi',
+      'nov',
       'dec',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
@@ -576,7 +567,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
   Future<void> _saveVacancy() async {
     if (_nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Va rugam introduceti numele vacantei')),
+        const SnackBar(content: Text('Please enter the vacation name')),
       );
       return;
     }
@@ -584,7 +575,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
     if (_startDate == null || _endDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Va rugam selectati data de inceput si de sfarsit'),
+          content: Text('Please select a start date and end date'),
         ),
       );
       return;
@@ -632,16 +623,16 @@ class _VacanciesContentState extends State<_VacanciesContent> {
         SnackBar(
           content: Text(
             isUpdating
-                ? 'Vacanta salvata cu succes'
-                : 'Vacanta adaugata cu succes',
+                ? 'Vacation saved successfully'
+                : 'Vacation added successfully',
           ),
         ),
       );
     } catch (e) {
       if (!mounted) return;
       final message = e is FirebaseException && e.code == 'permission-denied'
-          ? 'Nu ai permisiuni sa creezi vacante. Verifica rolul contului si regulile Firestore publicate.'
-          : 'Eroare la salvare vacanta';
+          ? 'You do not have permission to create vacations. Check the account role and published Firestore rules.'
+          : 'Error saving vacation';
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
@@ -651,7 +642,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
   Future<bool> _confirmDeleteVacancy({required String name}) async {
     final result = await _showBlurDialog<bool>(
       context: context,
-      barrierLabel: 'Confirmare stergere vacanta',
+      barrierLabel: 'Confirm vacation deletion',
       transitionDuration: const Duration(milliseconds: 180),
       builder: (ctx) {
         return SafeArea(
@@ -686,12 +677,12 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                               width: 52,
                               height: 52,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFDEBEB),
+                                color: const Color(0xFFF0D0D8),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Icon(
                                 Icons.delete_outline_rounded,
-                                color: Color(0xFFD92D20),
+                                color: Color(0xFFB03040),
                                 size: 26,
                               ),
                             ),
@@ -701,20 +692,20 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Sterge vacanta',
+                                    'Delete vacation',
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF4B83B2),
+                                      color: Color(0xFF2848B0),
                                     ),
                                   ),
                                   SizedBox(height: 6),
                                   Text(
-                                    'Actiunea este permanenta si va elimina vacanta din lista salvata.',
+                                    'This action is permanent and will remove the vacation from the saved list.',
                                     style: TextStyle(
                                       fontSize: 13,
                                       height: 1.4,
-                                      color: Color(0xFF93ABBD),
+                                      color: Color(0xFF7A7E9A),
                                     ),
                                   ),
                                 ],
@@ -727,20 +718,20 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF5F9FC),
+                            color: const Color(0xFFF2F4F8),
                             borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: const Color(0xFFD8E5EF)),
+                            border: Border.all(color: const Color(0xFFE8EAF2)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Vacanta selectata',
+                                'Selected vacation',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1,
-                                  color: Color(0xFF89A2B7),
+                                  color: Color(0xFF7A7E9A),
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -750,7 +741,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                   vertical: 8,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFFE9E7),
+                                  color: const Color(0xFFF0D0D8),
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Text(
@@ -758,7 +749,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFFB42318),
+                                    color: Color(0xFFB03040),
                                   ),
                                 ),
                               ),
@@ -776,13 +767,13 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                     vertical: 16,
                                   ),
                                   side: const BorderSide(
-                                    color: Color(0xFFCDDDEA),
+                                    color: Color(0xFFE8EAF2),
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
-                                child: const Text('Anuleaza'),
+                                child: const Text('Cancel'),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -790,7 +781,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                               child: FilledButton(
                                 onPressed: () => Navigator.of(ctx).pop(true),
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFFD92D20),
+                                  backgroundColor: const Color(0xFFB03040),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
@@ -799,7 +790,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
-                                child: const Text('Sterge vacanta'),
+                                child: const Text('Delete vacation'),
                               ),
                             ),
                           ],
@@ -826,17 +817,17 @@ class _VacanciesContentState extends State<_VacanciesContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Setare Vacante Școlare',
+            'School Vacation Settings',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF4B83B2),
+              color: Color(0xFF2848B0),
             ),
           ),
           const SizedBox(height: 6),
           const Text(
-            'Configureaza perioadele de repaus si gestioneaza vacantele scolare.',
-            style: TextStyle(fontSize: 13, color: Color(0xFF659BC5)),
+            'Configure rest periods and manage school vacations.',
+            style: TextStyle(fontSize: 13, color: Color(0xFF7A7E9A)),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -860,7 +851,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
     final isCreatingVacancy = _editing && !hasSelectedVacancy;
     final displayedName = _nameController.text.trim().isNotEmpty
         ? _nameController.text.trim()
-        : (_selectedVacancyName ?? 'Nicio vacanta selectata');
+        : (_selectedVacancyName ?? 'No vacation selected');
     final displayedStart = _editing ? _startDate : _selectedStartDate;
     final displayedEnd = _editing ? _endDate : _selectedEndDate;
 
@@ -868,7 +859,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD9E5EF)),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -884,11 +875,11 @@ class _VacanciesContentState extends State<_VacanciesContent> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'Gestionare Vacanță',
+              'Vacation Management',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF4F82AC),
+                color: Color(0xFF2848B0),
               ),
             ),
           ),
@@ -898,11 +889,11 @@ class _VacanciesContentState extends State<_VacanciesContent> {
             child: Text(
               !_editing
                   ? hasSelectedVacancy
-                        ? 'Poti modifica vacanta selectata si salva rapid schimbarile.'
-                        : 'Creeaza o vacanta noua si configureaza intervalul din calendar.'
+                        ? 'You can edit the selected vacation and save changes quickly.'
+                        : 'Create a new vacation and configure the interval from the calendar.'
                   : hasSelectedVacancy
-                  ? 'Actualizeaza numele si perioada, apoi salveaza vacanta.'
-                  : 'Completeaza campurile si salveaza vacanta noua.',
+                  ? 'Update the name and period, then save the vacation.'
+                  : 'Fill in the fields and save the new vacation.',
               style: const TextStyle(
                 fontSize: 12,
                 color: Color(0xFF87A1B6),
@@ -923,9 +914,9 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                 child: FilledButton.icon(
                   onPressed: _startCreatingVacancy,
                   icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-                  label: const Text('Creeaza vacanta'),
+                  label: const Text('Create vacation'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF238DE8),
+                    backgroundColor: const Color(0xFF2848B0),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -945,7 +936,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: const Center(
                   child: Text(
-                    'Selecteaza o vacanta din lista din dreapta sau apasa pe "Creeaza vacanta" pentru a adauga una noua.',
+                    'Select a vacation from the list on the right or press "Create vacation" to add a new one.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
@@ -965,11 +956,11 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                   Expanded(
                     child: Text(
                       _editing
-                          ? 'Completeaza perioada vacantei'
-                          : 'Detalii vacanta selectata',
+                          ? 'Fill in the vacation period'
+                          : 'Selected vacation details',
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF89A2B7),
+                        color: Color(0xFF7A7E9A),
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.5,
                       ),
@@ -985,14 +976,14 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                       child: OutlinedButton.icon(
                         onPressed: _startEditingSelectedVacancy,
                         icon: const Icon(Icons.edit_outlined, size: 16),
-                        label: const Text('Modifica'),
+                        label: const Text('Edit'),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const Divider(height: 16, thickness: 1, color: Color(0xFFD9E5EF)),
+            const Divider(height: 16, thickness: 1, color: Color(0xFFE8EAF2)),
             Expanded(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1004,12 +995,12 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
-                            'NUME EVENIMENT / VACANȚĂ',
+                            'EVENT / VACATION NAME',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1,
-                              color: Color(0xFF4B8BC1),
+                              color: Color(0xFF2848B0),
                             ),
                           ),
                         ),
@@ -1021,7 +1012,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                             enabled: _editing,
                             onChanged: _editing ? (_) => setState(() {}) : null,
                             decoration: InputDecoration(
-                              hintText: 'Ex: Vacanța de Primăvară',
+                              hintText: 'E.g.: Spring Break',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
@@ -1035,7 +1026,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                 borderSide: BorderSide.none,
                               ),
                               filled: true,
-                              fillColor: const Color(0xFFF2F6FA),
+                              fillColor: const Color(0xFFF2F4F8),
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                                 vertical: 14,
@@ -1053,12 +1044,12 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      'DATA INCEPUT',
+                                      'START DATE',
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 1,
-                                        color: Color(0xFF4B8BC1),
+                                        color: Color(0xFF2848B0),
                                       ),
                                     ),
                                     const SizedBox(height: 6),
@@ -1094,7 +1085,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                             },
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFF2F6FA),
+                                          color: const Color(0xFFF2F4F8),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -1112,8 +1103,8 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                                     : _formatDate(_startDate!),
                                                 style: TextStyle(
                                                   color: _startDate == null
-                                                      ? const Color(0xFF999999)
-                                                      : const Color(0xFF0D0D0D),
+                                                      ? const Color(0xFF7A7E9A)
+                                                      : const Color(0xFF1A2050),
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -1122,7 +1113,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                             const Icon(
                                               Icons.calendar_today_outlined,
                                               size: 16,
-                                              color: Color(0xFF8FABC1),
+                                              color: Color(0xFF7A7E9A),
                                             ),
                                           ],
                                         ),
@@ -1137,12 +1128,12 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      'DATA SFARSIT',
+                                      'END DATE',
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 1,
-                                        color: Color(0xFF4B8BC1),
+                                        color: Color(0xFF2848B0),
                                       ),
                                     ),
                                     const SizedBox(height: 6),
@@ -1174,7 +1165,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                             },
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFF2F6FA),
+                                          color: const Color(0xFFF2F4F8),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -1192,8 +1183,8 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                                     : _formatDate(_endDate!),
                                                 style: TextStyle(
                                                   color: _endDate == null
-                                                      ? const Color(0xFF999999)
-                                                      : const Color(0xFF0D0D0D),
+                                                      ? const Color(0xFF7A7E9A)
+                                                      : const Color(0xFF1A2050),
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -1202,7 +1193,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                             const Icon(
                                               Icons.calendar_today_outlined,
                                               size: 16,
-                                              color: Color(0xFF8FABC1),
+                                              color: Color(0xFF7A7E9A),
                                             ),
                                           ],
                                         ),
@@ -1224,19 +1215,19 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                               color: const Color(0xFFF3F7FB),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: const Color(0xFFD9E5EF),
+                                color: const Color(0xFFE8EAF2),
                               ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  'Rezumat',
+                                  'Summary',
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 0.5,
-                                    color: Color(0xFF89A2B7),
+                                    color: Color(0xFF7A7E9A),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -1245,17 +1236,17 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF4F82AC),
+                                    color: Color(0xFF2848B0),
                                   ),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
                                   displayedStart != null && displayedEnd != null
                                       ? '${_formatDateLong(displayedStart)} - ${_formatDateLong(displayedEnd)}'
-                                      : 'Selecteaza intervalul din calendar.',
+                                      : 'Select the interval from the calendar.',
                                   style: const TextStyle(
                                     fontSize: 12,
-                                    color: Color(0xFF869FB4),
+                                    color: Color(0xFF7A7E9A),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -1277,7 +1268,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                 children: [
                                   OutlinedButton(
                                     onPressed: _cancelEditing,
-                                    child: const Text('Anuleaza'),
+                                    child: const Text('Cancel'),
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
@@ -1291,12 +1282,12 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                       ),
                                       label: Text(
                                         _editing
-                                            ? 'Salveaza vacanta'
-                                            : 'Creeaza vacanta',
+                                            ? 'Save vacation'
+                                            : 'Create vacation',
                                       ),
                                       style: FilledButton.styleFrom(
                                         backgroundColor: const Color(
-                                          0xFF238DE8,
+                                          0xFF2848B0,
                                         ),
                                         foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
@@ -1335,10 +1326,10 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                               maintainAnimation: true,
                               maintainSize: true,
                               child: Text(
-                                '* Previzualizare: $displayedName',
+                                '* Preview: $displayedName',
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF5094CD),
+                                  color: Color(0xFF2848B0),
                                   fontStyle: FontStyle.italic,
                                 ),
                                 textAlign: TextAlign.center,
@@ -1367,20 +1358,20 @@ class _VacanciesContentState extends State<_VacanciesContent> {
     final firstWeekday = firstDay.weekday;
 
     const monthNames = [
-      'Ianuarie',
-      'Februarie',
-      'Martie',
-      'Aprilie',
-      'Mai',
-      'Iunie',
-      'Iulie',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
       'August',
-      'Septembrie',
-      'Octombrie',
-      'Noiembrie',
-      'Decembrie',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
-    const dayNames = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    const dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
     return Container(
       decoration: BoxDecoration(
@@ -1543,7 +1534,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: isStart || isEnd
-                                        ? const Color(0xFF5094CD)
+                                        ? const Color(0xFF2848B0)
                                         : isBetween
                                         ? const Color(0xFFC3D9EB)
                                         : Colors.transparent,
@@ -1582,7 +1573,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD9E5EF)),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -1618,8 +1609,8 @@ class _VacanciesContentState extends State<_VacanciesContent> {
           if (snapshot.hasError) {
             listWidget = const Center(
               child: Text(
-                'Nu exista vacante create',
-                style: TextStyle(fontSize: 13, color: Color(0xFF999999)),
+                'No vacations created',
+                style: TextStyle(fontSize: 13, color: Color(0xFF7A7E9A)),
               ),
             );
           } else if (!snapshot.hasData) {
@@ -1632,8 +1623,8 @@ class _VacanciesContentState extends State<_VacanciesContent> {
           } else if (vacancies.isEmpty) {
             listWidget = const Center(
               child: Text(
-                'Nu exista vacante create',
-                style: TextStyle(fontSize: 13, color: Color(0xFF999999)),
+                'No vacations created',
+                style: TextStyle(fontSize: 13, color: Color(0xFF7A7E9A)),
               ),
             );
           } else {
@@ -1656,7 +1647,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Vacante Salvate',
+                'Saved Vacations',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1665,8 +1656,8 @@ class _VacanciesContentState extends State<_VacanciesContent> {
               ),
               const SizedBox(height: 4),
               Text(
-                '${vacancies.length} vacante inregistrate',
-                style: const TextStyle(fontSize: 13, color: Color(0xFF999999)),
+                '${vacancies.length} vacations registered',
+                style: const TextStyle(fontSize: 13, color: Color(0xFF7A7E9A)),
               ),
               const SizedBox(height: 20),
               Expanded(child: listWidget),
@@ -1675,7 +1666,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                 Container(
                   padding: const EdgeInsets.fromLTRB(0, 14, 0, 0),
                   decoration: const BoxDecoration(
-                    border: Border(top: BorderSide(color: Color(0xFFE8E8E8))),
+                    border: Border(top: BorderSide(color: Color(0xFFE8EAF2))),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -1720,13 +1711,13 @@ class _VacanciesContentState extends State<_VacanciesContent> {
             margin: const EdgeInsets.symmetric(horizontal: 2),
             decoration: BoxDecoration(
               color: currentPage == index
-                  ? const Color(0xFF424242)
+                  ? const Color(0xFF1A2050)
                   : Colors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: currentPage == index
-                    ? const Color(0xFF424242)
-                    : const Color(0xFFD0D0D0),
+                    ? const Color(0xFF1A2050)
+                    : const Color(0xFFE8EAF2),
               ),
             ),
             alignment: Alignment.center,
@@ -1737,7 +1728,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                 fontWeight: FontWeight.w600,
                 color: currentPage == index
                     ? Colors.white
-                    : const Color(0xFF333333),
+                    : const Color(0xFF1A2050),
               ),
             ),
           ),
@@ -1757,7 +1748,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF999999),
+              color: Color(0xFF7A7E9A),
             ),
           ),
         ),
@@ -1811,11 +1802,11 @@ class _VacanciesContentState extends State<_VacanciesContent> {
     final Border? border;
 
     if (isSelected) {
-      cardColor = const Color(0xFF1C8EF0);
+      cardColor = const Color(0xFF2848B0);
       nameColor = Colors.white;
       iconColor = Colors.white;
       dateColor = Colors.white.withValues(alpha: 0.85);
-      border = Border.all(color: const Color(0xFF178BEF), width: 2);
+      border = Border.all(color: const Color(0xFF2848B0), width: 2);
     } else if (isFinished) {
       cardColor = const Color(0xFFF0F0F0);
       nameColor = const Color(0xFF888888);
@@ -1823,15 +1814,15 @@ class _VacanciesContentState extends State<_VacanciesContent> {
       dateColor = const Color(0xFFAAAAAA);
       border = Border.all(color: const Color(0xFFDDDDDD), width: 1);
     } else if (isFirst) {
-      cardColor = const Color(0xFF5094CD);
+      cardColor = const Color(0xFF2848B0);
       nameColor = Colors.white;
       iconColor = Colors.white;
       dateColor = Colors.white;
       border = null;
     } else {
-      cardColor = const Color(0xFFE6EFF7);
-      nameColor = const Color(0xFF5094CD);
-      iconColor = const Color(0xFFD32F2F);
+      cardColor = const Color(0xFFE8EAF2);
+      nameColor = const Color(0xFF2848B0);
+      iconColor = const Color(0xFFB03040);
       dateColor = const Color(0xFF666666);
       border = Border.all(color: const Color(0xFFC3D9EB), width: 1);
     }
@@ -1877,7 +1868,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isFinished ? '$name - Terminat' : name,
+                    isFinished ? '$name - Finished' : name,
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -1922,10 +1913,10 @@ class _VacanciesContentState extends State<_VacanciesContent> {
               icon: const Icon(
                 Icons.delete_outline,
                 size: 18,
-                color: Color(0xFFD32F2F),
+                color: Color(0xFFB03040),
               ),
               splashRadius: 18,
-              tooltip: 'Sterge vacanta',
+              tooltip: 'Delete vacation',
             ),
           ],
         ),
@@ -1960,14 +1951,14 @@ class _PaginationButton extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: enabled ? const Color(0xFFD0D0D0) : const Color(0xFFE8E8E8),
+            color: enabled ? const Color(0xFFE8EAF2) : const Color(0xFFE8EAF2),
           ),
         ),
         alignment: Alignment.center,
         child: Icon(
           icon,
           size: 20,
-          color: enabled ? const Color(0xFF333333) : const Color(0xFFCCCCCC),
+          color: enabled ? const Color(0xFF1A2050) : const Color(0xFFC0C4D8),
         ),
       ),
     );

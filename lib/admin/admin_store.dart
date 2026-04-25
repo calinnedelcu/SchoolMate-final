@@ -16,27 +16,27 @@ class AdminStore {
     username = username.trim().toLowerCase();
 
     if (username.isEmpty || password.isEmpty || fullName.isEmpty) {
-      throw Exception("Campuri lipsa");
+      throw Exception("Missing fields");
     }
     if (!["student", "teacher", "admin", "gate", "parent"].contains(role)) {
-      throw Exception("Role invalid");
+      throw Exception("Invalid role");
     }
     if ((role == "student" || role == "teacher") &&
         (classId == null || classId.trim().isEmpty)) {
-      throw Exception("classId obligatoriu pentru $role");
+      throw Exception("classId required for $role");
     }
-    // âœ… Dacă e student/teacher, clasa TREBUIE să existe deja în /classes
+    // For student/teacher, the class MUST already exist in /classes
     if (role == "student" || role == "teacher") {
       final cId = classId!.trim().toUpperCase();
       final classSnap = await _db.collection('classes').doc(cId).get();
 
       if (!classSnap.exists) {
-        throw Exception("Clasa $cId nu exista");
+        throw Exception("Class $cId does not exist");
       }
     }
     final ref = _db.collection('users').doc(username);
     final snap = await ref.get();
-    if (snap.exists) throw Exception("Username deja exista");
+    if (snap.exists) throw Exception("Username already exists");
     if (role == "teacher") {
       await _createTeacherAndAssign(
         username: username,
@@ -71,18 +71,18 @@ class AdminStore {
     required String endHHmm,
   }) async {
     classId = classId.trim().toUpperCase();
-    if (classId.isEmpty) throw Exception("classId lipsa");
+    if (classId.isEmpty) throw Exception("classId missing");
 
-    // (opțional) verifică format HH:mm
+    // (optional) validate HH:mm format
     bool ok(String s) => RegExp(r'^\d{2}:\d{2}$').hasMatch(s);
     if (!ok(startHHmm) || !ok(endHHmm)) {
-      throw Exception("Format invalid. Foloseste HH:mm (ex: 07:30)");
+      throw Exception("Invalid format. Use HH:mm (e.g. 07:30)");
     }
 
-    // clasa trebuie să existe (cum ai vrut)
+    // class must exist
     final classRef = _db.collection('classes').doc(classId);
     final snap = await classRef.get();
-    if (!snap.exists) throw Exception("Clasa $classId nu exista");
+    if (!snap.exists) throw Exception("Class $classId does not exist");
 
     await classRef.set({
       "noExitStart": startHHmm,
@@ -99,26 +99,26 @@ class AdminStore {
     required List<String> days,
   }) async {
     classId = classId.trim().toUpperCase();
-    if (classId.isEmpty) throw Exception("classId lipsa");
+    if (classId.isEmpty) throw Exception("classId missing");
 
-    // (opțional) verifică format HH:mm
+    // (optional) validate HH:mm format
     bool ok(String s) => RegExp(r'^\d{2}:\d{2}$').hasMatch(s);
     if (!ok(startHHmm) || !ok(endHHmm)) {
-      throw Exception("Format invalid. Foloseste HH:mm (ex: 07:30)");
+      throw Exception("Invalid format. Use HH:mm (e.g. 07:30)");
     }
 
-    // clasa trebuie să existe
+    // class must exist
     final classRef = _db.collection('classes').doc(classId);
     final snap = await classRef.get();
-    if (!snap.exists) throw Exception("Clasa $classId nu exista");
+    if (!snap.exists) throw Exception("Class $classId does not exist");
 
-    // converti zilele din Romanian format la numere (1-5)
+    // convert days from day names to numbers (1-5)
     final dayMapping = {
-      'Luni': 1,
-      'Marți': 2,
-      'Miercuri': 3,
-      'Joi': 4,
-      'Vineri': 5,
+      'Monday': 1,
+      'Tuesday': 2,
+      'Wednesday': 3,
+      'Thursday': 4,
+      'Friday': 5,
     };
 
     final dayNumbers = days
@@ -136,18 +136,18 @@ class AdminStore {
 
   Future<void> deleteClassCascade(String classId) async {
     classId = classId.trim().toUpperCase();
-    if (classId.isEmpty) throw Exception("classId lipsa");
+    if (classId.isEmpty) throw Exception("classId missing");
 
     final classRef = _db.collection('classes').doc(classId);
 
-    // ia teacherUsername înainte
+    // get teacherUsername first
     final classSnap = await classRef.get();
     final teacherUsername = (classSnap.data()?['teacherUsername'] ?? '')
         .toString()
         .trim()
         .toLowerCase();
 
-    // 1) șterge toți elevii din clasa asta
+    // 1) delete all students from this class
     final studentsSnap = await _db
         .collection('users')
         .where('role', isEqualTo: 'student')
@@ -159,16 +159,16 @@ class AdminStore {
       batch.delete(d.reference);
     }
 
-    // 2) dacă există teacher -> șterge-l și pe el (sau doar scoți classId, vezi comentariu)
+    // 2) if teacher exists -> delete them too (or just remove classId, see comment)
     if (teacherUsername.isNotEmpty) {
       final tRef = _db.collection('users').doc(teacherUsername);
       batch.delete(tRef);
 
-      // alternativ mai safe (nu ștergi profesorul, doar îl â€œdezasigneziâ€):
+      // safer alternative (do not delete teacher, just unassign them):
       // batch.update(tRef, {"classId": FieldValue.delete()});
     }
 
-    // 3) șterge clasa
+    // 3) delete class
     batch.delete(classRef);
 
     await batch.commit();
@@ -190,7 +190,7 @@ class AdminStore {
 
     await _db.runTransaction((tx) async {
       final uSnap = await tx.get(userRef);
-      if (uSnap.exists) throw Exception("Username deja exista");
+      if (uSnap.exists) throw Exception("Username already exists");
 
       final cSnap = await tx.get(classRef);
       final existingTeacher = cSnap.exists
@@ -200,10 +200,10 @@ class AdminStore {
                 .toLowerCase()
           : '';
       if (existingTeacher.isNotEmpty) {
-        throw Exception("Clasa $classId are deja diriginte: $existingTeacher");
+        throw Exception("Class $classId already has a homeroom teacher: $existingTeacher");
       }
 
-      // 1) creează user teacher
+      // 1) create teacher user
       tx.set(userRef, {
         "username": username,
         "role": "teacher",
@@ -216,7 +216,7 @@ class AdminStore {
         "createdAt": FieldValue.serverTimestamp(),
       });
 
-      // 2) setează teacher pe clasă
+      // 2) set teacher on class
       tx.set(classRef, {
         "name": classId,
         "teacherUsername": username,
@@ -235,12 +235,12 @@ class AdminStore {
       "passwordSalt": hp["saltB64"],
       "passwordHash": hp["hashB64"],
     });
-    return newPass; // secretariat o copiază
+    return newPass; // secretariat copies it
   }
 
   Future<void> deleteUser(String username) async {
     username = username.trim().toLowerCase();
-    if (username.isEmpty) throw Exception("username lipsa");
+    if (username.isEmpty) throw Exception("username missing");
 
     Future<void> clearTeacherFromClasses() async {
       final classesSnap = await _db
@@ -303,7 +303,7 @@ class AdminStore {
 
   Future<void> setDisabled(String username, bool disabled) async {
     username = username.trim().toLowerCase();
-    if (username.isEmpty) throw Exception("username lipsa");
+    if (username.isEmpty) throw Exception("username missing");
 
     final callable = FirebaseFunctions.instance.httpsCallable(
       'adminSetDisabled',
@@ -340,7 +340,7 @@ class AdminStore {
 
     if (userRef == null) {
       throw Exception(
-        "User inexistent (verifică uid/username): $userIdentifier",
+        "User not found (check uid/username): $userIdentifier",
       );
     }
     final resolvedUserRef = userRef;
@@ -349,7 +349,7 @@ class AdminStore {
 
     await _db.runTransaction((tx) async {
       final userSnap = await tx.get(resolvedUserRef);
-      if (!userSnap.exists) throw Exception("User inexistent");
+      if (!userSnap.exists) throw Exception("User not found");
 
       final userData = userSnap.data() as Map<String, dynamic>;
       final role = (userData["role"] ?? "").toString();
@@ -363,10 +363,10 @@ class AdminStore {
           .toUpperCase();
 
       if (role != "student" && role != "teacher") {
-        throw Exception("Doar student/teacher poate fi mutat");
+        throw Exception("Only student/teacher can be moved");
       }
 
-      // asigură clasa există
+      // ensure class exists
       final newClassSnap = await tx.get(newClassRef);
       if (!newClassSnap.exists) {
         tx.set(newClassRef, {
@@ -376,7 +376,7 @@ class AdminStore {
         }, SetOptions(merge: true));
       }
 
-      // STUDENT: doar update classId
+      // STUDENT: just update classId
       if (role == "student") {
         tx.update(resolvedUserRef, {
           "classId": newClassId,
@@ -385,7 +385,7 @@ class AdminStore {
         return;
       }
 
-      // TEACHER: verifică dacă noua clasă are deja diriginte
+      // TEACHER: check if the new class already has a homeroom teacher
       final newClassData = newClassSnap.exists
           ? (newClassSnap.data() as Map<String, dynamic>)
           : <String, dynamic>{};
@@ -397,11 +397,11 @@ class AdminStore {
 
       if (existingTeacher.isNotEmpty && existingTeacher != username) {
         throw Exception(
-          "Clasa $newClassId are deja un diriginte: $existingTeacher",
+          "Class $newClassId already has a homeroom teacher: $existingTeacher",
         );
       }
 
-      // dacă teacher era diriginte la clasa veche, îl scoatem de acolo
+      // if teacher was homeroom teacher at the old class, remove them from there
       if (oldClassId.isNotEmpty && oldClassId != newClassId) {
         final oldClassRef = _db.collection('classes').doc(oldClassId);
         final oldClassSnap = await tx.get(oldClassRef);
@@ -413,7 +413,7 @@ class AdminStore {
               .toLowerCase();
 
           if (oldTeacher == username) {
-            // scoate complet teacherUsername
+            // remove teacherUsername completely
             tx.set(oldClassRef, {
               "teacherUsername": FieldValue.delete(),
               "updatedAt": FieldValue.serverTimestamp(),
@@ -422,7 +422,7 @@ class AdminStore {
         }
       }
 
-      // setează teacher ca diriginte pe noua clasă
+      // set teacher as homeroom teacher on the new class
       tx.set(newClassRef, {
         "name": newClassId,
         "teacherUsername": username,
@@ -439,7 +439,7 @@ class AdminStore {
 
   Future<void> changeClassTeacher({
     required String classId,
-    required String teacherUsername, // poate fi "" ca sa scoti teacher
+    required String teacherUsername, // can be "" to remove the teacher
   }) async {
     classId = classId.trim().toUpperCase();
     teacherUsername = teacherUsername.trim().toLowerCase();
@@ -449,7 +449,7 @@ class AdminStore {
     await _db.runTransaction((tx) async {
       final classSnap = await tx.get(classRef);
       if (!classSnap.exists) {
-        throw Exception("Clasa $classId nu exista");
+        throw Exception("Class $classId does not exist");
       }
 
       String? oldTeacher;
@@ -462,16 +462,16 @@ class AdminStore {
         if (oldTeacher.isEmpty) oldTeacher = null;
       }
 
-      // daca exista deja diriginte si incerci sa pui altul -> ERROR
+      // if a homeroom teacher already exists and you're trying to set another -> ERROR
       if (teacherUsername.isNotEmpty &&
           oldTeacher != null &&
           oldTeacher != teacherUsername) {
-        throw Exception("Clasa $classId are deja diriginte: $oldTeacher");
+        throw Exception("Class $classId already has a homeroom teacher: $oldTeacher");
       }
 
       // 1) set new teacher on class
       if (teacherUsername.isEmpty) {
-        // scoate complet teacherUsername
+        // remove teacherUsername completely
         tx.set(classRef, {
           "name": classId,
           "updatedAt": FieldValue.serverTimestamp(),
@@ -499,19 +499,19 @@ class AdminStore {
         }, SetOptions(merge: true));
       }
 
-      // 2) validate + update new teacher user doc (NU crea user dacă nu există)
+      // 2) validate + update new teacher user doc (do NOT create user if not exists)
       if (teacherUsername.isNotEmpty) {
         final newTeacherRef = _db.collection('users').doc(teacherUsername);
         final newSnap = await tx.get(newTeacherRef);
 
         if (!newSnap.exists) {
-          throw Exception("Profesorul '$teacherUsername' nu exista in users");
+          throw Exception("Teacher '$teacherUsername' does not exist in users");
         }
 
         final newData = newSnap.data() as Map<String, dynamic>;
         final newRole = (newData["role"] ?? "").toString();
         if (newRole != "teacher") {
-          throw Exception("User '$teacherUsername' nu are role=teacher");
+          throw Exception("User '$teacherUsername' does not have role=teacher");
         }
 
         // teacher already assigned to another class?
@@ -520,7 +520,7 @@ class AdminStore {
             .toUpperCase();
         if (teacherClass.isNotEmpty && teacherClass != classId) {
           throw Exception(
-            "Profesorul '$teacherUsername' este deja diriginte la $teacherClass",
+            "Teacher '$teacherUsername' is already homeroom teacher at $teacherClass",
           );
         }
 
@@ -552,22 +552,22 @@ class AdminStore {
 
   Future<void> createClass({
     required String classId,
-    String? teacherUsername, // null = nu schimba, "" = remove, "abc" = set
+    String? teacherUsername, // null = don't change, "" = remove, "abc" = set
   }) async {
     classId = classId.trim().toUpperCase();
-    if (classId.isEmpty) throw Exception("classId lipsa");
+    if (classId.isEmpty) throw Exception("classId missing");
 
-    // doar asigura clasa exista
+    // just ensure class exists
     await _db.collection('classes').doc(classId).set({
       "name": classId,
       "updatedAt": FieldValue.serverTimestamp(),
       "createdAt": FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 
-    // daca null -> nu schimba dirigintele
+    // if null -> don't change the homeroom teacher
     if (teacherUsername == null) return;
 
-    // IMPORTANT: cheama changeClassTeacher si pentru "" (remove)
+    // IMPORTANT: call changeClassTeacher also for "" (remove)
     await changeClassTeacher(
       classId: classId,
       teacherUsername: teacherUsername,
