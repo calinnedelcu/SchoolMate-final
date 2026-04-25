@@ -30,9 +30,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_localizations:
-    sdk: flutter
-  intl: any
   qr_flutter: ^4.1.0
   mobile_scanner: ^5.0.0
   crypto: ^3.0.3
@@ -79,11 +76,9 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Enables generation of localizations classes from ARB files in lib/l10n.
-  generate: true
-
   assets:
     - assets/sounds/
+    - assets/images/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

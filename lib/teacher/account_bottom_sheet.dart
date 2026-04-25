@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../admin/services/admin_api.dart';
 import '../common/accessibility_settings_page.dart';
-import '../common/language_picker.dart';
 import '../core/session.dart';
 import '../student/logout_dialog.dart';
 
@@ -103,15 +102,6 @@ class _SettingsSheet extends StatelessWidget {
                   builder: (_) => const AccessibilitySettingsPage(),
                 ),
               );
-            },
-          ),
-          const SizedBox(height: 10),
-          _SettingsTile(
-            icon: Icons.language_rounded,
-            label: 'Limbă',
-            onTap: () {
-              Navigator.pop(ctx);
-              showLanguagePickerSheet(ctx);
             },
           ),
           const SizedBox(height: 10),

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../Auth/login_page_firestore.dart';
 import '../admin/services/admin_api.dart';
 import '../common/accessibility_settings_page.dart';
-import '../common/language_picker.dart';
 import '../core/session.dart';
 import 'parent_inbox_page.dart';
 import 'parent_requests_page.dart';
@@ -1755,15 +1754,6 @@ class _SettingsSheet extends StatelessWidget {
                   builder: (_) => const AccessibilitySettingsPage(),
                 ),
               );
-            },
-          ),
-          const SizedBox(height: 10),
-          _SettingsTile(
-            icon: Icons.language_rounded,
-            label: 'Limbă',
-            onTap: () {
-              Navigator.pop(ctx);
-              showLanguagePickerSheet(ctx);
             },
           ),
           const SizedBox(height: 10),
