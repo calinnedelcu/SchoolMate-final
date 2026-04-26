@@ -1,21 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:ui';
+import 'package:school_mate/core/session.dart';
 
 class GateMenuPage extends StatelessWidget {
   const GateMenuPage({super.key});
 
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
-    // No manual navigation needed; main.dart's authStateChanges listener handles the transition.
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color backgroundColor = const Color(0xFFF5F7FA);
-    final Color primaryBlue = const Color(0xFF3B66D6);
-    final Color darkText = const Color(0xFF1A202C);
+    const Color backgroundColor = Color(0xFFF5F7FA);
+    const Color primaryBlue = Color(0xFF3B66D6);
+    const Color darkText = Color(0xFF1A202C);
+
+    final hour = DateTime.now().hour;
+    String greetingText;
+    if (hour < 12) {
+      greetingText = "GOOD MORNING";
+    } else if (hour < 18) {
+      greetingText = "GOOD AFTERNOON";
+    } else {
+      greetingText = "GOOD EVENING";
+    }
+
+    final String sessionName = (AppSession.fullName ?? "").trim();
+    final String displayName = sessionName.isEmpty ? "Security User" : sessionName;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -45,7 +57,7 @@ class GateMenuPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildProfileCard(darkText, primaryBlue),
+            _buildProfileCard(darkText, primaryBlue, greetingText, displayName),
             const SizedBox(height: 24),
             _buildHeroScanner(context, primaryBlue),
             const SizedBox(height: 32),
@@ -90,7 +102,11 @@ class GateMenuPage extends StatelessWidget {
                     final timeStr = "${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}";
                     final String studentName = data['fullName'] ?? 'Unknown';
                     final String classCode = data['classId'] ?? '--';
-                    final Color statusColor = (data['status'] == 'entry' || data['status'] == 'success') ? Colors.green : Colors.red;
+                    
+                    // Enhanced status check to include entry, exit, and success as positive results
+                    final String status = (data['status'] ?? '').toString().toLowerCase();
+                    final Color statusColor = (status == 'entry' || status == 'success' || status == 'exit') 
+                        ? Colors.green : Colors.red;
 
                     return _buildRecentActivityItem(studentName, timeStr, classCode, statusColor);
                   }).toList(),
@@ -118,7 +134,7 @@ class GateMenuPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(100),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -148,7 +164,7 @@ class GateMenuPage extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileCard(Color darkText, Color primaryBlue) {
+  Widget _buildProfileCard(Color darkText, Color primaryBlue, String greeting, String name) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -157,7 +173,7 @@ class GateMenuPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(24), // Matches style guide 20px-24px
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -180,26 +196,28 @@ class GateMenuPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "GOOD MORNING",
+                  greeting,
                   style: TextStyle(
                     color: Colors.grey[500],
                     fontWeight: FontWeight.bold,
-                    fontSize: 10,
+                    fontSize: 12,
                     letterSpacing: 1.0,
                   ),
                 ),
                 Text(
-                  "Ion Popa",
+                  name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: darkText,
                     fontWeight: FontWeight.bold,
-                    fontSize: 22,
+                    fontSize: 20,
                   ),
                 ),
-                Text(
-                  "Porter A",
+                const Text(
+                  "Security Personnel",
                   style: TextStyle(
-                    color: primaryBlue,
+                    color: Color(0xFF3B66D6),
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
@@ -223,7 +241,7 @@ class GateMenuPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: primaryBlue.withOpacity(0.3),
+              color: primaryBlue.withValues(alpha: 0.3),
               blurRadius: 25,
               offset: const Offset(0, 15),
             ),
@@ -235,12 +253,12 @@ class GateMenuPage extends StatelessWidget {
             Positioned(
               top: -40,
               right: -40,
-              child: CircleAvatar(radius: 80, backgroundColor: Colors.white.withOpacity(0.1)),
+              child: CircleAvatar(radius: 80, backgroundColor: Colors.white.withValues(alpha: 0.1)),
             ),
             Positioned(
               bottom: -20,
               left: -20,
-              child: CircleAvatar(radius: 60, backgroundColor: Colors.white.withOpacity(0.05)),
+              child: CircleAvatar(radius: 60, backgroundColor: Colors.white.withValues(alpha: 0.05)),
             ),
             Center(
               child: Column(
@@ -249,9 +267,9 @@ class GateMenuPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1),
                     ),
                     child: const Icon(Icons.qr_code_2_rounded, size: 64, color: Colors.white),
                   ),
@@ -266,7 +284,7 @@ class GateMenuPage extends StatelessWidget {
                   Text(
                     "Tap anywhere to start the camera",
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 14,
                     ),
                   ),
@@ -288,7 +306,7 @@ class GateMenuPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(100),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
