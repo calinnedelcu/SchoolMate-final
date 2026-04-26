@@ -3,6 +3,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../core/session.dart';
+import '../student/widgets/school_decor.dart';
 
 const _primary = Color(0xFF2848B0);
 const _surfaceColor = Color(0xFFF2F4F8);
@@ -158,6 +159,10 @@ enum PostComposerMode { secretariat, teacher }
 class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
   PostKind _kind = PostKind.announcement;
 
+  // Returns English for teacher, Romanian for admin/secretariat.
+  String _t(String en, String ro) =>
+      widget.mode == PostComposerMode.teacher ? en : ro;
+
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _locationCtrl = TextEditingController();
@@ -212,20 +217,36 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
 
   String? _validate() {
     final title = _titleCtrl.text.trim();
-    if (title.isEmpty) return 'Adaugă un titlu.';
+    if (title.isEmpty) return _t('Add a title.', 'Adaugă un titlu.');
 
     if (_kind == PostKind.vacation) {
-      if (_eventDate == null) return 'Alege data de început a vacanței.';
-      if (_eventEndDate == null) return 'Alege data de sfârșit a vacanței.';
+      if (_eventDate == null) {
+        return _t(
+          'Pick the vacation start date.',
+          'Alege data de început a vacanței.',
+        );
+      }
+      if (_eventEndDate == null) {
+        return _t(
+          'Pick the vacation end date.',
+          'Alege data de sfârșit a vacanței.',
+        );
+      }
       if (_eventEndDate!.isBefore(_eventDate!)) {
-        return 'Data de sfârșit trebuie să fie după data de început.';
+        return _t(
+          'End date must be after start date.',
+          'Data de sfârșit trebuie să fie după data de început.',
+        );
       }
       return null;
     }
 
     final desc = _descCtrl.text.trim();
     if (desc.length < 20) {
-      return 'Descrierea trebuie să aibă cel puțin 20 de caractere.';
+      return _t(
+        'Description must be at least 20 characters.',
+        'Descrierea trebuie să aibă cel puțin 20 de caractere.',
+      );
     }
     if (widget.mode == PostComposerMode.secretariat) {
       if (_selectedClassIds != null && _selectedClassIds!.isEmpty) {
@@ -236,7 +257,9 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
       case PostKind.competition:
       case PostKind.camp:
       case PostKind.volunteer:
-        if (_eventDate == null) return 'Alege data evenimentului.';
+        if (_eventDate == null) {
+          return _t('Pick the event date.', 'Alege data evenimentului.');
+        }
         break;
       case PostKind.announcement:
       case PostKind.vacation:
@@ -246,7 +269,10 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     if (link.isNotEmpty &&
         !link.startsWith('http://') &&
         !link.startsWith('https://')) {
-      return 'Linkul trebuie să înceapă cu http:// sau https://.';
+      return _t(
+        'Link must start with http:// or https://.',
+        'Linkul trebuie să înceapă cu http:// sau https://.',
+      );
     }
     return null;
   }
@@ -361,7 +387,9 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${_kind.label} publicat${_kind == PostKind.competition || _kind == PostKind.camp || _kind == PostKind.vacation ? 'ă' : ''}!',
+            widget.mode == PostComposerMode.teacher
+                ? '${_kindLabel(_kind)} published!'
+                : '${_kindLabel(_kind)} publicat${_kind == PostKind.competition || _kind == PostKind.camp || _kind == PostKind.vacation ? 'ă' : ''}!',
           ),
         ),
       );
@@ -416,7 +444,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Postare nouă · ${_kind.label}',
+                    '${_t('New post', 'Postare nouă')} · ${_kindLabel(_kind)}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 17,
@@ -457,75 +485,151 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
       );
     }
 
-    final body = Container(
-      color: _surfaceColor,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+    final subtitle = _t(
+      'Send announcements, competitions, camps and volunteering for your class.',
+      widget.mode == PostComposerMode.teacher
+          ? 'Trimite anunțuri, competiții, tabere și voluntariat pentru clasa ta.'
+          : 'Compune anunțuri, competiții, tabere și voluntariat pentru toată școala sau clase selectate.',
+    );
+    final pageTitle = _t('Posts', 'Postări');
+    final recentLabel = _t('Recent posts', 'Postări recente');
+
+    if (widget.embedded) {
+      return Container(
+        color: _surfaceColor,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                pageTitle,
+                style: const TextStyle(
+                  color: _onSurface,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: const TextStyle(color: _outline, fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+              _buildKindChips(),
+              const SizedBox(height: 16),
+              _buildComposerCard(),
+              const SizedBox(height: 24),
+              Text(
+                recentLabel,
+                style: const TextStyle(
+                  color: _onSurface,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _PostsManagementList(
+                mode: widget.mode,
+                ownerUid: AppSession.uid ?? '',
+                ownerClassId: (AppSession.classId ?? '').trim(),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: _surfaceColor,
+      body: SafeArea(
+        top: false,
+        bottom: false,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Postări',
-              style: TextStyle(
-                color: _onSurface,
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
+            PageBlueHeader(
+              title: pageTitle,
+              subtitle: _t(
+                'For your class',
+                widget.mode == PostComposerMode.teacher
+                    ? 'Pentru clasa ta'
+                    : 'Pentru școală',
               ),
+              onBack: () => Navigator.of(context).maybePop(),
             ),
-            const SizedBox(height: 4),
-            Text(
-              widget.mode == PostComposerMode.teacher
-                  ? 'Trimite anunțuri, competiții, tabere și voluntariat pentru clasa ta.'
-                  : 'Compune anunțuri, competiții, tabere și voluntariat pentru toată școala sau clase selectate.',
-              style: const TextStyle(color: _outline, fontSize: 13),
-            ),
-            const SizedBox(height: 20),
-            _buildKindChips(),
-            const SizedBox(height: 16),
-            _buildComposerCard(),
-            const SizedBox(height: 24),
-            const Text(
-              'Postări recente',
-              style: TextStyle(
-                color: _onSurface,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      subtitle,
+                      style: const TextStyle(color: _outline, fontSize: 13),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildKindChips(),
+                    const SizedBox(height: 16),
+                    _buildComposerCard(),
+                    const SizedBox(height: 24),
+                    Text(
+                      recentLabel,
+                      style: const TextStyle(
+                        color: _onSurface,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _PostsManagementList(
+                      mode: widget.mode,
+                      ownerUid: AppSession.uid ?? '',
+                      ownerClassId: (AppSession.classId ?? '').trim(),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            _PostsManagementList(
-              mode: widget.mode,
-              ownerUid: AppSession.uid ?? '',
-              ownerClassId: (AppSession.classId ?? '').trim(),
             ),
           ],
         ),
       ),
     );
+  }
 
-    if (widget.embedded) return body;
-    return Scaffold(
-      backgroundColor: _surfaceColor,
-      appBar: AppBar(
-        toolbarHeight: 88,
-        backgroundColor: _primary,
-        foregroundColor: Colors.white,
-        iconTheme: const IconThemeData(size: 28),
-        title: const Text(
-          'Postări',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-        ),
-      ),
-      body: body,
-    );
+  String _kindLabel(PostKind k) {
+    if (widget.mode == PostComposerMode.teacher) {
+      switch (k) {
+        case PostKind.announcement:
+          return 'Announcement';
+        case PostKind.competition:
+          return 'Competition';
+        case PostKind.camp:
+          return 'Camp';
+        case PostKind.volunteer:
+          return 'Volunteer';
+        case PostKind.vacation:
+          return 'Vacation';
+      }
+    }
+    return k.label;
+  }
+
+  List<PostKind> get _visibleKinds {
+    if (widget.mode == PostComposerMode.teacher) {
+      // Teachers can't create vacancies (school-wide calendar entries).
+      return PostKind.values
+          .where((k) => k != PostKind.vacation)
+          .toList();
+    }
+    return PostKind.values;
   }
 
   Widget _buildKindChips({Color? accent}) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: PostKind.values.map((k) {
+      children: _visibleKinds.map((k) {
         final selected = _kind == k;
         final chipColor = selected ? k.accentColor : _cardBg;
         final borderColor = selected ? k.accentColor : const Color(0xFFD2DEE7);
@@ -549,7 +653,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  k.label,
+                  _kindLabel(k),
                   style: TextStyle(
                     color: selected ? Colors.white : _onSurface,
                     fontSize: 13,
@@ -587,7 +691,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
               Icon(_kind.icon, color: color, size: 20),
               const SizedBox(width: 8),
               Text(
-                'Postare nouă · ${_kind.label}',
+                '${_t('New post', 'Postare nouă')} · ${_kindLabel(_kind)}',
                 style: const TextStyle(
                   color: _onSurface,
                   fontSize: 15,
@@ -600,8 +704,11 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           _ComposerInput(
             controller: _titleCtrl,
             hint: _kind == PostKind.vacation
-                ? 'Numele vacanței * (ex: Vacanță de iarnă)'
-                : 'Titlu *',
+                ? _t(
+                    'Vacation name * (e.g. Winter break)',
+                    'Numele vacanței * (ex: Vacanță de iarnă)',
+                  )
+                : _t('Title *', 'Titlu *'),
             maxLength: 90,
           ),
           if (_kind == PostKind.vacation) ...[
@@ -611,18 +718,27 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
             const SizedBox(height: 10),
             _ComposerInput(
               controller: _descCtrl,
-              hint: 'Descriere * (min. 20 caractere)',
+              hint: _t(
+                'Description * (min. 20 characters)',
+                'Descriere * (min. 20 caractere)',
+              ),
               maxLines: 4,
               maxLength: 800,
             ),
             const SizedBox(height: 10),
             if (_kind != PostKind.announcement) ...[
-              _ComposerInput(controller: _locationCtrl, hint: 'Locație'),
+              _ComposerInput(
+                controller: _locationCtrl,
+                hint: _t('Location', 'Locație'),
+              ),
               const SizedBox(height: 10),
             ],
             _ComposerInput(
               controller: _linkCtrl,
-              hint: 'Link extern (opțional, https://...)',
+              hint: _t(
+                'External link (optional, https://...)',
+                'Link extern (opțional, https://...)',
+              ),
               keyboardType: TextInputType.url,
             ),
             const SizedBox(height: 10),
@@ -650,9 +766,9 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'Publică',
-                        style: TextStyle(
+                    : Text(
+                        _t('Publish', 'Publică'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
@@ -669,9 +785,13 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
   Widget _buildDatePickers() {
     final showRange = _kind == PostKind.camp || _kind == PostKind.vacation;
     final startLabel = _kind == PostKind.vacation
-        ? 'Început *'
-        : (showRange ? 'Început' : 'Data *');
-    final endLabel = _kind == PostKind.vacation ? 'Sfârșit *' : 'Sfârșit';
+        ? _t('Start *', 'Început *')
+        : (showRange
+            ? _t('Start', 'Început')
+            : _t('Date *', 'Data *'));
+    final endLabel = _kind == PostKind.vacation
+        ? _t('End *', 'Sfârșit *')
+        : _t('End', 'Sfârșit');
     return Row(
       children: [
         Expanded(
@@ -712,8 +832,8 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
             Expanded(
               child: Text(
                 classId.isEmpty
-                    ? 'Audiență: clasa ta (lipsește configurarea)'
-                    : 'Audiență: clasa $classId',
+                    ? 'Audience: your class (not configured)'
+                    : 'Audience: class $classId',
                 style: const TextStyle(
                   color: _onSurface,
                   fontSize: 13,
@@ -1050,10 +1170,12 @@ class _PostsManagementList extends StatelessWidget {
                       color: _cardBg,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Text(
-                      'Nicio postare încă.',
+                    child: Text(
+                      mode == PostComposerMode.teacher
+                          ? 'No posts yet.'
+                          : 'Nicio postare încă.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: _outline, fontSize: 13),
+                      style: const TextStyle(color: _outline, fontSize: 13),
                     ),
                   );
                 }
@@ -1063,7 +1185,7 @@ class _PostsManagementList extends StatelessWidget {
                       .map(
                         (item) => Padding(
                           padding: const EdgeInsets.only(bottom: 10),
-                          child: _PostCard(item: item),
+                          child: _PostCard(item: item, mode: mode),
                         ),
                       )
                       .toList(),
@@ -1089,15 +1211,22 @@ class _PostsManagementList extends StatelessWidget {
   }
 
   String _legacyAudienceLabel(Map<String, dynamic> d) {
+    final isTeacher = mode == PostComposerMode.teacher;
     final audience = (d['audienceClassIds'] as List?) ?? const [];
     if (audience.isNotEmpty) {
-      if (audience.contains(kAudienceAll)) return 'Toată școala';
-      if (audience.length == 1) return 'Clasa ${audience.first}';
-      return '${audience.length} clase';
+      if (audience.contains(kAudienceAll)) {
+        return isTeacher ? 'Whole school' : 'Toată școala';
+      }
+      if (audience.length == 1) {
+        return isTeacher ? 'Class ${audience.first}' : 'Clasa ${audience.first}';
+      }
+      return isTeacher
+          ? '${audience.length} classes'
+          : '${audience.length} clase';
     }
     final classId = d['classId'];
-    if (classId == null) return 'Toată școala';
-    return 'Clasa $classId';
+    if (classId == null) return isTeacher ? 'Whole school' : 'Toată școala';
+    return isTeacher ? 'Class $classId' : 'Clasa $classId';
   }
 }
 
@@ -1129,7 +1258,10 @@ class _PostItem {
 
 class _PostCard extends StatelessWidget {
   final _PostItem item;
-  const _PostCard({required this.item});
+  final PostComposerMode mode;
+  const _PostCard({required this.item, required this.mode});
+
+  bool get _isTeacher => mode == PostComposerMode.teacher;
 
   IconData get _icon {
     switch (item.category) {
@@ -1147,6 +1279,20 @@ class _PostCard extends StatelessWidget {
   }
 
   String get _label {
+    if (_isTeacher) {
+      switch (item.category) {
+        case 'competition':
+          return 'Competition';
+        case 'camp':
+          return 'Camp';
+        case 'volunteer':
+          return 'Volunteer';
+        case 'vacation':
+          return 'Vacation';
+        default:
+          return 'Announcement';
+      }
+    }
     switch (item.category) {
       case 'competition':
         return 'Competiție';
@@ -1172,18 +1318,25 @@ class _PostCard extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Șterge postarea?'),
+        title: Text(
+          _isTeacher ? 'Delete post?' : 'Șterge postarea?',
+        ),
         content: Text(
-          'Postarea "${item.title}" va fi ștearsă definitiv. Ești sigur?',
+          _isTeacher
+              ? 'Post "${item.title}" will be permanently deleted. Are you sure?'
+              : 'Postarea "${item.title}" va fi ștearsă definitiv. Ești sigur?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Anulează'),
+            child: Text(_isTeacher ? 'Cancel' : 'Anulează'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Șterge', style: TextStyle(color: _danger)),
+            child: Text(
+              _isTeacher ? 'Delete' : 'Șterge',
+              style: const TextStyle(color: _danger),
+            ),
           ),
         ],
       ),
@@ -1235,7 +1388,9 @@ class _PostCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.title.isEmpty ? '(fără titlu)' : item.title,
+                      item.title.isEmpty
+                          ? (_isTeacher ? '(no title)' : '(fără titlu)')
+                          : item.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -1252,13 +1407,16 @@ class _PostCard extends StatelessWidget {
                         _Tag(text: _label, color: _primary),
                         _Tag(
                           text: item.audienceLabel.isEmpty
-                              ? 'Toată școala'
+                              ? (_isTeacher ? 'Whole school' : 'Toată școala')
                               : item.audienceLabel,
                           color: const Color(0xFF6F8FA9),
                         ),
                         _Tag(text: dateStr, color: _outline),
                         if (item.archived)
-                          const _Tag(text: 'Arhivat', color: _danger),
+                          _Tag(
+                            text: _isTeacher ? 'Archived' : 'Arhivat',
+                            color: _danger,
+                          ),
                       ],
                     ),
                   ],
@@ -1285,7 +1443,9 @@ class _PostCard extends StatelessWidget {
               if (item.senderName.isNotEmpty)
                 Expanded(
                   child: Text(
-                    'de ${item.senderName}',
+                    _isTeacher
+                        ? 'by ${item.senderName}'
+                        : 'de ${item.senderName}',
                     style: const TextStyle(
                       color: _outline,
                       fontSize: 11,
@@ -1303,7 +1463,11 @@ class _PostCard extends StatelessWidget {
                       : Icons.archive_rounded,
                   size: 16,
                 ),
-                label: Text(item.archived ? 'Reactivează' : 'Arhivează'),
+                label: Text(
+                  _isTeacher
+                      ? (item.archived ? 'Reactivate' : 'Archive')
+                      : (item.archived ? 'Reactivează' : 'Arhivează'),
+                ),
                 style: TextButton.styleFrom(
                   foregroundColor: _primary,
                   textStyle: const TextStyle(
@@ -1315,7 +1479,7 @@ class _PostCard extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => _delete(context),
                 icon: const Icon(Icons.delete_outline_rounded, size: 16),
-                label: const Text('Șterge'),
+                label: Text(_isTeacher ? 'Delete' : 'Șterge'),
                 style: TextButton.styleFrom(
                   foregroundColor: _danger,
                   textStyle: const TextStyle(

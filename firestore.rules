@@ -191,7 +191,13 @@ service cloud.firestore {
           (isTeacher() &&
               resource.data.recipientRole == 'teacher' &&
           (resource.data.recipientUid == request.auth.uid ||
-            resource.data.recipientUid == ''));
+            resource.data.recipientUid == '')) ||
+          // Teachers can also see student-targeted broadcasts (school-wide or
+          // class-specific posts) so they see the same announcements as their
+          // students.
+          (isTeacher() &&
+              resource.data.recipientRole == 'student' &&
+              resource.data.recipientUid == '');
     }
 
     function validQrTokenCreate() {

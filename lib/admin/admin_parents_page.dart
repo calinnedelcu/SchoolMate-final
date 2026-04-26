@@ -288,8 +288,6 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                             .toString();
                                     final classId = (data['classId'] ?? '')
                                         .toString();
-                                    final inSchool =
-                                        data['inSchool'] as bool? ?? false;
                                     final email =
                                         (data['personalEmail'] ?? data['email'])
                                             ?.toString();
@@ -317,7 +315,6 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                         username: username,
                                         fullName: fullName,
                                         classId: classId,
-                                        inSchool: inSchool,
                                         status: status,
                                         onboardingComplete: onboardingComplete,
                                         emailVerified: emailVerified,
@@ -742,7 +739,6 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
     required String username,
     required String fullName,
     required String classId,
-    required bool inSchool,
     required String status,
     required bool onboardingComplete,
     required bool emailVerified,
