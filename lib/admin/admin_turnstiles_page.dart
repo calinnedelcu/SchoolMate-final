@@ -9,7 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../core/session.dart';
-import 'admin_api.dart';
+import 'services/admin_api.dart';
 import 'admin_classes_page.dart' show AdminClassesPage;
 import 'admin_notifications.dart';
 import 'admin_parents_page.dart';

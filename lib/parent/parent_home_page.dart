@@ -3,21 +3,100 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Auth/login_page_firestore.dart';
 import '../admin/services/admin_api.dart';
-import '../common/accessibility_settings_page.dart';
 import '../core/session.dart';
+import '../student/widgets/no_anim_route.dart';
+import '../student/widgets/school_decor.dart' as decor;
+import '../student/widgets/school_decor.dart' show WaveHeroHeader;
 import 'parent_inbox_page.dart';
 import 'parent_requests_page.dart';
+import 'parent_schedule_page.dart';
 import 'parent_students_page.dart';
 
-// ── Colour tokens (same palette as student) ──────────────────────────────────
-const _primary = Color(0xFF1F8BE7);
-const _surface = Color(0xFFEFF5FA);
-const _surfaceContainerLow = Color(0xFFE7F0F6);
+const _homeMonths = [
+  '',
+  'ianuarie',
+  'februarie',
+  'martie',
+  'aprilie',
+  'mai',
+  'iunie',
+  'iulie',
+  'august',
+  'septembrie',
+  'octombrie',
+  'noiembrie',
+  'decembrie',
+];
+
+// ── Colour tokens (same palette as student/admin) ────────────────────────────
+const _primary = Color(0xFF2848B0);
+const _surface = Color(0xFFF2F4F8);
+const _surfaceContainerLow = Color(0xFFE8EAF2);
 const _surfaceLowest = Color(0xFFFFFFFF);
-const _outline = Color(0xFF717B6E);
-const _outlineVariant = Color(0xFFBACCD9);
-const _onSurface = Color(0xFF587F9E);
-const _danger = Color(0xFF8E3557);
+const _outline = Color(0xFF7A7E9A);
+const _outlineVariant = Color(0xFFBFC3D9);
+const _onSurface = Color(0xFF1A2050);
+const _labelColor = Color(0xFF7A7E9A);
+const _pencilYellow = Color(0xFFF5C518);
+const _danger = Color(0xFFB03040);
+
+void _drawSymbol(
+  Canvas canvas,
+  String text,
+  Offset pos,
+  double fontSize,
+  Color color,
+) {
+  final painter = TextPainter(
+    text: TextSpan(
+      text: text,
+      style: TextStyle(
+        color: color,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+  );
+  painter.layout();
+  painter.paint(canvas, pos - Offset(painter.width / 2, painter.height / 2));
+}
+
+class _WhiteCardDecorPainter extends CustomPainter {
+  final int variant;
+  const _WhiteCardDecorPainter({this.variant = 0});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawCircle(
+      Offset(size.width - 20, size.height + 10),
+      40,
+      Paint()..color = _primary.withValues(alpha: 0.035),
+    );
+
+    final c1 = _primary.withValues(alpha: 0.10);
+    final c2 = _primary.withValues(alpha: 0.07);
+    final cy = _pencilYellow.withValues(alpha: 0.40);
+
+    final entries = [
+      ('π', Offset(size.width - 58, 16), 11.0),
+      ('+', Offset(size.width - 42, 24), 10.0),
+      ('×', Offset(size.width - 72, 28), 10.0),
+      ('=', Offset(size.width - 50, size.height - 14), 10.0),
+      ('√', Offset(size.width - 78, size.height - 20), 11.0),
+    ];
+    final yellowIdx = variant % entries.length;
+    for (int i = 0; i < entries.length; i++) {
+      final (text, pos, fs) = entries[i];
+      final color = i == yellowIdx ? cy : (i.isEven ? c1 : c2);
+      _drawSymbol(canvas, text, pos, fs, color);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _WhiteCardDecorPainter oldDelegate) =>
+      oldDelegate.variant != variant;
+}
 
 class _DampedScrollPhysics extends ScrollPhysics {
   const _DampedScrollPhysics({super.parent});
@@ -158,86 +237,54 @@ class _ParentHomePageState extends State<ParentHomePage> {
               builder: (context, childrenSnapshot) {
                 final childrenUids =
                     childrenSnapshot.data ?? directChildrenUids;
-                return Stack(
-                  fit: StackFit.expand,
+                final now = DateTime.now();
+                final dateStr =
+                    '${now.day} ${_homeMonths[now.month]} ${now.year}';
+                return Column(
                   children: [
-                    Container(color: _surface),
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: _TopHeroHeader(
-                        displayName: displayName,
-                        onSettings: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ParentProfilePage(),
-                          ),
-                        ),
-                      ),
+                    WaveHeroHeader(
+                      title: 'Welcome,\n$displayName',
+                      subtitle: dateStr,
                     ),
-                    Positioned(
-                      top: 190,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
+                    Expanded(
                       child: SingleChildScrollView(
                         physics: const _DampedScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
                         child: Column(
                           children: [
-                            _ActivityCard(
+                            _QuickStatsCard(
                               childrenUids: childrenUids,
-                              height: 390,
+                              inboxLastOpened: inboxLastOpened,
                             ),
                             const SizedBox(height: 16),
-                            _CopiiMeiCard(
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const ParentStudentsPage(),
-                                ),
-                              ),
+                            _ShortcutsRow(
+                              childrenUids: childrenUids,
+                              onRequestsTap: () {
+                                _markOpened(uid, 'requestsLastOpenedAt');
+                                Navigator.push(
+                                  context,
+                                  noAnimRoute(
+                                    (_) => const ParentRequestsPage(),
+                                  ),
+                                );
+                              },
+                              onScheduleTap: () {
+                                Navigator.push(
+                                  context,
+                                  noAnimRoute(
+                                    (_) => const ParentSchedulePage(),
+                                  ),
+                                );
+                              },
                             ),
-                            const SizedBox(height: 12),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: SizedBox(
-                                    height: 184,
-                                    child: _CereriCard(
-                                      childrenUids: childrenUids,
-                                      onTap: () {
-                                        _markOpened(
-                                          uid,
-                                          'requestsLastOpenedAt',
-                                        );
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                const ParentRequestsPage(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: SizedBox(
-                                    height: 184,
-                                    child: _MesajeCard(
-                                      childrenUids: childrenUids,
-                                      inboxLastOpened: inboxLastOpened,
-                                      onTap: () async {
-                                        await _openInbox(context, uid);
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(height: 16),
+                            _ParentAnnouncementsCard(
+                              parentUid: uid,
+                              childrenUids: childrenUids,
+                              inboxLastOpened: inboxLastOpened,
+                              onTap: () async {
+                                await _openInbox(context, uid);
+                              },
                             ),
                           ],
                         ),
@@ -271,7 +318,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
 
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const ParentInboxPage()),
+      noAnimRoute((_) => const ParentInboxPage()),
     );
 
     final returnedAt = DateTime.now();
@@ -294,575 +341,604 @@ class _ParentHomePageState extends State<ParentHomePage> {
   }
 }
 
+// QUICK STATS CARD
 // ─────────────────────────────────────────────────────────────────────────────
-// HERO HEADER
-// ─────────────────────────────────────────────────────────────────────────────
-class _TopHeroHeader extends StatefulWidget {
-  final String displayName;
-  final VoidCallback onSettings;
+class _QuickStatsCard extends StatelessWidget {
+  final List<String> childrenUids;
+  final DateTime? inboxLastOpened;
 
-  const _TopHeroHeader({required this.displayName, required this.onSettings});
-
-  @override
-  State<_TopHeroHeader> createState() => _TopHeroHeaderState();
-}
-
-class _TopHeroHeaderState extends State<_TopHeroHeader> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(52),
-        bottomRight: Radius.circular(52),
-      ),
-      child: Container(
-        height: 220 + topPadding,
-        color: _primary,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              right: -80,
-              top: -90,
-              child: _Circle(size: 290, opacity: 0.08),
-            ),
-            Positioned(
-              right: 38,
-              top: 54 + topPadding,
-              child: _Circle(size: 78, opacity: 0.07),
-            ),
-            Positioned(
-              left: -60,
-              bottom: -44,
-              child: _Circle(size: 186, opacity: 0.08),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(28, 4 + topPadding, 18, 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Bine ai venit,\n${widget.displayName}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 34,
-                        height: 1.20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTapDown: (_) => setState(() => _pressed = true),
-                    onTapUp: (_) {
-                      setState(() => _pressed = false);
-                      widget.onSettings();
-                    },
-                    onTapCancel: () => setState(() => _pressed = false),
-                    child: AnimatedScale(
-                      scale: _pressed ? 0.78 : 1.0,
-                      duration: const Duration(milliseconds: 100),
-                      curve: Curves.easeOut,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 100),
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: const Color(0x3389BEEB),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: const Color(0x6DC5E0F6),
-                            width: 1,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 21,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Circle extends StatelessWidget {
-  final double size;
-  final double opacity;
-
-  const _Circle({required this.size, required this.opacity});
+  const _QuickStatsCard({
+    required this.childrenUids,
+    required this.inboxLastOpened,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: size,
-      height: size,
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: opacity),
-        shape: BoxShape.circle,
+        color: _surfaceLowest,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x10000000),
+            blurRadius: 16,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ACTIVITY CARD
-// ─────────────────────────────────────────────────────────────────────────────
-class _ActivityCard extends StatelessWidget {
-  final List<String> childrenUids;
-  final double height;
-
-  const _ActivityCard({required this.childrenUids, required this.height});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: Container(
-        decoration: BoxDecoration(
-          color: _surfaceLowest,
-          borderRadius: BorderRadius.circular(34),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x141F8BE7),
-              blurRadius: 24,
-              offset: Offset(0, 10),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: const _WhiteCardDecorPainter(variant: 2),
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            const Text(
-              'Activitate Recentă',
-              style: TextStyle(
-                fontSize: 31,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.7,
-                color: Color(0xFF4B83B2),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFFDDDDDD),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: childrenUids.isEmpty
-                  ? const Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 20,
-                        horizontal: 20,
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _primary.withValues(alpha: 0.12),
+                          _primary.withValues(alpha: 0.06),
+                        ],
                       ),
-                      child: Center(
-                        child: Text(
-                          'Nu sunt copii adaugati.',
-                          style: TextStyle(color: _outline),
+                      borderRadius: BorderRadius.circular(13),
+                      border: Border.all(
+                        color: _primary.withValues(alpha: 0.10),
+                        width: 1,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.dashboard_rounded,
+                      color: _primary,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'At a glance',
+                          style: TextStyle(
+                            color: _onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
+                          ),
                         ),
-                      ),
-                    )
-                  : _ActivityFeed(childrenUids: childrenUids),
-            ),
-            if (childrenUids.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _ParentStatsRow(childrenUids: childrenUids),
+                        const SizedBox(height: 4),
+                        Container(
+                          width: 32,
+                          height: 2.5,
+                          decoration: BoxDecoration(
+                            color: _pencilYellow,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatTile(
+                      icon: Icons.group_rounded,
+                      iconColor: _primary,
+                      iconBg: _primary.withValues(alpha: 0.12),
+                      value: '${childrenUids.length}',
+                      label: 'CHILDREN',
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _PendingRequestsStat(childrenUids: childrenUids),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _UnreadInboxStat(
+                      childrenUids: childrenUids,
+                      inboxLastOpened: inboxLastOpened,
+                    ),
+                  ),
+                ],
               ),
             ],
-            const SizedBox(height: 14),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ACTIVITY FEED
-// ─────────────────────────────────────────────────────────────────────────────
-class _ActivityItem {
-  final String title;
-  final DateTime? time;
+class _StatTile extends StatelessWidget {
   final IconData icon;
-  final Color iconBg;
   final Color iconColor;
+  final Color iconBg;
+  final String value;
+  final String label;
 
-  const _ActivityItem({
-    required this.title,
-    required this.time,
+  const _StatTile({
     required this.icon,
-    required this.iconBg,
     required this.iconColor,
+    required this.iconBg,
+    required this.value,
+    required this.label,
   });
-}
-
-class _ActivityFeed extends StatefulWidget {
-  final List<String> childrenUids;
-
-  const _ActivityFeed({required this.childrenUids});
-
-  @override
-  State<_ActivityFeed> createState() => _ActivityFeedState();
-}
-
-class _ActivityFeedState extends State<_ActivityFeed> {
-  final Map<String, String> _names = {};
-
-  late Stream<QuerySnapshot<Map<String, dynamic>>> _accessStream;
-  late Stream<QuerySnapshot<Map<String, dynamic>>> _requestStream;
-
-  @override
-  void initState() {
-    super.initState();
-    _buildStreams(widget.childrenUids);
-    _loadNames();
-  }
-
-  @override
-  void didUpdateWidget(_ActivityFeed old) {
-    super.didUpdateWidget(old);
-    if (old.childrenUids.join() != widget.childrenUids.join()) {
-      _buildStreams(widget.childrenUids);
-      _loadNames();
-    }
-  }
-
-  void _buildStreams(List<String> uids) {
-    if (uids.isEmpty) {
-      _accessStream = const Stream.empty();
-      _requestStream = const Stream.empty();
-      return;
-    }
-    _accessStream = FirebaseFirestore.instance
-        .collection('accessEvents')
-        .where('userId', whereIn: uids)
-        .orderBy('timestamp', descending: true)
-        .limit(5)
-        .snapshots();
-    _requestStream = FirebaseFirestore.instance
-        .collection('leaveRequests')
-        .where('studentUid', whereIn: uids)
-        .where('status', whereIn: ['approved', 'rejected'])
-        .orderBy('reviewedAt', descending: true)
-        .limit(5)
-        .snapshots();
-  }
-
-  Future<void> _loadNames() async {
-    for (final uid in widget.childrenUids) {
-      if (_names.containsKey(uid)) continue;
-      try {
-        final doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .get();
-        final d = doc.data() ?? {};
-        final name = (d['fullName'] ?? d['username'] ?? '').toString().trim();
-        if (name.isNotEmpty && mounted) {
-          setState(() => _names[uid] = name);
-        }
-      } catch (_) {}
-    }
-  }
-
-  String _resolveName(String uid, Map<String, dynamic> eventData) {
-    if (_names.containsKey(uid)) return _names[uid]!;
-    for (final key in ['studentName', 'fullName', 'userName', 'username']) {
-      final v = (eventData[key] ?? '').toString().trim();
-      if (v.isNotEmpty) return v;
-    }
-    return 'Elev';
-  }
-
-  static String _formatTime(DateTime? dt) {
-    if (dt == null) return '--';
-    final day = dt.day.toString().padLeft(2, '0');
-    final month = _monthShort(dt.month);
-    final hour = dt.hour.toString().padLeft(2, '0');
-    final min = dt.minute.toString().padLeft(2, '0');
-    return '$day $month, $hour:$min';
-  }
-
-  static String _monthShort(int m) {
-    const months = [
-      'IAN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAI',
-      'IUN',
-      'IUL',
-      'AUG',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DEC',
-    ];
-    return months[m - 1];
-  }
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 15, 10, 15),
+      decoration: BoxDecoration(
+        color: _surfaceContainerLow.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 35,
+            height: 35,
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              color: _onSurface,
+              fontSize: 23,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              color: _labelColor,
+              fontSize: 10,
+              letterSpacing: 0.8,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PendingRequestsStat extends StatelessWidget {
+  final List<String> childrenUids;
+
+  const _PendingRequestsStat({required this.childrenUids});
+
+  @override
+  Widget build(BuildContext context) {
+    if (childrenUids.isEmpty) {
+      return const _StatTile(
+        icon: Icons.hourglass_top_rounded,
+        iconColor: Color(0xFFC58A00),
+        iconBg: Color(0xFFFFF1C4),
+        value: '0',
+        label: 'PENDING',
+      );
+    }
+    final chunk = childrenUids.take(10).toList();
+    final stream = FirebaseFirestore.instance
+        .collection('leaveRequests')
+        .where('studentUid', whereIn: chunk)
+        .where('status', isEqualTo: 'pending')
+        .snapshots();
+
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: _accessStream,
-      builder: (context, accessSnap) {
-        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: _requestStream,
-          builder: (context, reqSnap) {
-            final List<_ActivityItem> items = [];
-
-            for (final doc in accessSnap.data?.docs ?? []) {
-              final d = doc.data();
-              final typStr = (d['type'] ?? '').toString().trim();
-              final isExit = typStr == 'exit';
-              final uid = (d['userId'] ?? '').toString();
-              final name = _resolveName(uid, d);
-              final ts = (d['timestamp'] as Timestamp?)?.toDate();
-              items.add(
-                _ActivityItem(
-                  title: isExit ? '$name a iesit' : '$name a intrat',
-                  time: ts,
-                  icon: isExit
-                      ? Icons.arrow_forward_rounded
-                      : Icons.arrow_back_rounded,
-                  iconBg: isExit
-                      ? const Color(0xFFFFF0F5)
-                      : const Color(0xFFE8F0F6),
-                  iconColor: isExit ? _danger : _primary,
-                ),
-              );
-            }
-
-            for (final doc in reqSnap.data?.docs ?? []) {
-              final d = doc.data();
-              final status = (d['status'] ?? '').toString();
-              final ts =
-                  ((d['reviewedAt'] ?? d['updatedAt'] ?? d['createdAt'])
-                          as Timestamp?)
-                      ?.toDate();
-              final approved = status == 'approved';
-              items.add(
-                _ActivityItem(
-                  title: approved ? 'Cerere aprobata' : 'Cerere respinsa',
-                  time: ts,
-                  icon: approved
-                      ? Icons.check_circle_outline_rounded
-                      : Icons.cancel_outlined,
-                  iconBg: approved
-                      ? const Color(0xFFE8F0F6)
-                      : const Color(0xFFFFF0F5),
-                  iconColor: approved ? _primary : _danger,
-                ),
-              );
-            }
-
-            items.sort((a, b) {
-              if (a.time == null && b.time == null) return 0;
-              if (a.time == null) return 1;
-              if (b.time == null) return -1;
-              return b.time!.compareTo(a.time!);
-            });
-
-            final shown = items.take(3).toList();
-
-            if (shown.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                child: Center(
-                  child: Text(
-                    'Nicio activitate recenta.',
-                    style: TextStyle(color: _outline, fontSize: 14),
-                  ),
-                ),
-              );
-            }
-
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: shown
-                    .map(
-                      (item) => _ActivityTile(
-                        item: item,
-                        formattedTime: _formatTime(item.time),
-                      ),
-                    )
-                    .toList(),
-              ),
-            );
-          },
+      stream: stream,
+      builder: (context, snap) {
+        final count = snap.data?.docs.length ?? 0;
+        return _StatTile(
+          icon: Icons.hourglass_top_rounded,
+          iconColor: const Color(0xFFC58A00),
+          iconBg: const Color(0xFFFFF1C4),
+          value: '$count',
+          label: 'PENDING',
         );
       },
     );
   }
 }
 
-class _ActivityTile extends StatelessWidget {
-  final _ActivityItem item;
-  final String formattedTime;
-
-  const _ActivityTile({required this.item, required this.formattedTime});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFF3F8FC),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: item.iconColor,
-                  borderRadius: BorderRadius.circular(11),
-                ),
-                child: Icon(item.icon, color: Colors.white, size: 23),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title,
-                      style: const TextStyle(
-                        color: Color(0xFF4B83B2),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      formattedTime,
-                      style: const TextStyle(
-                        color: Color(0xFF85A0B7),
-                        fontSize: 12,
-                        letterSpacing: 0.6,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// COPIII MEI CARD
-// ─────────────────────────────────────────────────────────────────────────────
-class _CopiiMeiCard extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _CopiiMeiCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: _surfaceLowest,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: _surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.group_rounded,
-                  color: _primary,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Copiii mei',
-                      style: TextStyle(
-                        color: _primary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Vezi detaliile elevilor tăi',
-                      style: TextStyle(
-                        color: _outline,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: _outline,
-                size: 24,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CERERI CARD (dark green)
-// ─────────────────────────────────────────────────────────────────────────────
-class _CereriCard extends StatefulWidget {
+class _UnreadInboxStat extends StatelessWidget {
   final List<String> childrenUids;
-  final VoidCallback onTap;
+  final DateTime? inboxLastOpened;
 
-  const _CereriCard({required this.childrenUids, required this.onTap});
+  const _UnreadInboxStat({
+    required this.childrenUids,
+    required this.inboxLastOpened,
+  });
 
   @override
-  State<_CereriCard> createState() => _CereriCardState();
+  Widget build(BuildContext context) {
+    if (childrenUids.isEmpty) {
+      return const _StatTile(
+        icon: Icons.mark_email_unread_rounded,
+        iconColor: _primary,
+        iconBg: Color(0xFFE2E7FA),
+        value: '0',
+        label: 'UNREAD',
+      );
+    }
+    final chunk = childrenUids.take(10).toList();
+    final stream = FirebaseFirestore.instance
+        .collection('leaveRequests')
+        .where('studentUid', whereIn: chunk)
+        .orderBy('requestedAt', descending: true)
+        .limit(20)
+        .snapshots();
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: stream,
+      builder: (context, snap) {
+        final docs = snap.data?.docs ?? const [];
+        int unread;
+        if (inboxLastOpened == null) {
+          unread = docs.length;
+        } else {
+          unread = docs.where((d) {
+            final ts =
+                (d.data()['reviewedAt'] as Timestamp?) ??
+                (d.data()['requestedAt'] as Timestamp?);
+            return ts != null && ts.toDate().isAfter(inboxLastOpened!);
+          }).length;
+        }
+        return _StatTile(
+          icon: Icons.mark_email_unread_rounded,
+          iconColor: _primary,
+          iconBg: const Color(0xFFE2E7FA),
+          value: '$unread',
+          label: 'UNREAD',
+        );
+      },
+    );
+  }
 }
 
-class _CereriCardState extends State<_CereriCard> {
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _badgeStream;
+// ─────────────────────────────────────────────────────────────────────────────
+// ANNOUNCEMENTS CARD (mirrors student's inbox preview)
+// ─────────────────────────────────────────────────────────────────────────────
+class _ParentAnnouncementsCard extends StatelessWidget {
+  final String parentUid;
+  final List<String> childrenUids;
+  final DateTime? inboxLastOpened;
+  final VoidCallback onTap;
+
+  const _ParentAnnouncementsCard({
+    required this.parentUid,
+    required this.childrenUids,
+    required this.inboxLastOpened,
+    required this.onTap,
+  });
+
+  DateTime? _readDateTime(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value);
+    return null;
+  }
+
+  List<Stream<QuerySnapshot<Map<String, dynamic>>>> _buildSecretariatStreams() {
+    final base = FirebaseFirestore.instance.collection('secretariatMessages');
+    return [
+      // Parent-targeted: broadcasts + per-child messages
+      base
+          .where('recipientRole', isEqualTo: 'parent')
+          .where('studentUid', isEqualTo: '')
+          .limit(20)
+          .snapshots(),
+      ...childrenUids.map(
+        (childUid) => base
+            .where('recipientRole', isEqualTo: 'parent')
+            .where('studentUid', isEqualTo: childUid)
+            .limit(20)
+            .snapshots(),
+      ),
+      // Student-targeted: school-wide broadcasts + messages to any child
+      base
+          .where('recipientRole', isEqualTo: 'student')
+          .where('recipientUid', isEqualTo: '')
+          .limit(20)
+          .snapshots(),
+      ...childrenUids.map(
+        (childUid) => base
+            .where('recipientRole', isEqualTo: 'student')
+            .where('recipientUid', isEqualTo: childUid)
+            .limit(20)
+            .snapshots(),
+      ),
+    ];
+  }
+
+  Widget _withMergedDocs(
+    List<Stream<QuerySnapshot<Map<String, dynamic>>>> streams,
+    Widget Function(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs)
+    onReady,
+  ) {
+    Widget step(
+      int index,
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> acc,
+    ) {
+      if (index >= streams.length) return onReady(acc);
+      return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: streams[index],
+        builder: (context, snap) {
+          if (snap.hasError) return step(index + 1, acc);
+          if (!snap.hasData) {
+            return onReady(acc);
+          }
+          return step(index + 1, [...acc, ...snap.data!.docs]);
+        },
+      );
+    }
+
+    return step(0, const <QueryDocumentSnapshot<Map<String, dynamic>>>[]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasChildren = childrenUids.isNotEmpty;
+    final leaveStream = hasChildren
+        ? FirebaseFirestore.instance
+              .collection('leaveRequests')
+              .where('studentUid', whereIn: childrenUids.take(10).toList())
+              .where('status', whereIn: ['approved', 'rejected'])
+              .snapshots()
+        : null;
+    final secretariatStreams = _buildSecretariatStreams();
+
+    return GestureDetector(
+      onTap: onTap,
+      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: leaveStream,
+        builder: (context, leaveSnap) {
+          return _withMergedDocs(secretariatStreams, (secretariatDocs) {
+            final times = <DateTime>[];
+            for (final d in leaveSnap.data?.docs ?? const []) {
+              final data = d.data();
+              if ((data['source'] ?? '').toString() == 'secretariat') {
+                continue;
+              }
+              final when =
+                  _readDateTime(data['reviewedAt']) ??
+                  _readDateTime(data['requestedAt']);
+              if (when != null) times.add(when);
+            }
+            // Dedupe secretariat docs by id (broadcasts may overlap with
+            // per-child queries).
+            final byId =
+                <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
+            for (final d in secretariatDocs) {
+              byId[d.id] = d;
+            }
+            for (final d in byId.values) {
+              final when = _readDateTime(d.data()['createdAt']);
+              if (when != null) times.add(when);
+            }
+
+            int unread;
+            if (inboxLastOpened == null) {
+              unread = times.length;
+            } else {
+              unread = times.where((t) => t.isAfter(inboxLastOpened!)).length;
+            }
+            final hasNew = unread > 0;
+
+            return Container(
+              width: double.infinity,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: _surfaceLowest,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x10000000),
+                    blurRadius: 14,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: const _WhiteCardDecorPainter(variant: 4),
+                    ),
+                  ),
+                  Positioned(
+                    right: -10,
+                    bottom: -16,
+                    child: Transform.rotate(
+                      angle: 0.14,
+                      child: Icon(
+                        Icons.mail_rounded,
+                        size: 85,
+                        color: _primary.withValues(alpha: 0.055),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 14, 0),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        left: BorderSide(color: _primary, width: 4),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 18, 0, 18),
+                      child: Row(
+                        children: [
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      _primary.withValues(alpha: 0.12),
+                                      _primary.withValues(alpha: 0.06),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(
+                                    color: _primary.withValues(alpha: 0.1),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.chat_bubble_rounded,
+                                  color: _primary,
+                                  size: 22,
+                                ),
+                              ),
+                              if (hasNew)
+                                Positioned(
+                                  right: -2,
+                                  top: -2,
+                                  child: Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: _pencilYellow,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'Announcements',
+                                      style: TextStyle(
+                                        color: _onSurface,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    if (hasNew) ...[
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: _pencilYellow,
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'NEW',
+                                          style: TextStyle(
+                                            color: _onSurface,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  hasNew
+                                      ? (unread == 1
+                                            ? '1 new announcement'
+                                            : '$unread new announcements')
+                                      : 'No new announcements',
+                                  style: TextStyle(
+                                    color: hasNew ? _primary : _labelColor,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: Icon(
+                              Icons.chevron_right_rounded,
+                              color: _labelColor,
+                              size: 22,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          });
+        },
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SHORTCUTS ROW (Requests + Schedule)
+// ─────────────────────────────────────────────────────────────────────────────
+class _ShortcutsRow extends StatefulWidget {
+  final List<String> childrenUids;
+  final VoidCallback onRequestsTap;
+  final VoidCallback onScheduleTap;
+
+  const _ShortcutsRow({
+    required this.childrenUids,
+    required this.onRequestsTap,
+    required this.onScheduleTap,
+  });
+
+  @override
+  State<_ShortcutsRow> createState() => _ShortcutsRowState();
+}
+
+class _ShortcutsRowState extends State<_ShortcutsRow> {
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _pendingStream;
 
   @override
   void initState() {
@@ -871,7 +947,7 @@ class _CereriCardState extends State<_CereriCard> {
   }
 
   @override
-  void didUpdateWidget(_CereriCard old) {
+  void didUpdateWidget(_ShortcutsRow old) {
     super.didUpdateWidget(old);
     if (old.childrenUids.join() != widget.childrenUids.join()) {
       _buildStream(widget.childrenUids);
@@ -879,7 +955,7 @@ class _CereriCardState extends State<_CereriCard> {
   }
 
   void _buildStream(List<String> uids) {
-    _badgeStream = uids.isNotEmpty
+    _pendingStream = uids.isNotEmpty
         ? FirebaseFirestore.instance
               .collection('leaveRequests')
               .where('studentUid', whereIn: uids)
@@ -890,70 +966,173 @@ class _CereriCardState extends State<_CereriCard> {
 
   @override
   Widget build(BuildContext context) {
-    final badgeStream = _badgeStream;
-
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
-          ),
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x351F8BE7),
-              blurRadius: 20,
-              offset: Offset(0, 10),
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _pendingStream,
+      builder: (context, snap) {
+        final pending = snap.data?.docs.length ?? 0;
+        return Row(
+          children: [
+            Expanded(
+              child: _ShortcutTile(
+                icon: Icons.description_rounded,
+                title: 'Requests',
+                subtitle: pending == 0
+                    ? 'No new requests'
+                    : (pending == 1 ? '1 pending' : '$pending pending'),
+                badgeCount: pending,
+                onTap: widget.onRequestsTap,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _ShortcutTile(
+                icon: Icons.event_note_rounded,
+                title: 'Schedule',
+                subtitle: 'Weekly timetable',
+                badgeCount: 0,
+                onTap: widget.onScheduleTap,
+              ),
             ),
           ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
+        );
+      },
+    );
+  }
+}
+
+class _ShortcutTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final int badgeCount;
+  final VoidCallback onTap;
+
+  const _ShortcutTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.badgeCount,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasBadge = badgeCount > 0;
+    return Material(
+      color: _surfaceLowest,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Container(
+          height: 138,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x10000000),
+                blurRadius: 14,
+                offset: Offset(0, 4),
+              ),
+            ],
+            border: hasBadge
+                ? Border(
+                    left: BorderSide(color: _primary, width: 4),
+                  )
+                : null,
+          ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(hasBadge ? 13 : 15, 14, 13, 13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(
-                    Icons.description_outlined,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            _primary.withValues(alpha: 0.12),
+                            _primary.withValues(alpha: 0.06),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(13),
+                        border: Border.all(
+                          color: _primary.withValues(alpha: 0.10),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(icon, color: _primary, size: 23),
+                    ),
+                    if (hasBadge)
+                      Positioned(
+                        right: -4,
+                        top: -4,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: _pencilYellow,
+                            borderRadius: BorderRadius.circular(9),
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Text(
+                            badgeCount > 9 ? '9+' : '$badgeCount',
+                            style: const TextStyle(
+                              color: _onSurface,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                if (badgeStream != null) const SizedBox.shrink(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: _onSurface,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        height: 1.15,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: hasBadge ? _primary : _labelColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-            const Spacer(),
-            const Text(
-              'Cereri de\ninvoire',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                height: 1.18,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Vezi rapid',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.74),
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1160,71 +1339,158 @@ class _MesajeCardState extends State<_MesajeCard> {
                   _countUnreadDecisions(decisionSnap.data?.docs ?? const []) +
                   _countUnreadSecretariat(secretariatDocs);
 
+              final hasNew = unread > 0;
               return GestureDetector(
                 onTap: widget.onTap,
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDEE8F0),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: const Color(0xFFBACCD9).withValues(alpha: 0.36),
-                      width: 1.1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              color: _primary.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Icon(
-                              Icons.chat_bubble_outline_rounded,
-                              color: _primary,
-                              size: 24,
-                            ),
-                          ),
-                          if (unread > 0) const SizedBox.shrink(),
-                        ],
+                    color: _surfaceLowest,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x10000000),
+                        blurRadius: 14,
+                        offset: Offset(0, 4),
                       ),
-                      const Spacer(),
-                      const Text(
-                        'Mesaje',
-                        style: TextStyle(
-                          color: _onSurface,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: const _WhiteCardDecorPainter(variant: 4),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: unread > 0 ? _primary : _outline,
-                              shape: BoxShape.circle,
-                            ),
+                      Positioned(
+                        right: -10,
+                        bottom: -16,
+                        child: Transform.rotate(
+                          angle: 0.14,
+                          child: Icon(
+                            Icons.mail_rounded,
+                            size: 85,
+                            color: _primary.withValues(alpha: 0.055),
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            unread > 0 ? '$unread mesaje noi' : 'Vezi rapid',
-                            style: TextStyle(
-                              color: unread > 0 ? _primary : _outline,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: hasNew
+                              ? const Border(
+                                  left: BorderSide(color: _primary, width: 4),
+                                )
+                              : null,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            hasNew ? 14 : 18,
+                            16,
+                            14,
+                            16,
                           ),
-                        ],
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Container(
+                                    width: 46,
+                                    height: 46,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          _primary.withValues(alpha: 0.12),
+                                          _primary.withValues(alpha: 0.06),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: _primary.withValues(alpha: 0.10),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.chat_bubble_rounded,
+                                      color: _primary,
+                                      size: 22,
+                                    ),
+                                  ),
+                                  if (hasNew)
+                                    Positioned(
+                                      right: -2,
+                                      top: -2,
+                                      child: Container(
+                                        width: 10,
+                                        height: 10,
+                                        decoration: BoxDecoration(
+                                          color: _pencilYellow,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const Spacer(),
+                              Row(
+                                children: [
+                                  const Text(
+                                    'Messages',
+                                    style: TextStyle(
+                                      color: _onSurface,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.15,
+                                    ),
+                                  ),
+                                  if (hasNew) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 7,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _pencilYellow,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        'NEW',
+                                        style: TextStyle(
+                                          color: _onSurface,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                hasNew
+                                    ? (unread == 1
+                                          ? '1 new message'
+                                          : '$unread new messages')
+                                    : 'No new messages',
+                                style: TextStyle(
+                                  color: hasNew ? _primary : _labelColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -1239,154 +1505,23 @@ class _MesajeCardState extends State<_MesajeCard> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STATS ROW (Prezenți + Cereri în așteptare)
-// ─────────────────────────────────────────────────────────────────────────────
-class _ParentStatsRow extends StatefulWidget {
-  final List<String> childrenUids;
-
-  const _ParentStatsRow({required this.childrenUids});
-
-  @override
-  State<_ParentStatsRow> createState() => _ParentStatsRowState();
-}
-
-class _ParentStatsRowState extends State<_ParentStatsRow> {
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _childrenStream;
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _requestStream;
-
-  @override
-  void initState() {
-    super.initState();
-    _buildStreams(widget.childrenUids);
-  }
-
-  @override
-  void didUpdateWidget(_ParentStatsRow old) {
-    super.didUpdateWidget(old);
-    if (old.childrenUids.join() != widget.childrenUids.join()) {
-      _buildStreams(widget.childrenUids);
-    }
-  }
-
-  void _buildStreams(List<String> uids) {
-    if (uids.isEmpty) {
-      _childrenStream = null;
-      _requestStream = null;
-      return;
-    }
-    _childrenStream = FirebaseFirestore.instance
-        .collection('users')
-        .where(FieldPath.documentId, whereIn: uids)
-        .snapshots();
-    _requestStream = FirebaseFirestore.instance
-        .collection('leaveRequests')
-        .where('studentUid', whereIn: uids)
-        .where('status', isEqualTo: 'pending')
-        .snapshots();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final total = widget.childrenUids.length;
-    if (total == 0) return const SizedBox();
-
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: _childrenStream,
-      builder: (context, childSnap) {
-        int present = 0;
-        if (childSnap.hasData) {
-          for (final doc in childSnap.data!.docs) {
-            final d = doc.data();
-            if (d['isPresent'] == true ||
-                d['inSchool'] == true ||
-                d['present'] == true) {
-              present++;
-            }
-          }
-        }
-
-        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: _requestStream,
-          builder: (context, reqSnap) {
-            final pending = reqSnap.data?.docs.length ?? 0;
-
-            return Row(
-              children: [
-                Expanded(
-                  child: _StatBox(
-                    label: 'PREZENȚI',
-                    value: '$present/$total',
-                    valueColor: present > 0 ? _primary : _outline,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _StatBox(
-                    label: 'CERERI',
-                    value: '$pending',
-                    valueColor: pending > 0 ? _danger : _outline,
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-class _StatBox extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color valueColor;
-
-  const _StatBox({
-    required this.label,
-    required this.value,
-    required this.valueColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE7F0F6),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF717B6E),
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: valueColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // PARENT PROFILE PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 class ParentProfilePage extends StatelessWidget {
-  const ParentProfilePage({super.key});
+  final bool showBack;
+
+  const ParentProfilePage({super.key, this.showBack = true});
+
+  Future<void> _signOut(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    AppSession.clear();
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPageFirestore()),
+        (_) => false,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1398,7 +1533,9 @@ class ParentProfilePage extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
-            _ProfileTopHeader(onBack: () => Navigator.of(context).maybePop()),
+            _ProfileTopHeader(
+              onBack: showBack ? () => Navigator.of(context).maybePop() : null,
+            ),
             Expanded(
               child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                 stream: FirebaseFirestore.instance
@@ -1408,27 +1545,58 @@ class ParentProfilePage extends StatelessWidget {
                 builder: (context, snap) {
                   final data = snap.data?.data() ?? <String, dynamic>{};
                   final fullName = (data['fullName'] ?? '').toString().trim();
-                  final username = (data['username'] ?? '').toString().trim();
                   final email = FirebaseAuth.instance.currentUser?.email ?? '';
                   final rawChildren = data['children'];
                   final childCount = rawChildren is List
                       ? rawChildren.length
                       : 0;
+                  final displayName = fullName.isNotEmpty
+                      ? fullName
+                      : (AppSession.username ?? 'Parent');
 
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
-                    child: _ParentProfileCard(
-                      displayName: fullName.isNotEmpty
-                          ? fullName
-                          : (AppSession.username ?? 'Parinte'),
-                      username: username,
-                      email: email,
-                      childCount: snap.hasData ? childCount : null,
-                      onSettings: () => showModalBottomSheet<void>(
-                        context: context,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => const _SettingsSheet(),
-                      ),
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _ParentIdentityCard(
+                          displayName: displayName,
+                          email: email,
+                          childCount: snap.hasData ? childCount : null,
+                        ),
+                        const SizedBox(height: 22),
+                        const _ProfileSectionLabel('ACCOUNT'),
+                        const SizedBox(height: 10),
+                        _ProfileTile(
+                          icon: Icons.group_rounded,
+                          title: 'Children',
+                          subtitle: childCount == 0
+                              ? 'No linked accounts'
+                              : '$childCount linked ${childCount == 1 ? 'account' : 'accounts'}',
+                          onTap: () => Navigator.of(context).push(
+                            noAnimRoute(
+                              (_) => const ParentStudentsPage(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _ProfileTile(
+                          icon: Icons.edit_outlined,
+                          title: 'Edit profile',
+                          subtitle: 'Email · Password',
+                          onTap: () => showDialog<void>(
+                            context: context,
+                            barrierDismissible: true,
+                            builder: (_) =>
+                                const _ParentAccountSettingsDialog(),
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        _ProfileSignOutButton(
+                          onSignOut: () => _signOut(context),
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -1442,349 +1610,363 @@ class ParentProfilePage extends StatelessWidget {
 }
 
 class _ProfileTopHeader extends StatelessWidget {
-  final VoidCallback onBack;
+  final VoidCallback? onBack;
 
-  const _ProfileTopHeader({required this.onBack});
+  const _ProfileTopHeader({this.onBack});
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 390;
-    final headerHeight = compact ? 138.0 : 146.0;
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(54),
-        bottomRight: Radius.circular(54),
+    final topPadding = MediaQuery.of(context).padding.top;
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x302848B0),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
       ),
-      child: Container(
-        height: headerHeight,
-        width: double.infinity,
-        color: _primary,
-        child: Stack(
-          children: [
-            Positioned(
-              top: -72,
-              right: -52,
-              child: _Circle(size: 220, opacity: 0.08),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: const decor.HeaderSparklesPainter(variant: 4),
             ),
-            Positioned(
-              top: 44,
-              right: 34,
-              child: _Circle(size: 72, opacity: 0.08),
-            ),
-            Positioned(
-              left: 156,
-              bottom: -28,
-              child: _Circle(size: 82, opacity: 0.08),
-            ),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: onBack,
-                      behavior: HitTestBehavior.opaque,
-                      child: const SizedBox(
-                        width: 34,
-                        height: 34,
-                        child: Center(
-                          child: Icon(
-                            Icons.arrow_back_rounded,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                        ),
-                      ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 24),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (onBack != null) ...[
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Text(
-                        'Profil',
+                    child: IconButton(
+                      onPressed: onBack,
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Profile',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 29,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.6,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.3,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ParentProfileCard extends StatelessWidget {
-  final String displayName;
-  final String username;
-  final String email;
-  final int? childCount;
-  final VoidCallback onSettings;
-
-  const _ParentProfileCard({
-    required this.displayName,
-    required this.username,
-    required this.email,
-    required this.childCount,
-    required this.onSettings,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(38),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(38)),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x121F8BE7),
-              blurRadius: 28,
-              offset: Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          displayName,
-                          style: const TextStyle(
-                            color: Color(0xFF587F9E),
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            height: 1.1,
-                          ),
-                        ),
-                        if (username.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            '@$username',
-                            style: const TextStyle(
-                              color: Color(0xFF1F8BE7),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: onSettings,
-                      child: Container(
-                        width: 48,
-                        height: 48,
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 42,
+                        height: 3,
                         decoration: BoxDecoration(
-                          color: _surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(
-                          Icons.settings_outlined,
-                          color: _primary,
-                          size: 26,
+                          color: _pencilYellow,
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Your account',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.86),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 22),
-              Container(height: 1, color: const Color(0xFFF0F1EA)),
-              const SizedBox(height: 18),
-              _ProfileInfoBox(
-                icon: Icons.mail_outline_rounded,
-                label: 'EMAIL',
-                value: email.isNotEmpty ? email : 'Nedefinit',
-              ),
-              const SizedBox(height: 10),
-              _ProfileInfoBox(
-                icon: Icons.child_care_rounded,
-                label: 'NR. COPII',
-                value: childCount == null
-                    ? '...'
-                    : '$childCount ${childCount == 1 ? 'copil' : 'copii'}',
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileInfoBox extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _ProfileInfoBox({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: _primary.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Icon(icon, color: _primary, size: 28),
-        ),
-        const SizedBox(width: 18),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF717B6E),
-                  letterSpacing: 0.6,
                 ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF587F9E),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SETTINGS SHEET
-// ─────────────────────────────────────────────────────────────────────────────
-class _SettingsSheet extends StatelessWidget {
-  const _SettingsSheet();
-
-  @override
-  Widget build(BuildContext ctx) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: _surfaceLowest,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 36,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: 20),
-            decoration: BoxDecoration(
-              color: _outlineVariant,
-              borderRadius: BorderRadius.circular(2),
+              ],
             ),
-          ),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Setări cont',
-              style: TextStyle(
-                color: _onSurface,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          _SettingsTile(
-            icon: Icons.edit_outlined,
-            label: 'Editare profil',
-            onTap: () {
-              Navigator.pop(ctx);
-              showDialog<void>(
-                context: ctx,
-                barrierDismissible: true,
-                builder: (_) => const _ParentAccountSettingsDialog(),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          _SettingsTile(
-            icon: Icons.accessibility_new_rounded,
-            label: 'Accesibilitate',
-            onTap: () {
-              Navigator.pop(ctx);
-              Navigator.of(ctx).push(
-                MaterialPageRoute(
-                  builder: (_) => const AccessibilitySettingsPage(),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          _SettingsTile(
-            icon: Icons.logout,
-            label: 'Deconectează-te',
-            danger: true,
-            onTap: () {
-              Navigator.pop(ctx);
-              _logout(ctx);
-            },
           ),
         ],
       ),
     );
   }
+}
 
-  void _logout(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-    AppSession.clear();
-    if (context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginPageFirestore()),
-        (_) => false,
-      );
+// ─────────────────────────────────────────────────────────────────────────────
+// PARENT IDENTITY + ACCOUNT TILES (mirrors student profile layout)
+// ─────────────────────────────────────────────────────────────────────────────
+class _ParentIdentityCard extends StatelessWidget {
+  final String displayName;
+  final String email;
+  final int? childCount;
+
+  const _ParentIdentityCard({
+    required this.displayName,
+    required this.email,
+    required this.childCount,
+  });
+
+  String _initials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) {
+      return parts.first.characters.take(2).toString().toUpperCase();
     }
+    return (parts.first.characters.take(1).toString() +
+            parts[1].characters.take(1).toString())
+        .toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final subtitle = childCount == null
+        ? 'Parent'
+        : 'Parent · $childCount ${childCount == 1 ? 'child' : 'children'}';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+      decoration: BoxDecoration(
+        color: _surfaceLowest,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _outlineVariant.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: _primary,
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Text(
+              _initials(displayName),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _onSurface,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  width: 36,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: _pencilYellow,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: _outline,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (email.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    email,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: _outline,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileSectionLabel extends StatelessWidget {
+  final String text;
+
+  const _ProfileSectionLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: _outline,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _ProfileTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: _surfaceLowest,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: _surfaceLowest,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: _outlineVariant.withValues(alpha: 0.18)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: _primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, color: _primary, size: 24),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: _onSurface,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: _outline,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: _outline,
+                  size: 22,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileSignOutButton extends StatelessWidget {
+  final VoidCallback onSignOut;
+
+  const _ProfileSignOutButton({required this.onSignOut});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFFF0D0D8),
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onSignOut,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.logout_rounded, color: Color(0xFFB03040), size: 20),
+              SizedBox(width: 10),
+              Text(
+                'Sign out',
+                style: TextStyle(
+                  color: Color(0xFFB03040),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ACCOUNT SETTINGS DIALOG  (Email · Parolă)
+// ACCOUNT SETTINGS DIALOG  (Email · Password)
 // ─────────────────────────────────────────────────────────────────────────────
 class _ParentAccountSettingsDialog extends StatefulWidget {
   const _ParentAccountSettingsDialog();
@@ -1860,7 +2042,7 @@ class _ParentAccountSettingsDialogState
     } on FirebaseAuthException {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Parola actuală este incorectă.')),
+          const SnackBar(content: Text('Current password is incorrect.')),
         );
       }
       return false;
@@ -1877,7 +2059,7 @@ class _ParentAccountSettingsDialogState
       if (_editingEmail && _emailC.text.trim().isNotEmpty) {
         if (!_emailVerified) {
           setState(() {
-            _emailError = 'Verifică mai întâi email-ul nou.';
+            _emailError = 'Verify the new email first.';
             _saving = false;
           });
           return;
@@ -1889,14 +2071,14 @@ class _ParentAccountSettingsDialogState
           _passwordC.text.trim() != '••••••••••••') {
         if (_passwordC.text.trim() != _confirmPasswordC.text.trim()) {
           setState(() {
-            _passwordError = 'Parolele nu se potrivesc.';
+            _passwordError = 'Passwords do not match.';
             _saving = false;
           });
           return;
         }
         if (_passwordC.text.trim().length < 8) {
           setState(() {
-            _passwordError = 'Parola trebuie să aibă cel puțin 8 caractere.';
+            _passwordError = 'Password must be at least 8 characters.';
             _saving = false;
           });
           return;
@@ -1919,14 +2101,14 @@ class _ParentAccountSettingsDialogState
         final messenger = ScaffoldMessenger.of(context);
         Navigator.pop(context);
         messenger.showSnackBar(
-          const SnackBar(content: Text('Setări actualizate.')),
+          const SnackBar(content: Text('Settings updated.')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Eroare: $e')));
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (!closed && mounted) setState(() => _saving = false);
@@ -1969,7 +2151,7 @@ class _ParentAccountSettingsDialogState
                     children: [
                       const Expanded(
                         child: Text(
-                          'Setări Cont',
+                          'Account Settings',
                           style: TextStyle(
                             color: _onSurface,
                             fontSize: 24,
@@ -1987,7 +2169,7 @@ class _ParentAccountSettingsDialogState
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: const Text(
-                          'Anulează',
+                          'Cancel',
                           style: TextStyle(
                             color: _outline,
                             fontSize: 15,
@@ -2020,7 +2202,7 @@ class _ParentAccountSettingsDialogState
                                 ),
                               )
                             : const Text(
-                                'Salvează',
+                                'Save',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
@@ -2030,7 +2212,7 @@ class _ParentAccountSettingsDialogState
                     ],
                   ),
                   const SizedBox(height: 6),
-                  const Divider(color: Color(0xFFF0F1EA)),
+                  const Divider(color: Color(0xFFE8EAF2)),
                   const SizedBox(height: 18),
 
                   // ── EMAIL ──
@@ -2132,8 +2314,7 @@ class _ParentAccountSettingsDialogState
                                 } catch (_) {
                                   if (mounted) {
                                     setState(() {
-                                      _emailError =
-                                          'Nu am putut trimite codul.';
+                                      _emailError = 'Could not send the code.';
                                       _sendingCode = false;
                                     });
                                   }
@@ -2149,9 +2330,7 @@ class _ParentAccountSettingsDialogState
                                 ),
                               )
                             : const Icon(Icons.send_rounded, size: 18),
-                        label: Text(
-                          _codeSent ? 'Retrimite cod' : 'Trimite cod',
-                        ),
+                        label: Text(_codeSent ? 'Resend code' : 'Send code'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _primary,
                           foregroundColor: Colors.white,
@@ -2179,7 +2358,7 @@ class _ParentAccountSettingsDialogState
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            'Am trimis un cod la ${_emailC.text.trim()}. Introdu-l mai jos.',
+                            'A code was sent to ${_emailC.text.trim()}. Enter it below.',
                             style: const TextStyle(
                               color: _outline,
                               fontSize: 12.5,
@@ -2228,7 +2407,7 @@ class _ParentAccountSettingsDialogState
                             onTap: () async {
                               final code = _verificationCodeC.text.trim();
                               if (code.isEmpty) {
-                                setState(() => _emailError = 'Introdu codul.');
+                                setState(() => _emailError = 'Enter the code.');
                                 return;
                               }
                               final uid =
@@ -2247,13 +2426,13 @@ class _ParentAccountSettingsDialogState
                                 } else {
                                   if (mounted) {
                                     setState(
-                                      () => _emailError = 'Cod invalid.',
+                                      () => _emailError = 'Invalid code.',
                                     );
                                   }
                                 }
                               } catch (_) {
                                 if (mounted) {
-                                  setState(() => _emailError = 'Cod invalid.');
+                                  setState(() => _emailError = 'Invalid code.');
                                 }
                               }
                             },
@@ -2267,7 +2446,7 @@ class _ParentAccountSettingsDialogState
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Text(
-                                'Verifică',
+                                'Verify',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 13,
@@ -2345,7 +2524,7 @@ class _ParentAccountSettingsDialogState
                                     fontSize: 15,
                                   ),
                                   decoration: const InputDecoration.collapsed(
-                                    hintText: 'Parola nouă',
+                                    hintText: 'New password',
                                   ),
                                 )
                               : const Text(
@@ -2404,7 +2583,7 @@ class _ParentAccountSettingsDialogState
                                 fontSize: 15,
                               ),
                               decoration: const InputDecoration.collapsed(
-                                hintText: 'Confirmă parola',
+                                hintText: 'Confirm password',
                               ),
                             ),
                           ),
@@ -2476,7 +2655,7 @@ class _ParentReauthDialogState extends State<_ParentReauthDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Confirmare identitate',
+              'Confirm identity',
               style: TextStyle(
                 color: _onSurface,
                 fontSize: 18,
@@ -2485,7 +2664,7 @@ class _ParentReauthDialogState extends State<_ParentReauthDialog> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Introdu parola actuală pentru a continua.',
+              'Enter your current password to continue.',
               style: TextStyle(color: _outline, fontSize: 13.5, height: 1.4),
             ),
             const SizedBox(height: 16),
@@ -2495,7 +2674,7 @@ class _ParentReauthDialogState extends State<_ParentReauthDialog> {
               autofocus: true,
               style: const TextStyle(color: _onSurface, fontSize: 15),
               decoration: InputDecoration(
-                hintText: 'Parola actuală',
+                hintText: 'Current password',
                 hintStyle: const TextStyle(color: _outline),
                 filled: true,
                 fillColor: _surfaceContainerLow,
@@ -2506,14 +2685,14 @@ class _ParentReauthDialogState extends State<_ParentReauthDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(
-                    color: Color(0xFFC1D2DF),
+                    color: Color(0xFFBFC3D9),
                     width: 1.2,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(
-                    color: Color(0xFFC1D2DF),
+                    color: Color(0xFFBFC3D9),
                     width: 1.2,
                   ),
                 ),
@@ -2548,7 +2727,7 @@ class _ParentReauthDialogState extends State<_ParentReauthDialog> {
                       ),
                     ),
                     child: const Text(
-                      'Anulează',
+                      'Cancel',
                       style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -2567,7 +2746,7 @@ class _ParentReauthDialogState extends State<_ParentReauthDialog> {
                       elevation: 0,
                     ),
                     child: const Text(
-                      'Confirmă',
+                      'Confirm',
                       style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -2575,50 +2754,6 @@ class _ParentReauthDialogState extends State<_ParentReauthDialog> {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final bool danger;
-
-  const _SettingsTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.danger = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = danger ? _danger : _primary;
-    return Material(
-      color: danger ? _danger.withValues(alpha: 0.07) : _surfaceContainerLow,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Icon(icon, color: color, size: 24),
-              const SizedBox(width: 14),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

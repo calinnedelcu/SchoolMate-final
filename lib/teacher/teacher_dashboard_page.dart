@@ -8,8 +8,6 @@ import 'orardir.dart';
 import 'cereriasteptare.dart';
 import 'statuselevi.dart';
 import 'mesajedir.dart';
-import 'voluntariat_manage_page.dart';
-import 'widgets/schedule_bottom_sheet_teacher.dart';
 import '../admin/admin_post_composer_page.dart';
 
 class _DampedScrollPhysics extends ScrollPhysics {
@@ -62,12 +60,16 @@ class _HeaderWavePainterTeacher extends CustomPainter {
     final path = Path()
       ..lineTo(0, size.height - 40)
       ..quadraticBezierTo(
-        size.width * 0.25, size.height,
-        size.width * 0.5, size.height - 20,
+        size.width * 0.25,
+        size.height,
+        size.width * 0.5,
+        size.height - 20,
       )
       ..quadraticBezierTo(
-        size.width * 0.75, size.height - 42,
-        size.width, size.height - 14,
+        size.width * 0.75,
+        size.height - 42,
+        size.width,
+        size.height - 14,
       )
       ..lineTo(size.width, 0)
       ..close();
@@ -104,9 +106,27 @@ class _HeaderWavePainterTeacher extends CustomPainter {
     _drawSymbol(canvas, '√', Offset(size.width * 0.72, 38), 13, c2);
     _drawSymbol(canvas, '∞', Offset(size.width * 0.82, 65), 14, cy);
     _drawSymbol(canvas, '÷', Offset(size.width * 0.90, 42), 12, c2);
-    _drawSymbol(canvas, '=', Offset(size.width * 0.22, size.height - 88), 11, c2);
-    _drawSymbol(canvas, '∆', Offset(size.width * 0.38, size.height - 100), 12, cy);
-    _drawSymbol(canvas, '²', Offset(size.width * 0.46, size.height - 75), 11, c2);
+    _drawSymbol(
+      canvas,
+      '=',
+      Offset(size.width * 0.22, size.height - 88),
+      11,
+      c2,
+    );
+    _drawSymbol(
+      canvas,
+      '∆',
+      Offset(size.width * 0.38, size.height - 100),
+      12,
+      cy,
+    );
+    _drawSymbol(
+      canvas,
+      '²',
+      Offset(size.width * 0.46, size.height - 75),
+      11,
+      c2,
+    );
 
     canvas.restore();
 
@@ -119,12 +139,16 @@ class _HeaderWavePainterTeacher extends CustomPainter {
     final linePath = Path()
       ..moveTo(0, size.height - 52)
       ..quadraticBezierTo(
-        size.width * 0.3, size.height - 12,
-        size.width * 0.55, size.height - 34,
+        size.width * 0.3,
+        size.height - 12,
+        size.width * 0.55,
+        size.height - 34,
       )
       ..quadraticBezierTo(
-        size.width * 0.78, size.height - 54,
-        size.width, size.height - 22,
+        size.width * 0.78,
+        size.height - 54,
+        size.width,
+        size.height - 22,
       );
 
     canvas.drawPath(linePath, linePaint);
@@ -135,12 +159,16 @@ class _HeaderWavePainterTeacher extends CustomPainter {
     final accentPath = Path()
       ..moveTo(0, size.height - 58)
       ..quadraticBezierTo(
-        size.width * 0.35, size.height - 16,
-        size.width * 0.6, size.height - 42,
+        size.width * 0.35,
+        size.height - 16,
+        size.width * 0.6,
+        size.height - 42,
       )
       ..quadraticBezierTo(
-        size.width * 0.8, size.height - 60,
-        size.width, size.height - 28,
+        size.width * 0.8,
+        size.height - 60,
+        size.width,
+        size.height - 28,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
@@ -386,8 +414,6 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
     );
   }
 
- 
-
   Widget _headerCircle(double size, double opacity) {
     return IgnorePointer(
       child: Container(
@@ -467,7 +493,9 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
           ),
           child: Stack(
             children: [
-              Positioned.fill(child: CustomPaint(painter: _AziCardDecorPainter())),
+              Positioned.fill(
+                child: CustomPaint(painter: _AziCardDecorPainter()),
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
                 child: Column(
@@ -505,7 +533,8 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                         final inSchool = students
                             .where(
                               (d) =>
-                                  (d.data() as Map<String, dynamic>)['inSchool'] ==
+                                  (d.data()
+                                      as Map<String, dynamic>)['inSchool'] ==
                                   true,
                             )
                             .length;
@@ -603,7 +632,10 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                   child: _QuickActionTileTeacher(
                     icon: Icons.group_rounded,
                     label: 'My Class',
-                    gradientColors: const [Color(0xFF2848B0), Color(0xFF4070E0)],
+                    gradientColors: const [
+                      Color(0xFF2848B0),
+                      Color(0xFF4070E0),
+                    ],
                     onTap: () => Navigator.push(
                       context,
                       PageRouteBuilder(
@@ -619,7 +651,10 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                   child: _QuickActionTileTeacher(
                     icon: Icons.event_rounded,
                     label: 'Schedule',
-                    gradientColors: const [Color(0xFF3460CC), Color(0xFF4878E8)],
+                    gradientColors: const [
+                      Color(0xFF3460CC),
+                      Color(0xFF4878E8),
+                    ],
                     onTap: () => showTeacherScheduleSheet(context, _classId),
                   ),
                 ),
@@ -627,29 +662,11 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
             ),
             const SizedBox(height: 12),
 
-            // Volunteering long button at bottom
-            _GridCard(
-              icon: Icons.volunteer_activism_rounded,
-              title: 'Volunteering',
-              subtitle: 'Manage activities',
-              isDark: false,
-              wide: true,
-              onTap: () => Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => const VoluntariatManagePage(),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
             // Post Announcement (kept wide)
             _GridCard(
-              icon: Icons.campaign_rounded,
-              title: 'Post Announcement',
-              subtitle: 'Create new announcement',
+              icon: Icons.dynamic_feed_rounded,
+              title: 'Postări pentru clasă',
+              subtitle: 'Anunțuri, competiții, tabere',
               isDark: false,
               wide: true,
               onTap: () => Navigator.push(
@@ -989,7 +1006,9 @@ class _QuickActionTileTeacher extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Positioned.fill(child: CustomPaint(painter: _QuickTileDecorPainterTeacher())),
+            Positioned.fill(
+              child: CustomPaint(painter: _QuickTileDecorPainterTeacher()),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Column(
@@ -1109,12 +1128,48 @@ class _AziCardDecorPainter extends CustomPainter {
     final c1 = Colors.white.withOpacity(0.3);
     final c2 = Colors.white.withOpacity(0.22);
     final cy = _pencilYellow.withOpacity(0.35);
-    _drawSymbol(canvas, '∑', Offset(size.width - 28, size.height * 0.42), 14, cy);
-    _drawSymbol(canvas, '=', Offset(size.width * 0.88, size.height - 38), 12, c1);
-    _drawSymbol(canvas, '∫', Offset(size.width * 0.82, size.height * 0.28), 15, c2);
-    _drawSymbol(canvas, 'π', Offset(size.width * 0.93, size.height * 0.55), 13, c2);
-    _drawSymbol(canvas, '+', Offset(size.width * 0.72, size.height * 0.58), 11, cy);
-    _drawSymbol(canvas, '√', Offset(size.width * 0.78, size.height - 28), 12, c2);
+    _drawSymbol(
+      canvas,
+      '∑',
+      Offset(size.width - 28, size.height * 0.42),
+      14,
+      cy,
+    );
+    _drawSymbol(
+      canvas,
+      '=',
+      Offset(size.width * 0.88, size.height - 38),
+      12,
+      c1,
+    );
+    _drawSymbol(
+      canvas,
+      '∫',
+      Offset(size.width * 0.82, size.height * 0.28),
+      15,
+      c2,
+    );
+    _drawSymbol(
+      canvas,
+      'π',
+      Offset(size.width * 0.93, size.height * 0.55),
+      13,
+      c2,
+    );
+    _drawSymbol(
+      canvas,
+      '+',
+      Offset(size.width * 0.72, size.height * 0.58),
+      11,
+      cy,
+    );
+    _drawSymbol(
+      canvas,
+      '√',
+      Offset(size.width * 0.78, size.height - 28),
+      12,
+      c2,
+    );
   }
 
   @override

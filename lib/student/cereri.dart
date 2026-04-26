@@ -1,4 +1,5 @@
 import 'package:firster/student/meniu.dart';
+import 'package:firster/student/widgets/no_anim_route.dart';
 import 'package:firster/student/widgets/school_decor.dart';
 import 'package:firster/core/session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -686,9 +687,7 @@ class _CereriScreenState extends State<CereriScreen> {
       return;
     }
 
-    navigator.pushReplacement(
-      MaterialPageRoute(builder: (_) => const MeniuScreen()),
-    );
+    navigator.pushReplacement(noAnimRoute((_) => const MeniuScreen()));
   }
 
   @override

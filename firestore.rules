@@ -181,6 +181,13 @@ service cloud.firestore {
               resource.data.recipientRole == 'parent' &&
           (resource.data.studentUid == '' ||
             isParentOfStudent(resource.data.studentUid))) ||
+          // Parents can also see student-targeted announcements addressed to
+          // their children, plus school-wide student broadcasts.
+          (isParent() &&
+              resource.data.recipientRole == 'student' &&
+          (resource.data.recipientUid == '' ||
+            isParentOfStudent(resource.data.recipientUid) ||
+            isParentOfStudent(resource.data.studentUid))) ||
           (isTeacher() &&
               resource.data.recipientRole == 'teacher' &&
           (resource.data.recipientUid == request.auth.uid ||
@@ -205,6 +212,10 @@ service cloud.firestore {
       allow update: if isAdmin() ||
           (isOwnUser(userId) && onlyOwnInboxFieldsChanged());
       allow delete: if isAdmin();
+
+      match /bookmarks/{itemId} {
+        allow read, write: if isOwnUser(userId);
+      }
     }
 
     match /app_settings/{settingId} {

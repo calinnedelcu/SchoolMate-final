@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../admin/services/admin_api.dart';
-import '../common/accessibility_settings_page.dart';
 import '../core/session.dart';
 import '../student/logout_dialog.dart';
 
@@ -88,19 +87,6 @@ class _SettingsSheet extends StatelessWidget {
                 context: ctx,
                 barrierDismissible: true,
                 builder: (_) => const _AccountSettingsDialog(),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          _SettingsTile(
-            icon: Icons.accessibility_new_rounded,
-            label: 'Accesibilitate',
-            onTap: () {
-              Navigator.pop(ctx);
-              Navigator.of(ctx).push(
-                MaterialPageRoute(
-                  builder: (_) => const AccessibilitySettingsPage(),
-                ),
               );
             },
           ),

@@ -1,13 +1,13 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firster/core/session.dart';
 import 'package:firster/student/cereri.dart';
 import 'package:firster/student/inbox.dart';
+import 'package:firster/student/widgets/no_anim_route.dart';
 import 'package:firster/student/widgets/qr_bottom_sheet.dart';
-import 'package:firster/student/widgets/schedule_bottom_sheet.dart';
+import 'package:firster/student/widgets/school_decor.dart';
 import 'package:flutter/material.dart';
 
 class _DampedScrollPhysics extends ScrollPhysics {
@@ -43,7 +43,6 @@ class MeniuScreen extends StatefulWidget {
 
 class _MeniuScreenState extends State<MeniuScreen> {
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _userDocStream;
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _leaveActiveStream;
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _classDocStream;
 
   @override
@@ -55,12 +54,6 @@ class _MeniuScreenState extends State<MeniuScreen> {
     _userDocStream = FirebaseFirestore.instance
         .collection('users')
         .doc(currentUser.uid)
-        .snapshots();
-
-    _leaveActiveStream = FirebaseFirestore.instance
-        .collection('leaveRequests')
-        .where('studentUid', isEqualTo: currentUser.uid)
-        .where('status', whereIn: ['approved', 'active', 'pending'])
         .snapshots();
 
     final classId = AppSession.classId;
@@ -109,9 +102,7 @@ class _MeniuScreenState extends State<MeniuScreen> {
       widget.onNavigateTab!(2);
       return;
     }
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const CereriScreen()));
+    Navigator.of(context).push(noAnimRoute((_) => const CereriScreen()));
   }
 
   Future<void> _openInbox() async {
@@ -129,13 +120,7 @@ class _MeniuScreenState extends State<MeniuScreen> {
     }
 
     if (!mounted) return;
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const InboxScreen()));
-  }
-
-  void _openSchedule() {
-    showScheduleSheet(context);
+    Navigator.of(context).push(noAnimRoute((_) => const InboxScreen()));
   }
 
   Future<void> _showQrSheet(BuildContext context) async {
@@ -177,9 +162,15 @@ class _MeniuScreenState extends State<MeniuScreen> {
                     classSnapshot.data?.data() ?? const <String, dynamic>{};
                 final todaySchedule = _todaySchedule(classData);
 
+                final now = DateTime.now();
+                final dateStr =
+                    '${now.day} ${_homeMonths[now.month]} ${now.year}';
                 return Column(
                   children: [
-                    _TopHeroHeader(displayName: resolvedName),
+                    WaveHeroHeader(
+                      title: 'Welcome,\n$resolvedName',
+                      subtitle: dateStr,
+                    ),
                     Expanded(
                       child: SingleChildScrollView(
                         physics: const _DampedScrollPhysics(),
@@ -188,11 +179,9 @@ class _MeniuScreenState extends State<MeniuScreen> {
                           children: [
                             _AziHeroCard(schedule: todaySchedule),
                             const SizedBox(height: 16),
-                            _CerereInvoireCard(
-                              leaveStream: _leaveActiveStream,
-                              onCreateNew: _openCereri,
-                              onShowQr: () => _showQrSheet(context),
-                              onPendingTap: widget.onNavigateToActiveLeave,
+                            _QuickActionsRow(
+                              onQr: () => _showQrSheet(context),
+                              onLeaveRequests: _openCereri,
                             ),
                             const SizedBox(height: 16),
                             _InboxPreviewCard(
@@ -200,11 +189,6 @@ class _MeniuScreenState extends State<MeniuScreen> {
                                   FirebaseAuth.instance.currentUser?.uid ?? '',
                               inboxLastOpenedAt: inboxLastOpenedAt,
                               onTap: _openInbox,
-                            ),
-                            const SizedBox(height: 24),
-                            _QuickActionsRow(
-                              onQr: () => _showQrSheet(context),
-                              onSchedule: _openSchedule,
                             ),
                           ],
                         ),
@@ -221,200 +205,10 @@ class _MeniuScreenState extends State<MeniuScreen> {
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// HEADER
-// ────────────────────────────────────────────────────────────────────────────
-class _TopHeroHeader extends StatelessWidget {
-  final String displayName;
-
-  const _TopHeroHeader({required this.displayName});
-
-  static const _months = [
-    '', 'ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie',
-    'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-    final now = DateTime.now();
-    final dateStr = '${now.day} ${_months[now.month]} ${now.year}';
-
-    return SizedBox(
-      width: double.infinity,
-      height: topPadding + 170,
-      child: CustomPaint(
-        painter: _HeaderWavePainter(),
-        child: Stack(
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(26, topPadding + 16, 70, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome, $displayName',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      height: 1.25,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: 46,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: _pencilYellow,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    dateStr,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-void _drawSymbol(
-  Canvas canvas,
-  String text,
-  Offset pos,
-  double fontSize,
-  Color color,
-) {
-  final painter = TextPainter(
-    text: TextSpan(
-      text: text,
-      style: TextStyle(
-        color: color,
-        fontSize: fontSize,
-        fontWeight: FontWeight.w700,
-      ),
-    ),
-    textDirection: TextDirection.ltr,
-  );
-  painter.layout();
-  painter.paint(canvas, pos - Offset(painter.width / 2, painter.height / 2));
-}
-
-class _HeaderWavePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..shader = ui.Gradient.linear(
-        Offset.zero,
-        Offset(size.width, size.height),
-        const [Color(0xFF2040A0), Color(0xFF3058C8)],
-      );
-
-    final path = Path()
-      ..lineTo(0, size.height - 40)
-      ..quadraticBezierTo(
-        size.width * 0.25, size.height,
-        size.width * 0.5, size.height - 20,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.75, size.height - 42,
-        size.width, size.height - 14,
-      )
-      ..lineTo(size.width, 0)
-      ..close();
-
-    canvas.drawPath(path, paint);
-    canvas.save();
-    canvas.clipPath(path);
-
-    // Large soft blob top-right
-    final blobPaint = Paint()..color = Colors.white.withValues(alpha: 0.06);
-    canvas.drawCircle(Offset(size.width - 30, 40), 85, blobPaint);
-
-    // Outlined ring top-right
-    final ringPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.14)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6;
-    canvas.drawCircle(Offset(size.width - 30, 40), 85, ringPaint);
-
-    // Soft blob bottom-left behind wave
-    canvas.drawCircle(
-      Offset(size.width * 0.12, size.height - 70),
-      55,
-      Paint()..color = Colors.white.withValues(alpha: 0.04),
-    );
-
-    // Math symbols scattered as school-themed sparkles
-    final c1 = Colors.white.withValues(alpha: 0.3);
-    final c2 = Colors.white.withValues(alpha: 0.22);
-    final cy = const Color(0xFFF5C518).withValues(alpha: 0.35);
-    _drawSymbol(canvas, 'π', Offset(size.width * 0.54, 26), 15, cy);
-    _drawSymbol(canvas, '+', Offset(size.width * 0.62, 52), 13, c1);
-    _drawSymbol(canvas, '×', Offset(size.width * 0.48, 72), 11, c2);
-    _drawSymbol(canvas, '√', Offset(size.width * 0.72, 38), 13, c2);
-    _drawSymbol(canvas, '∞', Offset(size.width * 0.82, 65), 14, cy);
-    _drawSymbol(canvas, '÷', Offset(size.width * 0.90, 42), 12, c2);
-    _drawSymbol(canvas, '=', Offset(size.width * 0.22, size.height - 88), 11, c2);
-    _drawSymbol(canvas, '∆', Offset(size.width * 0.38, size.height - 100), 12, cy);
-    _drawSymbol(canvas, '²', Offset(size.width * 0.46, size.height - 75), 11, c2);
-
-    canvas.restore();
-
-    // Wave highlight line
-    final linePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.22)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
-
-    final linePath = Path()
-      ..moveTo(0, size.height - 52)
-      ..quadraticBezierTo(
-        size.width * 0.3, size.height - 12,
-        size.width * 0.55, size.height - 34,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.78, size.height - 54,
-        size.width, size.height - 22,
-      );
-
-    canvas.drawPath(linePath, linePaint);
-
-    // Second wave accent (filled)
-    final accentPaint = Paint()..color = const Color(0x14FFFFFF);
-
-    final accentPath = Path()
-      ..moveTo(0, size.height - 58)
-      ..quadraticBezierTo(
-        size.width * 0.35, size.height - 16,
-        size.width * 0.6, size.height - 42,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.8, size.height - 60,
-        size.width, size.height - 28,
-      )
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-
-    canvas.drawPath(accentPath, accentPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
+const _homeMonths = [
+  '', 'ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie',
+  'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie',
+];
 
 // ────────────────────────────────────────────────────────────────────────────
 // AZI HERO CARD (gradient, white text, vertical layout)
@@ -656,187 +450,16 @@ class _AziCardDecorPainter extends CustomPainter {
     final c1 = Colors.white.withValues(alpha: 0.3);
     final c2 = Colors.white.withValues(alpha: 0.22);
     final cy = const Color(0xFFF5C518).withValues(alpha: 0.35);
-    _drawSymbol(canvas, '∑', Offset(size.width - 28, size.height * 0.42), 14, cy);
-    _drawSymbol(canvas, '=', Offset(size.width * 0.88, size.height - 38), 12, c1);
-    _drawSymbol(canvas, '∫', Offset(size.width * 0.82, size.height * 0.28), 15, c2);
-    _drawSymbol(canvas, 'π', Offset(size.width * 0.93, size.height * 0.55), 13, c2);
-    _drawSymbol(canvas, '+', Offset(size.width * 0.72, size.height * 0.58), 11, cy);
-    _drawSymbol(canvas, '√', Offset(size.width * 0.78, size.height - 28), 12, c2);
+    drawMathSymbol(canvas, '∑', Offset(size.width - 28, size.height * 0.42), 14, cy);
+    drawMathSymbol(canvas, '=', Offset(size.width * 0.88, size.height - 38), 12, c1);
+    drawMathSymbol(canvas, '∫', Offset(size.width * 0.82, size.height * 0.28), 15, c2);
+    drawMathSymbol(canvas, 'π', Offset(size.width * 0.93, size.height * 0.55), 13, c2);
+    drawMathSymbol(canvas, '+', Offset(size.width * 0.72, size.height * 0.58), 11, cy);
+    drawMathSymbol(canvas, '√', Offset(size.width * 0.78, size.height - 28), 12, c2);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// CERERE DE ÎNVOIRE CARD
-// ────────────────────────────────────────────────────────────────────────────
-class _CerereInvoireCard extends StatelessWidget {
-  final Stream<QuerySnapshot<Map<String, dynamic>>>? leaveStream;
-  final VoidCallback onCreateNew;
-  final VoidCallback onShowQr;
-  final void Function(String docId)? onPendingTap;
-
-  const _CerereInvoireCard({
-    required this.leaveStream,
-    required this.onCreateNew,
-    required this.onShowQr,
-    required this.onPendingTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: leaveStream,
-      builder: (context, snapshot) {
-        final docs = snapshot.data?.docs ?? const [];
-        final now = DateTime.now();
-        final todayMidnight = DateTime(now.year, now.month, now.day);
-
-        bool isExpired(Map<String, dynamic> data) {
-          final forDate = (data['requestedForDate'] as Timestamp?)?.toDate();
-          if (forDate == null) return false;
-          return forDate.isBefore(todayMidnight);
-        }
-
-        QueryDocumentSnapshot<Map<String, dynamic>>? activeDoc;
-        for (final d in docs) {
-          final data = d.data();
-          if (isExpired(data)) continue;
-          final status = data['status'];
-          if (status == 'approved' || status == 'active') {
-            activeDoc ??= d;
-          }
-        }
-
-        final onTap = activeDoc != null ? onShowQr : onCreateNew;
-
-        return GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: double.infinity,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: _surfaceLowest,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x10000000),
-                  blurRadius: 14,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: CustomPaint(painter: _WhiteCardDecorPainter()),
-                ),
-                Positioned(
-                  right: -12,
-                  bottom: -18,
-                  child: Transform.rotate(
-                    angle: -0.12,
-                    child: Icon(
-                      Icons.assignment_rounded,
-                      size: 90,
-                      color: _primary.withValues(alpha: 0.055),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 18, 14, 18),
-                  child: Row(
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  _primary.withValues(alpha: 0.12),
-                                  _primary.withValues(alpha: 0.06),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                color: _primary.withValues(alpha: 0.1),
-                                width: 1,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.description_rounded,
-                              color: _primary,
-                              size: 24,
-                            ),
-                          ),
-                          Positioned(
-                            right: -2,
-                            top: -2,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: _pencilYellow,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Leave requests',
-                              style: TextStyle(
-                                color: _onSurface,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Manage your absences',
-                              style: TextStyle(
-                                color: _labelColor,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 32,
-                        height: 32,
-                        child: Icon(
-                          Icons.chevron_right_rounded,
-                          color: _labelColor,
-                          size: 22,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -1035,7 +658,7 @@ class _InboxPreviewCard extends StatelessWidget {
                                   Row(
                                     children: [
                                       const Text(
-                                        'Messages',
+                                        'Announcements',
                                         style: TextStyle(
                                           color: _onSurface,
                                           fontSize: 16,
@@ -1071,9 +694,9 @@ class _InboxPreviewCard extends StatelessWidget {
                                   Text(
                                     hasNew
                                         ? (unread == 1
-                                              ? '1 new message'
-                                              : '$unread new messages')
-                                        : 'No new messages',
+                                              ? '1 new announcement'
+                                              : '$unread new announcements')
+                                        : 'No new announcements',
                                     style: TextStyle(
                                       color: hasNew ? _primary : _labelColor,
                                       fontSize: 13,
@@ -1143,7 +766,7 @@ class _WhiteCardDecorPainter extends CustomPainter {
     for (int i = 0; i < entries.length; i++) {
       final (text, pos, fs) = entries[i];
       final color = i == yellowIdx ? cy : (i.isEven ? c1 : c2);
-      _drawSymbol(canvas, text, pos, fs, color);
+      drawMathSymbol(canvas, text, pos, fs, color);
     }
   }
 
@@ -1157,11 +780,11 @@ class _WhiteCardDecorPainter extends CustomPainter {
 // ────────────────────────────────────────────────────────────────────────────
 class _QuickActionsRow extends StatelessWidget {
   final VoidCallback onQr;
-  final VoidCallback onSchedule;
+  final VoidCallback onLeaveRequests;
 
   const _QuickActionsRow({
     required this.onQr,
-    required this.onSchedule,
+    required this.onLeaveRequests,
   });
 
   @override
@@ -1179,10 +802,10 @@ class _QuickActionsRow extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _QuickActionTile(
-            icon: Icons.calendar_today_rounded,
-            label: 'Schedule',
+            icon: Icons.description_rounded,
+            label: 'Leave requests',
             gradientColors: const [Color(0xFF3460CC), Color(0xFF4878E8)],
-            onTap: onSchedule,
+            onTap: onLeaveRequests,
           ),
         ),
       ],
