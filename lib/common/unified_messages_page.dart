@@ -21,8 +21,14 @@ enum _MessageCategory { requests, announcements, competition, camp, volunteer }
 class UnifiedMessagesPage extends StatefulWidget {
   final UnifiedInboxRole role;
   final VoidCallback? onBack;
+  final VoidCallback? onCreatePost;
 
-  const UnifiedMessagesPage({super.key, required this.role, this.onBack});
+  const UnifiedMessagesPage({
+    super.key,
+    required this.role,
+    this.onBack,
+    this.onCreatePost,
+  });
 
   @override
   State<UnifiedMessagesPage> createState() => _UnifiedMessagesPageState();
@@ -32,6 +38,8 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
   bool _loadingChildren = false;
   List<String> _childrenUids = const <String>[];
   Map<String, String> _childNames = const <String, String>{};
+  String _teacherClassId = '';
+  bool _loadingTeacherClass = false;
   _MessageCategory? _filter; // null == "All"
 
   @override
@@ -40,6 +48,32 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
     if (widget.role == UnifiedInboxRole.parent) {
       _loadingChildren = true;
       _loadChildren();
+    } else if (widget.role == UnifiedInboxRole.teacher) {
+      _loadingTeacherClass = true;
+      _loadTeacherClass();
+    }
+  }
+
+  Future<void> _loadTeacherClass() async {
+    final uid = (AppSession.uid ?? '').trim();
+    if (uid.isEmpty) {
+      if (mounted) setState(() => _loadingTeacherClass = false);
+      return;
+    }
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      final classId = (doc.data()?['classId'] ?? '').toString().trim();
+      if (mounted) {
+        setState(() {
+          _teacherClassId = classId;
+          _loadingTeacherClass = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loadingTeacherClass = false);
     }
   }
 
@@ -138,6 +172,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
         ];
       case UnifiedInboxRole.teacher:
         return [
+          // Teacher-targeted broadcasts + direct messages
           base
               .where('recipientRole', isEqualTo: 'teacher')
               .where('recipientUid', isEqualTo: '')
@@ -145,6 +180,11 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           base
               .where('recipientRole', isEqualTo: 'teacher')
               .where('recipientUid', isEqualTo: uid)
+              .snapshots(),
+          // Same student-broadcasts the teacher's class sees
+          base
+              .where('recipientRole', isEqualTo: 'student')
+              .where('recipientUid', isEqualTo: '')
               .snapshots(),
         ];
       case UnifiedInboxRole.parent:
@@ -189,6 +229,17 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
             .snapshots(),
       ),
     ];
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>>?
+  _buildTeacherDecisionsStream() {
+    if (_teacherClassId.isEmpty) return null;
+    return FirebaseFirestore.instance
+        .collection('leaveRequests')
+        .where('classId', isEqualTo: _teacherClassId)
+        .orderBy('requestedAt', descending: true)
+        .limit(80)
+        .snapshots();
   }
 
   Widget _buildMergedStream(
@@ -335,21 +386,20 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
         bottom: false,
         child: Column(
           children: [
-            _InboxTopHeader(onBack: () => _goBack(context)),
-            const SizedBox(height: 14),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                widget.role == UnifiedInboxRole.parent
-                    ? "See your children's school announcements."
-                    : 'Manage your activities, requests and announcements.',
-                style: const TextStyle(
-                  color: _kTextMuted,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+            PageBlueHeader(
+              title: 'Messages',
+              subtitle: widget.role == UnifiedInboxRole.parent
+                  ? "Children's school announcements"
+                  : 'Activities, requests & announcements',
+              onBack: () => _goBack(context),
             ),
+            if (widget.onCreatePost != null) ...[
+              const SizedBox(height: 14),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                child: _CreatePostButton(onTap: widget.onCreatePost!),
+              ),
+            ],
             const SizedBox(height: 12),
             _FilterPills(
               selected: _filter,
@@ -359,7 +409,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
-                child: _loadingChildren
+                child: (_loadingChildren || _loadingTeacherClass)
                     ? const Center(child: CircularProgressIndicator())
                     : _buildBody(uid),
               ),
@@ -387,6 +437,43 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
           return _buildItemsList(allItems);
         });
+      }
+
+      if (widget.role == UnifiedInboxRole.teacher) {
+        final teacherStream = _buildTeacherDecisionsStream();
+        if (teacherStream == null) {
+          return _buildItemsList(secretariatItems);
+        }
+        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: teacherStream,
+          builder: (context, snap) {
+            if (snap.hasError) {
+              return Center(child: Text('Error: ${snap.error}'));
+            }
+            final decisionDocs =
+                snap.data?.docs ??
+                const <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+            final studentUids = decisionDocs
+                .map((d) => (d.data()['studentUid'] ?? '').toString().trim())
+                .where((s) => s.isNotEmpty)
+                .toSet();
+            return FutureBuilder<Map<String, String>>(
+              future: _loadUserLabels(studentUids),
+              builder: (context, namesSnap) {
+                final names = namesSnap.data ?? const <String, String>{};
+                final decisionItems = _mapTeacherDecisionItems(
+                  decisionDocs,
+                  names,
+                );
+                final allItems = <_UnifiedMessageItem>[
+                  ...decisionItems,
+                  ...secretariatItems,
+                ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+                return _buildItemsList(allItems);
+              },
+            );
+          },
+        );
       }
 
       if (widget.role != UnifiedInboxRole.student) {
@@ -566,6 +653,63 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
         .toList();
   }
 
+  List<_UnifiedMessageItem> _mapTeacherDecisionItems(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+    Map<String, String> studentNamesByUid,
+  ) {
+    return docs
+        .where((doc) {
+          final data = doc.data();
+          final status = (data['status'] ?? '').toString().trim();
+          final source = (data['source'] ?? '').toString().trim();
+          return source != 'secretariat' &&
+              (status == 'pending' ||
+                  status == 'approved' ||
+                  status == 'rejected');
+        })
+        .map((doc) {
+          final data = doc.data();
+          final status = (data['status'] ?? '').toString().trim();
+          final studentUid = (data['studentUid'] ?? '').toString().trim();
+          final studentName = (data['studentName'] ?? '').toString().trim();
+          final resolved = studentName.isNotEmpty
+              ? studentName
+              : (studentNamesByUid[studentUid] ?? 'Student');
+
+          final reviewedAt = (data['reviewedAt'] as Timestamp?)?.toDate();
+          final requestedAt = (data['requestedAt'] as Timestamp?)?.toDate();
+          final when =
+              reviewedAt ??
+              requestedAt ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+
+          final state = status == 'approved'
+              ? _MessageState.approved
+              : (status == 'rejected'
+                    ? _MessageState.rejected
+                    : _MessageState.pending);
+
+          return _UnifiedMessageItem(
+            kind: _MessageKind.decision,
+            state: state,
+            category: _MessageCategory.requests,
+            title: state == _MessageState.pending
+                ? 'Pending request - $resolved'
+                : '${state == _MessageState.approved ? 'Request approved' : 'Request rejected'} - $resolved',
+            sender: state == _MessageState.pending
+                ? 'Awaiting your decision'
+                : _normalizeSender(
+                    (data['reviewedByName'] ?? 'Homeroom teacher').toString(),
+                  ),
+            message: (data['message'] ?? '').toString().trim(),
+            createdAt: when,
+            dateLabel: (data['dateText'] ?? '').toString().trim(),
+            timeLabel: (data['timeText'] ?? '').toString().trim(),
+          );
+        })
+        .toList();
+  }
+
   Widget _buildItemsList(List<_UnifiedMessageItem> items) {
     final filtered = _filter == null
         ? items
@@ -704,101 +848,6 @@ class _Pill extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _InboxTopHeader extends StatelessWidget {
-  final VoidCallback onBack;
-
-  const _InboxTopHeader({required this.onBack});
-
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-    return Container(
-      width: double.infinity,
-      clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x302848B0),
-            blurRadius: 20,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          const Positioned.fill(
-            child: CustomPaint(
-              painter: HeaderSparklesPainter(variant: 1),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 22),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    onPressed: onBack,
-                    icon: const Icon(
-                      Icons.arrow_back_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                    padding: EdgeInsets.zero,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Messages',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        width: 42,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: kPencilYellow,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1078,5 +1127,42 @@ _CardScheme _cardScheme(_MessageState state) {
         pillBg: Color(0xFFE8EAF2),
         pillFg: _kPrimary,
       );
+  }
+}
+
+class _CreatePostButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _CreatePostButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: _kPrimary,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Create new post',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

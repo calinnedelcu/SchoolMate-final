@@ -37,7 +37,7 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
     final parentName =
         (AppSession.fullName != null && AppSession.fullName!.isNotEmpty)
         ? AppSession.fullName!
-        : (AppSession.username ?? 'Parinte');
+        : (AppSession.username ?? 'Parent');
     try {
       await FirebaseFirestore.instance
           .collection('leaveRequests')

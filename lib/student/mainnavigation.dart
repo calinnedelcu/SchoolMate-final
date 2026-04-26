@@ -42,7 +42,7 @@ class _AppShellState extends State<AppShell> {
       return;
     }
 
-    // Marcare ca văzut când se selectează tab-ul inbox (index 3)
+    // Mark as seen when the inbox tab is selected (index 3)
     if (index == 3) {
       final uid = AppSession.uid;
       if (uid != null && uid.isNotEmpty) {

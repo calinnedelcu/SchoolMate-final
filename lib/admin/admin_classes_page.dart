@@ -621,7 +621,6 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     required String username,
     required String fullName,
     required String classId,
-    required bool inSchool,
     required String status,
     required bool onboardingComplete,
     required bool emailVerified,
@@ -3773,8 +3772,6 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     final fullName =
                                         (data['fullName'] ?? username)
                                             .toString();
-                                    final inSchool =
-                                        data['inSchool'] as bool? ?? false;
                                     final status = (data['status'] ?? 'active')
                                         .toString();
                                     final onboardingComplete =
@@ -3955,7 +3952,6 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       username: username,
                                                       fullName: fullName,
                                                       classId: classId,
-                                                      inSchool: inSchool,
                                                       status: status,
                                                       onboardingComplete:
                                                           onboardingComplete,
