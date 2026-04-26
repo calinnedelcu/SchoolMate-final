@@ -1,29 +1,36 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
 import '../core/session.dart';
-import '../student/logout_dialog.dart';
-import 'orardir.dart';
+import '../student/widgets/no_anim_route.dart';
+import '../student/widgets/school_decor.dart' show WaveHeroHeader;
 import 'cereriasteptare.dart';
-import 'statuselevi.dart';
 import 'mesajedir.dart';
-import '../admin/admin_post_composer_page.dart';
 import 'widgets/schedule_bottom_sheet_teacher.dart';
 
-class _DampedScrollPhysics extends ScrollPhysics {
-  const _DampedScrollPhysics({super.parent});
-  @override
-  _DampedScrollPhysics applyTo(ScrollPhysics? ancestor) =>
-      _DampedScrollPhysics(parent: buildParent(ancestor));
-  @override
-  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) =>
-      super.applyPhysicsToUserOffset(position, offset) * 0.55;
-}
+const _homeMonths = [
+  '',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
-const _kGreen = Color(0xFF2848B0);
+// Same palette as parent dashboard
+const _primary = Color(0xFF2848B0);
+const _surface = Color(0xFFF2F4F8);
+const _surfaceContainerLow = Color(0xFFE8EAF2);
+const _surfaceLowest = Color(0xFFFFFFFF);
+const _onSurface = Color(0xFF1A2050);
+const _labelColor = Color(0xFF7A7E9A);
 const _pencilYellow = Color(0xFFF5C518);
-const _kBg = Color(0xFFEFF5FA);
 
 void _drawSymbol(
   Canvas canvas,
@@ -47,141 +54,57 @@ void _drawSymbol(
   painter.paint(canvas, pos - Offset(painter.width / 2, painter.height / 2));
 }
 
-// Painter copied/adapted from student header to match exact visuals
-class _HeaderWavePainterTeacher extends CustomPainter {
+class _WhiteCardDecorPainter extends CustomPainter {
+  final int variant;
+  const _WhiteCardDecorPainter({this.variant = 0});
+
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..shader = ui.Gradient.linear(
-        Offset.zero,
-        Offset(size.width, size.height),
-        const [Color(0xFF2040A0), Color(0xFF3058C8)],
-      );
-
-    final path = Path()
-      ..lineTo(0, size.height - 40)
-      ..quadraticBezierTo(
-        size.width * 0.25,
-        size.height,
-        size.width * 0.5,
-        size.height - 20,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.75,
-        size.height - 42,
-        size.width,
-        size.height - 14,
-      )
-      ..lineTo(size.width, 0)
-      ..close();
-
-    canvas.drawPath(path, paint);
-    canvas.save();
-    canvas.clipPath(path);
-
-    // Large soft blob top-right
-    final blobPaint = Paint()..color = Colors.white.withOpacity(0.06);
-    canvas.drawCircle(Offset(size.width - 30, 40), 85, blobPaint);
-
-    // Outlined ring top-right
-    final ringPaint = Paint()
-      ..color = Colors.white.withOpacity(0.14)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6;
-    canvas.drawCircle(Offset(size.width - 30, 40), 85, ringPaint);
-
-    // Soft blob bottom-left behind wave
     canvas.drawCircle(
-      Offset(size.width * 0.12, size.height - 70),
-      55,
-      Paint()..color = Colors.white.withOpacity(0.04),
+      Offset(size.width - 20, size.height + 10),
+      40,
+      Paint()..color = _primary.withValues(alpha: 0.035),
     );
 
-    // Math symbols scattered as school-themed sparkles
-    final c1 = Colors.white.withOpacity(0.3);
-    final c2 = Colors.white.withOpacity(0.22);
-    final cy = _pencilYellow.withOpacity(0.35);
-    _drawSymbol(canvas, 'π', Offset(size.width * 0.54, 26), 15, cy);
-    _drawSymbol(canvas, '+', Offset(size.width * 0.62, 52), 13, c1);
-    _drawSymbol(canvas, '×', Offset(size.width * 0.48, 72), 11, c2);
-    _drawSymbol(canvas, '√', Offset(size.width * 0.72, 38), 13, c2);
-    _drawSymbol(canvas, '∞', Offset(size.width * 0.82, 65), 14, cy);
-    _drawSymbol(canvas, '÷', Offset(size.width * 0.90, 42), 12, c2);
-    _drawSymbol(
-      canvas,
-      '=',
-      Offset(size.width * 0.22, size.height - 88),
-      11,
-      c2,
-    );
-    _drawSymbol(
-      canvas,
-      '∆',
-      Offset(size.width * 0.38, size.height - 100),
-      12,
-      cy,
-    );
-    _drawSymbol(
-      canvas,
-      '²',
-      Offset(size.width * 0.46, size.height - 75),
-      11,
-      c2,
-    );
+    final c1 = _primary.withValues(alpha: 0.10);
+    final c2 = _primary.withValues(alpha: 0.07);
+    final cy = _pencilYellow.withValues(alpha: 0.40);
 
-    canvas.restore();
-
-    // Wave highlight line
-    final linePaint = Paint()
-      ..color = Colors.white.withOpacity(0.22)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
-
-    final linePath = Path()
-      ..moveTo(0, size.height - 52)
-      ..quadraticBezierTo(
-        size.width * 0.3,
-        size.height - 12,
-        size.width * 0.55,
-        size.height - 34,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.78,
-        size.height - 54,
-        size.width,
-        size.height - 22,
-      );
-
-    canvas.drawPath(linePath, linePaint);
-
-    // Second wave accent (filled)
-    final accentPaint = Paint()..color = const Color(0x14FFFFFF);
-
-    final accentPath = Path()
-      ..moveTo(0, size.height - 58)
-      ..quadraticBezierTo(
-        size.width * 0.35,
-        size.height - 16,
-        size.width * 0.6,
-        size.height - 42,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.8,
-        size.height - 60,
-        size.width,
-        size.height - 28,
-      )
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-
-    canvas.drawPath(accentPath, accentPaint);
+    final entries = [
+      ('π', Offset(size.width - 58, 16), 11.0),
+      ('+', Offset(size.width - 42, 24), 10.0),
+      ('×', Offset(size.width - 72, 28), 10.0),
+      ('=', Offset(size.width - 50, size.height - 14), 10.0),
+      ('√', Offset(size.width - 78, size.height - 20), 11.0),
+    ];
+    final yellowIdx = variant % entries.length;
+    for (int i = 0; i < entries.length; i++) {
+      final (text, pos, fs) = entries[i];
+      final color = i == yellowIdx ? cy : (i.isEven ? c1 : c2);
+      _drawSymbol(canvas, text, pos, fs, color);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _WhiteCardDecorPainter oldDelegate) =>
+      oldDelegate.variant != variant;
 }
 
+class _DampedScrollPhysics extends ScrollPhysics {
+  const _DampedScrollPhysics({super.parent});
+
+  @override
+  _DampedScrollPhysics applyTo(ScrollPhysics? ancestor) =>
+      _DampedScrollPhysics(parent: buildParent(ancestor));
+
+  @override
+  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) =>
+      super.applyPhysicsToUserOffset(position, offset) * 0.55;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN WIDGET
+// ─────────────────────────────────────────────────────────────────────────────
 class TeacherDashboardPage extends StatefulWidget {
   const TeacherDashboardPage({super.key});
 
@@ -193,8 +116,9 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _teacherStream;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _pendingStream;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _studentsStream;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _classMessagesStream;
   String _classId = '';
-  bool _profilePressed = false;
+  DateTime? _localInboxLastOpened;
 
   @override
   void initState() {
@@ -206,7 +130,6 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
           .doc(uid)
           .snapshots();
 
-      // Listen once to get classId and initialize pending stream
       _teacherStream!.listen((doc) {
         if (!mounted) return;
         final data = doc.data() ?? {};
@@ -224,35 +147,39 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 .where('classId', isEqualTo: classId)
                 .where('role', isEqualTo: 'student')
                 .snapshots();
+            _classMessagesStream = FirebaseFirestore.instance
+                .collection('leaveRequests')
+                .where('classId', isEqualTo: classId)
+                .snapshots();
           });
         }
       });
     }
   }
 
-  // ignore: unused_element
-  Future<void> _logout() async {
-    final shouldLogout = await showStudentLogoutDialog(
-      context,
-      accentColor: _kGreen,
-      surfaceColor: Colors.white,
-      softSurfaceColor: const Color(0xFFE8EEF4),
-      titleColor: const Color(0xFF1F8BE7),
-      messageColor: const Color(0xFF6488A8),
-    );
+  DateTime? _effectiveLastOpened(DateTime? server, DateTime? local) {
+    if (server == null) return local;
+    if (local == null) return server;
+    return local.isAfter(server) ? local : server;
+  }
 
-    if (!shouldLogout) return;
-    try {
-      await FirebaseAuth.instance.signOut();
-      AppSession.clear();
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Nu am putut face logout. Încearcă din nou.'),
-        ),
-      );
+  Future<void> _openMessages() async {
+    final uid = AppSession.uid;
+    final openedAt = DateTime.now();
+    if (mounted) setState(() => _localInboxLastOpened = openedAt);
+    if (uid != null && uid.isNotEmpty) {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .set({
+            'inboxLastOpenedAt': Timestamp.fromDate(openedAt),
+          }, SetOptions(merge: true))
+          .catchError((_) {});
     }
+    await Navigator.push(
+      context,
+      noAnimRoute((_) => const MesajeDirPage()),
+    );
   }
 
   @override
@@ -262,48 +189,65 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
       return const Scaffold(body: Center(child: Text('No session')));
     }
 
-    final topPadding = MediaQuery.of(context).padding.top;
-
     return Scaffold(
-      backgroundColor: _kBg,
-      body: Stack(
-        children: [
-          SafeArea(
-            top: false,
-            child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      backgroundColor: _surface,
+      body: SafeArea(
+        top: false,
+        child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: _teacherStream,
               builder: (context, snap) {
                 final data = snap.data?.data() ?? const <String, dynamic>{};
                 final fullName = (data['fullName'] ?? '').toString().trim();
                 final displayName = fullName.isNotEmpty
                     ? fullName
-                    : (AppSession.username ?? 'Diriginte');
+                    : (AppSession.username ?? 'Teacher');
+                final serverInboxLastOpened =
+                    (data['inboxLastOpenedAt'] as Timestamp?)?.toDate();
+                final inboxLastOpened = _effectiveLastOpened(
+                  serverInboxLastOpened,
+                  _localInboxLastOpened,
+                );
 
-                final scrollStart = 190.0;
+                final now = DateTime.now();
+                final dateStr =
+                    '${now.day} ${_homeMonths[now.month]} ${now.year}';
 
-                return Stack(
-                  fit: StackFit.expand,
+                return Column(
                   children: [
-                    Container(color: _kBg),
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: _buildHeader(displayName),
+                    WaveHeroHeader(
+                      title: 'Welcome,\n$displayName',
+                      subtitle: dateStr,
                     ),
-                    Positioned(
-                      top: scrollStart,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
+                    Expanded(
                       child: SingleChildScrollView(
                         physics: const _DampedScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
                         child: Column(
                           children: [
-                            _buildActivityCard(),
+                            _QuickStatsCard(
+                              studentsStream: _studentsStream,
+                              pendingStream: _pendingStream,
+                              messagesStream: _classMessagesStream,
+                              inboxLastOpened: inboxLastOpened,
+                            ),
                             const SizedBox(height: 16),
-                            _buildGrid(context),
+                            _ShortcutsRow(
+                              pendingStream: _pendingStream,
+                              onRequestsTap: () => Navigator.push(
+                                context,
+                                noAnimRoute(
+                                  (_) => const CereriAsteptarePage(),
+                                ),
+                              ),
+                              onScheduleTap: () =>
+                                  showTeacherScheduleSheet(context, _classId),
+                            ),
+                            const SizedBox(height: 16),
+                            _AnnouncementsCard(
+                              onTap: _openMessages,
+                              messagesStream: _classMessagesStream,
+                              inboxLastOpened: inboxLastOpened,
+                            ),
                           ],
                         ),
                       ),
@@ -312,425 +256,199 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 );
               },
             ),
-          ),
-          Positioned(
-            top: topPadding + 5,
-            right: 14,
-            child: GestureDetector(
-              onTapDown: (_) => setState(() => _profilePressed = true),
-              onTapUp: (_) {
-                setState(() => _profilePressed = false);
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (_, __, ___) => const OrarDirPage(),
-                    transitionDuration: Duration.zero,
-                    reverseTransitionDuration: Duration.zero,
-                  ),
-                );
-              },
-              onTapCancel: () => setState(() => _profilePressed = false),
-              child: AnimatedScale(
-                scale: _profilePressed ? 0.78 : 1.0,
-                duration: const Duration(milliseconds: 100),
-                curve: Curves.easeOut,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 100),
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0x3389BEEB),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: const Color(0x6DC5E0F6),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 21,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
-    );
-  }
-
-  // ─── Blue hero header (copied from student design) ─────────────────────────
-  Widget _buildHeader(String displayName) {
-    final topPadding = MediaQuery.of(context).padding.top;
-    final now = DateTime.now();
-    final dateStr = '${now.day} aprilie ${now.year}';
-
-    return SizedBox(
-      width: double.infinity,
-      height: topPadding + 170,
-      child: CustomPaint(
-        painter: _HeaderWavePainterTeacher(),
-        child: Stack(
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(26, topPadding + 16, 70, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome, $displayName',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      height: 1.25,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: 46,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: _pencilYellow,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    dateStr,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ─── Card "Activitate Recentă" ──────────────────────────────────────────────
-  Widget _buildActivityCard() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _pendingStream,
-      builder: (context, snap) {
-        final pendingDocs = snap.data?.docs ?? [];
-
-        final items = <_ActivityData>[];
-
-        // Cereri în așteptare reale (max 1 pentru a lăsa loc celorlalte)
-        for (final doc in pendingDocs.take(1)) {
-          final d = doc.data() as Map<String, dynamic>;
-          final classId = (d['classId'] ?? '').toString();
-          items.add(
-            _ActivityData(
-              icon: Icons.warning_amber_rounded,
-              iconColor: const Color(0xFF9D1F5F),
-              title: 'Pending request - $classId',
-              time: 'NOW',
-            ),
-          );
-        }
-
-        items.add(
-          const _ActivityData(
-            icon: Icons.campaign_rounded,
-            iconColor: _kGreen,
-            title: 'New school announcement',
-            time: 'TODAY',
-          ),
-        );
-
-        if (pendingDocs.length > 1) {
-          final d = pendingDocs[1].data() as Map<String, dynamic>;
-          final studentName = (d['studentName'] ?? '').toString();
-          items.add(
-            _ActivityData(
-              icon: Icons.cancel_rounded,
-              iconColor: _kGreen,
-              title: 'Request rejected - $studentName',
-              time: 'TODAY',
-            ),
-          );
-        }
-
-        return Container(
-          width: double.infinity,
-          height: 390,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF2848B0), Color(0xFF3460CC), Color(0xFF4070E0)],
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x282848B0),
-                blurRadius: 20,
-                offset: Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(painter: _AziCardDecorPainter()),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 4),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Recent Activity',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.2,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: Column(
-                          children: items
-                              .map((item) => _ActivityItemWidget(data: item))
-                              .toList(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    StreamBuilder<QuerySnapshot>(
-                      stream: _studentsStream,
-                      builder: (context, stuSnap) {
-                        final students = stuSnap.data?.docs ?? [];
-                        final inSchool = students
-                            .where(
-                              (d) =>
-                                  (d.data()
-                                      as Map<String, dynamic>)['inSchool'] ==
-                                  true,
-                            )
-                            .length;
-                        final absent = students.length - inSchool;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _StatBox(
-                                  label: 'PRESENT',
-                                  value: students.isEmpty ? '--' : '$inSchool',
-                                  valueColor: _kGreen,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _StatBox(
-                                  label: 'ABSENT',
-                                  value: students.isEmpty ? '--' : '$absent',
-                                  valueColor: absent > 0
-                                      ? const Color(0xFF8E3557)
-                                      : const Color(0xFF717B6E),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 6),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // ─── Grid 2×2 ───────────────────────────────────────────────────────────────
-  Widget _buildGrid(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _pendingStream,
-      builder: (context, snap) {
-        final count = snap.data?.docs.length ?? 0;
-        final requestsSubtitle = count > 0
-            ? '$count ${count == 1 ? 'new request' : 'new requests'}'
-            : 'No new requests';
-
-        return Column(
-          children: [
-            // Top full-width white long button: Leave Requests
-            _GridCard(
-              icon: Icons.article_rounded,
-              title: 'Leave requests',
-              subtitle: requestsSubtitle,
-              isDark: false,
-              wide: true,
-              onTap: () => Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => const CereriAsteptarePage(),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Top full-width white long button: Messages
-            _GridCard(
-              icon: Icons.chat_bubble_rounded,
-              title: 'Messages',
-              subtitle: 'No new messages',
-              isDark: false,
-              wide: true,
-              onTap: () => Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => const MesajeDirPage(),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Row with two student-style quick tiles: My Class (left) and Schedule (right)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: _QuickActionTileTeacher(
-                    icon: Icons.group_rounded,
-                    label: 'My Class',
-                    gradientColors: const [
-                      Color(0xFF2848B0),
-                      Color(0xFF4070E0),
-                    ],
-                    onTap: () => Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (_, __, ___) => const StatusEleviPage(),
-                        transitionDuration: Duration.zero,
-                        reverseTransitionDuration: Duration.zero,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _QuickActionTileTeacher(
-                    icon: Icons.event_rounded,
-                    label: 'Schedule',
-                    gradientColors: const [
-                      Color(0xFF3460CC),
-                      Color(0xFF4878E8),
-                    ],
-                    onTap: () => showTeacherScheduleSheet(context, _classId),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Post Announcement (kept wide)
-            _GridCard(
-              icon: Icons.dynamic_feed_rounded,
-              title: 'Postări pentru clasă',
-              subtitle: 'Anunțuri, competiții, tabere',
-              isDark: false,
-              wide: true,
-              onTap: () => Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => const AdminPostComposerPage(
-                    mode: PostComposerMode.teacher,
-                  ),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }
 
-// ─── Model date activitate ────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// QUICK STATS CARD (STUDENTS / PENDING / MESSAGES)
+// ─────────────────────────────────────────────────────────────────────────────
+class _QuickStatsCard extends StatelessWidget {
+  final Stream<QuerySnapshot<Map<String, dynamic>>>? studentsStream;
+  final Stream<QuerySnapshot<Map<String, dynamic>>>? pendingStream;
+  final Stream<QuerySnapshot<Map<String, dynamic>>>? messagesStream;
+  final DateTime? inboxLastOpened;
 
-class _ActivityData {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String time;
-
-  const _ActivityData({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.time,
-  });
-}
-
-// ─── Widget rând activitate ───────────────────────────────────────────────────
-
-class _StatBox extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color valueColor;
-
-  const _StatBox({
-    required this.label,
-    required this.value,
-    required this.valueColor,
+  const _QuickStatsCard({
+    required this.studentsStream,
+    required this.pendingStream,
+    required this.messagesStream,
+    required this.inboxLastOpened,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: const Color(0xFFE7F0F6),
-        borderRadius: BorderRadius.circular(18),
+        color: _surfaceLowest,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x10000000),
+            blurRadius: 16,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: const _WhiteCardDecorPainter(variant: 2),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _primary.withValues(alpha: 0.12),
+                          _primary.withValues(alpha: 0.06),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(13),
+                      border: Border.all(
+                        color: _primary.withValues(alpha: 0.10),
+                        width: 1,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.dashboard_rounded,
+                      color: _primary,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'At a glance',
+                          style: TextStyle(
+                            color: _onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          width: 32,
+                          height: 2.5,
+                          decoration: BoxDecoration(
+                            color: _pencilYellow,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: studentsStream,
+                builder: (context, snap) {
+                  final docs = snap.data?.docs ?? const [];
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _StatTile(
+                          icon: Icons.group_rounded,
+                          iconColor: _primary,
+                          iconBg: _primary.withValues(alpha: 0.12),
+                          value: '${docs.length}',
+                          label: 'STUDENTS',
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _PendingStatTile(stream: pendingStream),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _MessagesStatTile(
+                          stream: messagesStream,
+                          inboxLastOpened: inboxLastOpened,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBg;
+  final String value;
+  final String label;
+
+  const _StatTile({
+    required this.icon,
+    required this.iconColor,
+    required this.iconBg,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 15, 10, 15),
+      decoration: BoxDecoration(
+        color: _surfaceContainerLow.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF717B6E),
-              letterSpacing: 1.0,
+          Container(
+            width: 35,
+            height: 35,
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(11),
             ),
+            child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 15,
+            style: const TextStyle(
+              color: _onSurface,
+              fontSize: 23,
               fontWeight: FontWeight.w800,
-              color: valueColor,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              color: _labelColor,
+              fontSize: 10,
+              letterSpacing: 0.8,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -739,60 +457,252 @@ class _StatBox extends StatelessWidget {
   }
 }
 
-class _ActivityItemWidget extends StatelessWidget {
-  final _ActivityData data;
-
-  const _ActivityItemWidget({required this.data});
+class _PendingStatTile extends StatelessWidget {
+  final Stream<QuerySnapshot<Map<String, dynamic>>>? stream;
+  const _PendingStatTile({required this.stream});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFF3F8FC),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: data.iconColor.withOpacity(1.0),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(data.icon, color: Colors.white, size: 26),
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: stream,
+      builder: (context, snap) {
+        final count = snap.data?.docs.length ?? 0;
+        return _StatTile(
+          icon: Icons.hourglass_top_rounded,
+          iconColor: const Color(0xFFC58A00),
+          iconBg: const Color(0xFFFFF1C4),
+          value: '$count',
+          label: 'PENDING',
+        );
+      },
+    );
+  }
+}
+
+class _MessagesStatTile extends StatelessWidget {
+  final Stream<QuerySnapshot<Map<String, dynamic>>>? stream;
+  final DateTime? inboxLastOpened;
+
+  const _MessagesStatTile({
+    required this.stream,
+    required this.inboxLastOpened,
+  });
+
+  DateTime? _readWhen(Map<String, dynamic> d) {
+    final reviewed = (d['reviewedAt'] as Timestamp?)?.toDate();
+    final requested = (d['requestedAt'] as Timestamp?)?.toDate();
+    return reviewed ?? requested;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: stream,
+      builder: (context, snap) {
+        final docs = snap.data?.docs ?? const [];
+        int unread;
+        if (inboxLastOpened == null) {
+          unread = docs.length;
+        } else {
+          unread = docs.where((d) {
+            final when = _readWhen(d.data());
+            return when != null && when.isAfter(inboxLastOpened!);
+          }).length;
+        }
+        return _StatTile(
+          icon: Icons.mark_email_unread_rounded,
+          iconColor: _primary,
+          iconBg: const Color(0xFFE2E7FA),
+          value: '$unread',
+          label: 'MESSAGES',
+        );
+      },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SHORTCUT TILES
+// ─────────────────────────────────────────────────────────────────────────────
+class _ShortcutsRow extends StatelessWidget {
+  final Stream<QuerySnapshot<Map<String, dynamic>>>? pendingStream;
+  final VoidCallback onRequestsTap;
+  final VoidCallback onScheduleTap;
+
+  const _ShortcutsRow({
+    required this.pendingStream,
+    required this.onRequestsTap,
+    required this.onScheduleTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: pendingStream,
+      builder: (context, snap) {
+        final pending = snap.data?.docs.length ?? 0;
+        return Row(
+          children: [
+            Expanded(
+              child: _ShortcutTile(
+                icon: Icons.description_rounded,
+                title: 'Leave requests',
+                subtitle: pending == 0
+                    ? 'No new requests'
+                    : (pending == 1 ? '1 pending' : '$pending pending'),
+                badgeCount: pending,
+                onTap: onRequestsTap,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _ShortcutTile(
+                icon: Icons.event_note_rounded,
+                title: 'Schedule',
+                subtitle: 'Today\'s lessons',
+                badgeCount: 0,
+                onTap: onScheduleTap,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ShortcutTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final int badgeCount;
+  final VoidCallback onTap;
+
+  const _ShortcutTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.badgeCount,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasBadge = badgeCount > 0;
+    return Material(
+      color: _surfaceLowest,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Container(
+          height: 138,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x10000000),
+                blurRadius: 14,
+                offset: Offset(0, 4),
+              ),
+            ],
+            border: hasBadge
+                ? const Border(
+                    left: BorderSide(color: _primary, width: 4),
+                  )
+                : null,
+          ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(hasBadge ? 13 : 15, 14, 13, 13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            _primary.withValues(alpha: 0.12),
+                            _primary.withValues(alpha: 0.06),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(13),
+                        border: Border.all(
+                          color: _primary.withValues(alpha: 0.10),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(icon, color: _primary, size: 23),
+                    ),
+                    if (hasBadge)
+                      Positioned(
+                        right: -4,
+                        top: -4,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: _pencilYellow,
+                            borderRadius: BorderRadius.circular(9),
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Text(
+                            badgeCount > 9 ? '9+' : '$badgeCount',
+                            style: const TextStyle(
+                              color: _onSurface,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      data.title,
+                      title,
                       style: const TextStyle(
-                        color: Color(0xFF4B83B2),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        color: _onSurface,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        height: 1.15,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 3),
                     Text(
-                      data.time,
-                      style: const TextStyle(
-                        color: Color(0xFF85A0B7),
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: hasBadge ? _primary : _labelColor,
                         fontSize: 12,
-                        letterSpacing: 0.6,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -800,366 +710,211 @@ class _ActivityItemWidget extends StatelessWidget {
   }
 }
 
-// ─── Card grid 2×2 ───────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// ANNOUNCEMENTS CARD (light, mirrors parent's announcements card)
+// ─────────────────────────────────────────────────────────────────────────────
+class _AnnouncementsCard extends StatelessWidget {
+  final VoidCallback onTap;
+  final Stream<QuerySnapshot<Map<String, dynamic>>>? messagesStream;
+  final DateTime? inboxLastOpened;
 
-class _GridCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool isDark;
-  final bool wide;
-  final VoidCallback? onTap;
-
-  const _GridCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.isDark,
-    this.wide = false,
-    this.onTap,
+  const _AnnouncementsCard({
+    required this.onTap,
+    required this.messagesStream,
+    required this.inboxLastOpened,
   });
+
+  DateTime? _readWhen(Map<String, dynamic> d) {
+    final reviewed = (d['reviewedAt'] as Timestamp?)?.toDate();
+    final requested = (d['requestedAt'] as Timestamp?)?.toDate();
+    return reviewed ?? requested;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final iconBg = isDark
-        ? Colors.white.withValues(alpha: 0.18)
-        : _kGreen.withValues(alpha: 0.10);
-    final iconColor = isDark ? Colors.white : _kGreen;
-    final titleColor = isDark ? Colors.white : const Color(0xFF4B83B2);
-    final subtitleColor = isDark
-        ? Colors.white.withValues(alpha: 0.74)
-        : const Color(0xFF8AA2B6);
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: messagesStream,
+      builder: (context, snap) {
+        final docs = snap.data?.docs ?? const [];
+        int unread;
+        if (inboxLastOpened == null) {
+          unread = docs.length;
+        } else {
+          unread = docs.where((d) {
+            final when = _readWhen(d.data());
+            return when != null && when.isAfter(inboxLastOpened!);
+          }).length;
+        }
+        final hasNew = unread > 0;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: wide ? null : 184,
-        padding: wide
-            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 14)
-            : const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: isDark && !wide
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF1F8BE7), Color(0xFF328FDF)],
-                )
-              : null,
-          color: wide
-              ? const Color(0xFFFFFFFF)
-              : isDark
-              ? null
-              : const Color(0xFFDEE8F0),
-          borderRadius: BorderRadius.circular(22),
-          border: (!isDark && !wide)
-              ? Border.all(
-                  color: const Color(0xFFBACCD9).withValues(alpha: 0.36),
-                  width: 1.1,
-                )
-              : null,
-          boxShadow: isDark && !wide
-              ? const [
-                  BoxShadow(
-                    color: Color(0x351F8BE7),
-                    blurRadius: 20,
-                    offset: Offset(0, 10),
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: double.infinity,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: _surfaceLowest,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x10000000),
+                  blurRadius: 14,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: const _WhiteCardDecorPainter(variant: 4),
                   ),
-                ]
-              : wide
-              ? const [
-                  BoxShadow(
-                    color: Color(0x14000000),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: wide
-            ? Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE7F0F6),
-                      borderRadius: BorderRadius.circular(16),
+                ),
+                Positioned(
+                  right: -10,
+                  bottom: -16,
+                  child: Transform.rotate(
+                    angle: 0.14,
+                    child: Icon(
+                      Icons.mail_rounded,
+                      size: 85,
+                      color: _primary.withValues(alpha: 0.055),
                     ),
-                    child: Icon(icon, color: _kGreen, size: 28),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
+                ),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 14, 0),
+                  decoration: BoxDecoration(
+                    border: hasNew
+                        ? const Border(
+                            left: BorderSide(color: _primary, width: 4),
+                          )
+                        : null,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(hasNew ? 14 : 18, 18, 0, 18),
+                    child: Row(
                       children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            color: _kGreen,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    _primary.withValues(alpha: 0.12),
+                                    _primary.withValues(alpha: 0.06),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                  color: _primary.withValues(alpha: 0.1),
+                                  width: 1,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.chat_bubble_rounded,
+                                color: _primary,
+                                size: 22,
+                              ),
+                            ),
+                            if (hasNew)
+                              Positioned(
+                                right: -2,
+                                top: -2,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: _pencilYellow,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text(
+                                    'Announcements',
+                                    style: TextStyle(
+                                      color: _onSurface,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  if (hasNew) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _pencilYellow,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        'NEW',
+                                        style: TextStyle(
+                                          color: _onSurface,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                hasNew
+                                    ? (unread == 1
+                                          ? '1 new announcement'
+                                          : '$unread new announcements')
+                                    : 'No new announcements',
+                                style: TextStyle(
+                                  color: hasNew ? _primary : _labelColor,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle,
-                          style: const TextStyle(
-                            color: Color(0xFF717B6E),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
+                        const SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: Icon(
+                            Icons.chevron_right_rounded,
+                            color: _labelColor,
+                            size: 22,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: Color(0xFF717B6E),
-                    size: 24,
-                  ),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: iconBg,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(icon, color: iconColor, size: 24),
-                  ),
-                  const Spacer(),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: titleColor,
-                      fontSize: 22,
-                      height: 1.18,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: subtitleColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-}
-
-// Student-style quick action tile (copied/adapted from student meniu.dart)
-class _QuickActionTileTeacher extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final List<Color> gradientColors;
-  final VoidCallback onTap;
-
-  const _QuickActionTileTeacher({
-    required this.icon,
-    required this.label,
-    required this.gradientColors,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 184,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0C000000),
-              blurRadius: 10,
-              offset: Offset(0, 4),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Positioned.fill(
-              child: CustomPaint(painter: _QuickTileDecorPainterTeacher()),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: gradientColors,
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(icon, color: Colors.white, size: 22),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: _kGreen,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Container(
-                    width: 16,
-                    height: 2,
-                    decoration: BoxDecoration(
-                      color: _pencilYellow,
-                      borderRadius: BorderRadius.circular(1),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
-class _QuickTileDecorPainterTeacher extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final gridPaint = Paint()
-      ..color = _kGreen.withOpacity(0.04)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.7;
-    const gridSize = 22.0;
-    for (double x = gridSize; x < size.width; x += gridSize) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-    for (double y = gridSize; y < size.height; y += gridSize) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-
-    // Soft corner blob bottom-right
-    canvas.drawCircle(
-      Offset(size.width + 5, size.height + 5),
-      28,
-      Paint()..color = _kGreen.withOpacity(0.05),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// Reuse the student's Azi card decor painter (not the whole card) to match the
-// notebook grid + symbols background used by Today's Schedule.
-class _AziCardDecorPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Notebook grid pattern (math squared paper)
-    final gridPaint = Paint()
-      ..color = Colors.white.withOpacity(0.05)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-    const gridSize = 26.0;
-    for (double x = gridSize; x < size.width; x += gridSize) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-    for (double y = gridSize; y < size.height; y += gridSize) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-
-    // Large soft circle top-right
-    canvas.drawCircle(
-      Offset(size.width + 10, -10),
-      90,
-      Paint()..color = Colors.white.withOpacity(0.06),
-    );
-
-    // Outlined ring top-right
-    canvas.drawCircle(
-      Offset(size.width + 10, -10),
-      90,
-      Paint()
-        ..color = Colors.white.withOpacity(0.12)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
-    );
-
-    // Medium soft circle bottom-right
-    canvas.drawCircle(
-      Offset(size.width - 30, size.height + 10),
-      70,
-      Paint()..color = Colors.white.withOpacity(0.05),
-    );
-
-    // Math symbols as school-themed sparkles
-    final c1 = Colors.white.withOpacity(0.3);
-    final c2 = Colors.white.withOpacity(0.22);
-    final cy = _pencilYellow.withOpacity(0.35);
-    _drawSymbol(
-      canvas,
-      '∑',
-      Offset(size.width - 28, size.height * 0.42),
-      14,
-      cy,
-    );
-    _drawSymbol(
-      canvas,
-      '=',
-      Offset(size.width * 0.88, size.height - 38),
-      12,
-      c1,
-    );
-    _drawSymbol(
-      canvas,
-      '∫',
-      Offset(size.width * 0.82, size.height * 0.28),
-      15,
-      c2,
-    );
-    _drawSymbol(
-      canvas,
-      'π',
-      Offset(size.width * 0.93, size.height * 0.55),
-      13,
-      c2,
-    );
-    _drawSymbol(
-      canvas,
-      '+',
-      Offset(size.width * 0.72, size.height * 0.58),
-      11,
-      cy,
-    );
-    _drawSymbol(
-      canvas,
-      '√',
-      Offset(size.width * 0.78, size.height - 28),
-      12,
-      c2,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

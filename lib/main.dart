@@ -6,7 +6,7 @@ import 'package:school_mate/student/mainnavigation.dart';
 import 'package:school_mate/admin/secretariat_raw_page.dart'
     show SecretariatRawPage;
 import 'package:school_mate/gate/gate_scan_page.dart';
-import 'package:school_mate/teacher/teacher_dashboard_page.dart';
+import 'package:school_mate/teacher/teacher_shell.dart';
 import 'package:school_mate/parent/parent_shell.dart';
 import 'package:school_mate/services/security_flags_service.dart';
 import 'package:school_mate/core/session.dart';
@@ -399,7 +399,7 @@ class _MyAppState extends State<MyApp> {
                           } else if (role == 'admin') {
                             return const SecretariatRawPage();
                           } else if (role == 'teacher') {
-                            return const TeacherDashboardPage();
+                            return const TeacherShell();
                           } else if (role == 'parent') {
                             return const ParentShell();
                           }

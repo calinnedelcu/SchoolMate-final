@@ -13,7 +13,7 @@ const _outlineVariant = Color(0xFFBACCD9);
 const _onSurface = Color(0xFF537DA2);
 const _danger = Color(0xFF8E3557);
 
-/// Functia principala care deschide panoul de setari pentru diriginte.
+/// Opens the teacher's account settings panel.
 void showAccountBottomSheet(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
@@ -69,7 +69,7 @@ class _SettingsSheet extends StatelessWidget {
           const Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Setări cont',
+              'Account settings',
               style: TextStyle(
                 color: _onSurface,
                 fontSize: 20,
@@ -80,7 +80,7 @@ class _SettingsSheet extends StatelessWidget {
           const SizedBox(height: 18),
           _SettingsTile(
             icon: Icons.edit_outlined,
-            label: 'Editare profil',
+            label: 'Edit profile',
             onTap: () {
               Navigator.pop(ctx);
               showDialog<void>(
@@ -93,7 +93,7 @@ class _SettingsSheet extends StatelessWidget {
           const SizedBox(height: 10),
           _SettingsTile(
             icon: Icons.logout,
-            label: 'Deconectează-te',
+            label: 'Sign out',
             danger: true,
             onTap: () => _logout(ctx),
           ),
@@ -101,6 +101,15 @@ class _SettingsSheet extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Opens the edit-profile dialog directly (without going through the bottom sheet).
+void showTeacherEditProfileDialog(BuildContext context) {
+  showDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    builder: (_) => const _AccountSettingsDialog(),
+  );
 }
 
 class _AccountSettingsDialog extends StatefulWidget {
@@ -176,7 +185,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
     } on FirebaseAuthException {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Parola actuală este incorectă.')),
+          const SnackBar(content: Text('Current password is incorrect.')),
         );
       }
       return false;
@@ -225,12 +234,12 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
         final messenger = ScaffoldMessenger.of(context);
         Navigator.pop(context);
         messenger.showSnackBar(
-          const SnackBar(content: Text('Setări actualizate.')),
+          const SnackBar(content: Text('Settings updated.')),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Eroare: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (!closed && mounted) setState(() => _saving = false);
@@ -264,7 +273,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                 children: [
                   const Expanded(
                     child: Text(
-                      'Setări Cont',
+                      'Account settings',
                       style: TextStyle(
                         color: _onSurface,
                         fontSize: 24,
@@ -274,7 +283,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                   ),
                   TextButton(
                     onPressed: _saving ? null : () => Navigator.pop(context),
-                    child: const Text('Anulează', style: TextStyle(color: _outline)),
+                    child: const Text('Cancel', style: TextStyle(color: _outline)),
                   ),
                   const SizedBox(width: 6),
                   ElevatedButton(
@@ -291,14 +300,14 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                             height: 18,
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
-                        : const Text('Salvează'),
+                        : const Text('Save'),
                   ),
                 ],
               ),
               const Divider(height: 24),
               
               // EMAIL
-              const Text('EMAIL PERSONAL', style: TextStyle(color: _primary, fontSize: 12, fontWeight: FontWeight.w700)),
+              const Text('PERSONAL EMAIL', style: TextStyle(color: _primary, fontSize: 12, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -340,7 +349,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                   icon: _sendingCode 
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Icon(Icons.send_rounded, size: 18),
-                  label: Text(_codeSent ? 'Retrimite cod' : 'Trimite cod verificare'),
+                  label: Text(_codeSent ? 'Resend code' : 'Send verification code'),
                   style: ElevatedButton.styleFrom(backgroundColor: _primary, foregroundColor: Colors.white),
                 ),
               ],
@@ -351,20 +360,20 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                   controller: _verificationCodeC,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    hintText: 'Cod 6 cifre',
-                    suffixIcon: TextButton(onPressed: _verifyCode, child: const Text('Verifică')),
+                    hintText: '6-digit code',
+                    suffixIcon: TextButton(onPressed: _verifyCode, child: const Text('Verify')),
                   ),
                 ),
               ],
 
               if (_emailVerified) const Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: Text('✓ Email verificat', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                child: Text('✓ Email verified', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
               ),
 
               const SizedBox(height: 24),
               // PAROLA
-              const Text('PAROLĂ', style: TextStyle(color: _primary, fontSize: 12, fontWeight: FontWeight.w700)),
+              const Text('PASSWORD', style: TextStyle(color: _primary, fontSize: 12, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -381,7 +390,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                           ? TextField(
                               controller: _passwordC,
                               obscureText: _obscurePassword,
-                              decoration: const InputDecoration.collapsed(hintText: 'Parola nouă'),
+                              decoration: const InputDecoration.collapsed(hintText: 'New password'),
                             )
                           : const Text('••••••••••••', style: TextStyle(fontSize: 15)),
                     ),
@@ -401,7 +410,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                 TextField(
                   controller: _confirmPasswordC,
                   obscureText: _obscurePassword,
-                  decoration: const InputDecoration(hintText: 'Confirmă parola nouă'),
+                  decoration: const InputDecoration(hintText: 'Confirm new password'),
                 ),
               ],
               
@@ -433,7 +442,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
       final res = await _api.verifyEmailCode(uid: FirebaseAuth.instance.currentUser!.uid, code: code);
       if (res['verified'] == true) setState(() => _emailVerified = true);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cod invalid')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid code')));
     }
   }
 }
@@ -451,17 +460,17 @@ class _ReauthDialogState extends State<_ReauthDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Confirmare identitate'),
+      title: const Text('Confirm identity'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Introdu parola actuală pentru a putea face modificări sensibile.'),
+          const Text('Enter your current password to make sensitive changes.'),
           const SizedBox(height: 16),
           TextField(
             controller: _ctrl,
             obscureText: _obscure,
             decoration: InputDecoration(
-              hintText: 'Parola actuală',
+              hintText: 'Current password',
               suffixIcon: IconButton(
                 icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
                 onPressed: () => setState(() => _obscure = !_obscure),
@@ -471,11 +480,11 @@ class _ReauthDialogState extends State<_ReauthDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Anulează')),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, _ctrl.text),
           style: ElevatedButton.styleFrom(backgroundColor: _primary, foregroundColor: Colors.white),
-          child: const Text('Confirmă'),
+          child: const Text('Confirm'),
         ),
       ],
     );

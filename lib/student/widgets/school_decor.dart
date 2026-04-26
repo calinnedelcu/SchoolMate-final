@@ -236,6 +236,135 @@ class WaveHeaderPainter extends CustomPainter {
   bool shouldRepaint(covariant WaveHeaderPainter oldDelegate) => false;
 }
 
+/// Standard blue gradient page header used on subpages (lists, details).
+/// Mirrors the look of `WaveHeroHeader` but without the bottom wave — fits
+/// pages that have a flat content area below.
+class PageBlueHeader extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final VoidCallback? onBack;
+  final Widget? trailing;
+
+  const PageBlueHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.onBack,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x302848B0),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          const Positioned.fill(
+            child: CustomPaint(painter: HeaderSparklesPainter(variant: 1)),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              topPadding + 16,
+              20,
+              subtitle == null ? 22 : 24,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (onBack != null) ...[
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      onPressed: onBack,
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 42,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: kPencilYellow,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          subtitle!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.86),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (trailing != null) ...[
+                  const SizedBox(width: 12),
+                  trailing!,
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class WhiteCardSparklesPainter extends CustomPainter {
   final Color primary;
   final int variant;

@@ -14,18 +14,18 @@ import 'parent_students_page.dart';
 
 const _homeMonths = [
   '',
-  'ianuarie',
-  'februarie',
-  'martie',
-  'aprilie',
-  'mai',
-  'iunie',
-  'iulie',
-  'august',
-  'septembrie',
-  'octombrie',
-  'noiembrie',
-  'decembrie',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 // ── Colour tokens (same palette as student/admin) ────────────────────────────
@@ -2289,7 +2289,7 @@ class _ParentAccountSettingsDialogState
                                 final email = _emailC.text.trim();
                                 if (email.isEmpty || !email.contains('@')) {
                                   setState(
-                                    () => _emailError = 'Email invalid.',
+                                    () => _emailError = 'Invalid email.',
                                   );
                                   return;
                                 }
@@ -2489,9 +2489,9 @@ class _ParentAccountSettingsDialogState
                   ],
                   const SizedBox(height: 22),
 
-                  // ── PAROLĂ ──
+                  // ── PASSWORD ──
                   const Text(
-                    'PAROLĂ',
+                    'PASSWORD',
                     style: TextStyle(
                       color: _primary,
                       fontSize: 12,

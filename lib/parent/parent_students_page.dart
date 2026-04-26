@@ -17,7 +17,6 @@ class ParentStudentViewData {
   final String username;
   final String role;
   final String classId;
-  final bool inSchool;
   final String photoUrl;
 
   const ParentStudentViewData({
@@ -26,7 +25,6 @@ class ParentStudentViewData {
     required this.username,
     required this.role,
     required this.classId,
-    required this.inSchool,
     required this.photoUrl,
   });
 }
@@ -107,7 +105,7 @@ class ParentStudentsPage extends StatelessWidget {
                                     ? viewData.fullName.trim()
                                     : viewData.username.trim().isNotEmpty
                                     ? viewData.username.trim()
-                                    : 'Elev necunoscut';
+                                    : 'Unknown student';
                                 final initials = name
                                     .trim()
                                     .split(' ')
@@ -188,7 +186,6 @@ class ParentStudentsPage extends StatelessWidget {
       username: (data['username'] ?? data['uid'] ?? '').toString(),
       role: (data['role'] ?? 'student').toString(),
       classId: (data['classId'] ?? '').toString(),
-      inSchool: data['inSchool'] == true,
       photoUrl:
           (data['profilePictureUrl'] ??
                   data['photoUrl'] ??

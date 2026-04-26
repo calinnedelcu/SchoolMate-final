@@ -206,8 +206,8 @@ class _MeniuScreenState extends State<MeniuScreen> {
 }
 
 const _homeMonths = [
-  '', 'ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie',
-  'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie',
+  '', 'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 // ────────────────────────────────────────────────────────────────────────────

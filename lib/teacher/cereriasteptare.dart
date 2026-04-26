@@ -1,9 +1,9 @@
 ﻿import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../core/session.dart';
+import '../student/widgets/school_decor.dart';
 
-const _kHeaderGreen = Color(0xFF2848B0);
-const _kPageBg = Color(0xFFEFF5FA);
+const _kPageBg = Color(0xFFF2F4F8);
 const _kCardBg = Color(0xFFFFFFFF);
 
 class CereriAsteptarePage extends StatefulWidget {
@@ -55,7 +55,7 @@ class _CereriAsteptarePageState extends State<CereriAsteptarePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            status == 'approved' ? 'Cerere aprobată' : 'Cerere respinsă',
+            status == 'approved' ? 'Request approved' : 'Request rejected',
           ),
           backgroundColor: status == 'approved' ? Colors.blue : Colors.red,
         ),
@@ -77,8 +77,9 @@ class _CereriAsteptarePageState extends State<CereriAsteptarePage> {
         bottom: false,
         child: Column(
           children: [
-            _TopHeader(
-              title: 'Leave Requests',
+            PageBlueHeader(
+              title: 'Leave requests',
+              subtitle: 'Approve or reject',
               onBack: () => Navigator.of(context).maybePop(),
             ),
             Expanded(
@@ -96,7 +97,7 @@ class _CereriAsteptarePageState extends State<CereriAsteptarePage> {
                           builder: (context, snap) {
                             if (snap.hasError) {
                               return Center(
-                                child: Text('Eroare: ${snap.error}'),
+                                child: Text('Error: ${snap.error}'),
                               );
                             }
                             if (!snap.hasData) {
@@ -108,7 +109,7 @@ class _CereriAsteptarePageState extends State<CereriAsteptarePage> {
                             if (docs.isEmpty) {
                               return const Center(
                                 child: Text(
-                                  'Nicio cerere în așteptare',
+                                  'No pending requests',
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: Color(0xFF5D655A),
@@ -151,9 +152,9 @@ class _CereriAsteptarePageState extends State<CereriAsteptarePage> {
                                 return _RequestCard(
                                   initials: initials.isEmpty ? '??' : initials,
                                   name: studentName.isEmpty
-                                      ? 'Elev fără nume'
+                                      ? 'Unnamed student'
                                       : studentName,
-                                  classLabel: 'ELEV • CLASA A $_classId',
+                                  classLabel: 'STUDENT • CLASS $_classId',
                                   dateText: dateText,
                                   timeText: timeText,
                                   message: message,
@@ -175,90 +176,6 @@ class _CereriAsteptarePageState extends State<CereriAsteptarePage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _TopHeader extends StatelessWidget {
-  final String title;
-  final VoidCallback onBack;
-
-  const _TopHeader({required this.title, required this.onBack});
-
-  @override
-  Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 390;
-    final headerHeight = compact ? 138.0 : 146.0;
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(54),
-        bottomRight: Radius.circular(54),
-      ),
-      child: Container(
-        height: headerHeight,
-        width: double.infinity,
-        color: _kHeaderGreen,
-        child: Stack(
-          children: [
-            Positioned(top: -72, right: -52, child: _decorCircle(220)),
-            Positioned(top: 44, right: 34, child: _decorCircle(72)),
-            Positioned(left: 156, bottom: -28, child: _decorCircle(82)),
-            Padding(
-              padding: EdgeInsets.zero,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: onBack,
-                        behavior: HitTestBehavior.opaque,
-                        child: const SizedBox(
-                          width: 34,
-                          height: 34,
-                          child: Center(
-                            child: Icon(
-                              Icons.arrow_back_rounded,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 29,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.6,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _decorCircle(double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: 0.08),
       ),
     );
   }
@@ -438,7 +355,7 @@ class _RequestCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: onAccept,
                         icon: const Icon(Icons.check_rounded, size: 18),
-                        label: const Text('Acceptă'),
+                        label: const Text('Approve'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1F8BE7),
                           foregroundColor: Colors.white,
@@ -462,7 +379,7 @@ class _RequestCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: onReject,
                         icon: const Icon(Icons.close_rounded, size: 18),
-                        label: const Text('Respinge'),
+                        label: const Text('Reject'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFF7E7EE),
                           foregroundColor: const Color(0xFF9C2D62),

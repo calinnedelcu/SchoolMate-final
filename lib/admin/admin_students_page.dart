@@ -230,19 +230,6 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                           .toString()
                                           .toLowerCase(),
                                     );
-                              case 'status':
-                                final aIn = ad['inSchool'] == true ? 0 : 1;
-                                final bIn = bd['inSchool'] == true ? 0 : 1;
-                                final cmp = aIn.compareTo(bIn);
-                                if (cmp != 0) return cmp;
-                                return (ad['fullName'] ?? '')
-                                    .toString()
-                                    .toLowerCase()
-                                    .compareTo(
-                                      (bd['fullName'] ?? '')
-                                          .toString()
-                                          .toLowerCase(),
-                                    );
                               default:
                                 return (ad['fullName'] ?? '')
                                     .toString()
@@ -316,8 +303,6 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                             .toString();
                                     final classId = (data['classId'] ?? '')
                                         .toString();
-                                    final inSchool =
-                                        data['inSchool'] as bool? ?? false;
                                     final email =
                                         (data['personalEmail'] ?? data['email'])
                                             ?.toString();
@@ -347,7 +332,6 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                         username: username,
                                         fullName: fullName,
                                         classId: classId,
-                                        inSchool: inSchool,
                                         status: status,
                                         onboardingComplete: onboardingComplete,
                                         emailVerified: emailVerified,
@@ -879,7 +863,6 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
     required String username,
     required String fullName,
     required String classId,
-    required bool inSchool,
     required String status,
     required bool onboardingComplete,
     required bool emailVerified,

@@ -108,7 +108,7 @@ class _InboxScreenState extends State<InboxScreen> {
         if (mounted) setState(() => _activeHighlightId = null);
       });
     } else if (retries > 0) {
-      // Lista poate să nu fie randată încă — reîncercăm după un frame.
+      // List may not be rendered yet — retry after one frame.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _scrollToHighlight(docId, retries: retries - 1);
       });
