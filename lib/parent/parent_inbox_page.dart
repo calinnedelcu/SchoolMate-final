@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firster/common/unified_messages_page.dart';
+import 'package:school_mate/common/unified_messages_page.dart';
 
 class ParentInboxPage extends StatelessWidget {
   const ParentInboxPage({super.key});

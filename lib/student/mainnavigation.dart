@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firster/core/session.dart';
-import 'package:firster/student/meniu.dart';
-import 'package:firster/student/profile_page.dart';
-import 'package:firster/student/schedule_page.dart';
-import 'package:firster/student/widgets/maniubara.dart';
-import 'package:firster/student/leave_requests_overview.dart';
-import 'package:firster/student/inbox.dart';
+import 'package:school_mate/core/session.dart';
+import 'package:school_mate/student/meniu.dart';
+import 'package:school_mate/student/profile_page.dart';
+import 'package:school_mate/student/schedule_page.dart';
+import 'package:school_mate/student/widgets/maniubara.dart';
+import 'package:school_mate/student/leave_requests_overview.dart';
+import 'package:school_mate/student/inbox.dart';
 import 'package:flutter/material.dart';
 
 class AppShell extends StatefulWidget {

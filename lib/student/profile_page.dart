@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firster/core/session.dart';
-import 'package:firster/student/bookmarks_page.dart';
-import 'package:firster/student/logout_dialog.dart';
-import 'package:firster/student/orar.dart' show showEditProfileDialog;
-import 'package:firster/student/widgets/no_anim_route.dart';
-import 'package:firster/student/widgets/school_decor.dart';
+import 'package:school_mate/core/session.dart';
+import 'package:school_mate/student/bookmarks_page.dart';
+import 'package:school_mate/student/logout_dialog.dart';
+import 'package:school_mate/student/orar.dart' show showEditProfileDialog;
+import 'package:school_mate/student/widgets/no_anim_route.dart';
+import 'package:school_mate/student/widgets/school_decor.dart';
 import 'package:flutter/material.dart';
 
 const _primary = Color(0xFF2848B0);

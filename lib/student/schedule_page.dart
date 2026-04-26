@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firster/core/session.dart';
-import 'package:firster/student/widgets/school_decor.dart';
-import 'package:firster/student/widgets/timetable.dart';
+import 'package:school_mate/core/session.dart';
+import 'package:school_mate/student/widgets/school_decor.dart';
+import 'package:school_mate/student/widgets/timetable.dart';
 import 'package:flutter/material.dart';
 
 const _primary = Color(0xFF2848B0);

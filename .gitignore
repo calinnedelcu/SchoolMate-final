@@ -53,3 +53,8 @@ CLAUDE.md
 functions/.env
 *.env
 docs/deploy_log.txt
+
+# Node modules and root npm leftovers
+node_modules/
+/package.json
+/package-lock.json

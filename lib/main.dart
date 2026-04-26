@@ -1,16 +1,16 @@
 import 'dart:async';
 
-import 'package:firster/Auth/login_page_firestore.dart';
-import 'package:firster/Auth/two_factor_verify_page.dart';
-import 'package:firster/student/mainnavigation.dart';
-import 'package:firster/admin/secretariat_raw_page.dart'
+import 'package:school_mate/Auth/login_page_firestore.dart';
+import 'package:school_mate/Auth/two_factor_verify_page.dart';
+import 'package:school_mate/student/mainnavigation.dart';
+import 'package:school_mate/admin/secretariat_raw_page.dart'
     show SecretariatRawPage;
-import 'package:firster/gate/gate_scan_page.dart';
-import 'package:firster/teacher/teacher_dashboard_page.dart';
-import 'package:firster/parent/parent_shell.dart';
-import 'package:firster/services/security_flags_service.dart';
-import 'package:firster/core/session.dart';
-import 'package:firster/auth/onboarding_page.dart';
+import 'package:school_mate/gate/gate_scan_page.dart';
+import 'package:school_mate/teacher/teacher_dashboard_page.dart';
+import 'package:school_mate/parent/parent_shell.dart';
+import 'package:school_mate/services/security_flags_service.dart';
+import 'package:school_mate/core/session.dart';
+import 'package:school_mate/auth/onboarding_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';

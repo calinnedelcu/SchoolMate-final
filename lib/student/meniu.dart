@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firster/core/session.dart';
-import 'package:firster/student/cereri.dart';
-import 'package:firster/student/inbox.dart';
-import 'package:firster/student/widgets/no_anim_route.dart';
-import 'package:firster/student/widgets/qr_bottom_sheet.dart';
-import 'package:firster/student/widgets/school_decor.dart';
+import 'package:school_mate/core/session.dart';
+import 'package:school_mate/student/cereri.dart';
+import 'package:school_mate/student/inbox.dart';
+import 'package:school_mate/student/widgets/no_anim_route.dart';
+import 'package:school_mate/student/widgets/qr_bottom_sheet.dart';
+import 'package:school_mate/student/widgets/school_decor.dart';
 import 'package:flutter/material.dart';
 
 class _DampedScrollPhysics extends ScrollPhysics {

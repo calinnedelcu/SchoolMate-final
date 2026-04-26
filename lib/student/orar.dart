@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firster/admin/services/admin_api.dart';
-import 'package:firster/student/logout_dialog.dart';
-import 'package:firster/core/session.dart';
-import 'package:firster/student/widgets/qr_bottom_sheet.dart';
-import 'package:firster/student/widgets/school_decor.dart';
+import 'package:school_mate/admin/services/admin_api.dart';
+import 'package:school_mate/student/logout_dialog.dart';
+import 'package:school_mate/core/session.dart';
+import 'package:school_mate/student/widgets/qr_bottom_sheet.dart';
+import 'package:school_mate/student/widgets/school_decor.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 

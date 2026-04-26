@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:ui' show ImageFilter;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firster/student/bookmarks_service.dart';
-import 'package:firster/student/meniu.dart';
-import 'package:firster/student/widgets/no_anim_route.dart';
-import 'package:firster/student/widgets/school_decor.dart';
-import 'package:firster/core/session.dart';
+import 'package:school_mate/student/bookmarks_service.dart';
+import 'package:school_mate/student/meniu.dart';
+import 'package:school_mate/student/widgets/no_anim_route.dart';
+import 'package:school_mate/student/widgets/school_decor.dart';
+import 'package:school_mate/core/session.dart';
 import 'package:flutter/material.dart';
 
 enum _InboxFilter {

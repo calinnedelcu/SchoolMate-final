@@ -51,7 +51,6 @@ web_targets = {
     "web/icons/schoolmate-maskable-192.png": 192,
     "web/icons/schoolmate-maskable-512.png": 512,
     "web/icons/logo_1024x1024.png": 1024,
-    "web/icons/LogoAplicatie PM.png": 1024,
 }
 for rel, size in web_targets.items():
     save_resized(ROOT / rel, size)

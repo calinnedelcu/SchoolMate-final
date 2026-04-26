@@ -47,7 +47,7 @@ exports.sendVerificationEmail = onCall(async (request) => {
     await transporter.sendMail({
         from: process.env.SMTP_FROM,
         to: email,
-        subject: "Cod de verificare - Firster",
+        subject: "Cod de verificare - SchoolMate",
         html: `<p>Codul tau de verificare este: <strong>${code}</strong></p>
                 <p>Codul expira în 1 oră.</p>`
     });
