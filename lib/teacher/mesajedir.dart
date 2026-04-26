@@ -13,7 +13,7 @@ class MesajeDirPage extends StatefulWidget {
   State<MesajeDirPage> createState() => _MesajeDirPageState();
 }
 
-// utilities copied from StudentInterface/inbox.dart for styling and data conversion
+// utilities shared with student inbox for styling and data conversion
 
 String _formatTimeAgo(DateTime dateTime) {
   final diff = DateTime.now().difference(dateTime);

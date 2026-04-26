@@ -47,3 +47,9 @@ app.*.map.json
 # Claude Code local config
 .claude/
 CLAUDE.md
+
+# Firebase deploy cache and secrets
+.firebase/
+functions/.env
+*.env
+docs/deploy_log.txt
