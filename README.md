@@ -1,10 +1,10 @@
 # SchoolMate
 
-**Hardcore Entrepreneur 6.0 — categoria {{CATEGORIE: gimnaziu / liceu}}**
+**Hardcore Entrepreneur 6.0 — categoria liceu**
 **Tema concursului:** *„Incluziune pentru toți. Viitor durabil pentru fiecare."*
-**Echipa:** {{NUME_ECHIPA}}
-**Membri:** {{NUME_MEMBRI}}
-**Mentor:** {{MENTOR_SAU_„fără mentor"}}
+**Echipa:** TransylvanianBears
+**Membri:** Nedelcu Călin, Buloi Cristian, Boștină Vlad, Cheroiu Andrei (clasa 11i)
+**Mentor:** fără mentor
 
 ---
 
@@ -31,8 +31,8 @@ Toate materialele cerute de regulament sunt în [livrabile/](livrabile/):
 
 - [livrabile/business-plan.md](livrabile/business-plan.md) — plan de afaceri (cu obiective SMART, grup-țintă, sustenabilitate, monetizare).
 - `livrabile/app-release.apk` — APK Android release (generat cu `flutter build apk --release`).
-- **Pitch video (max 3 min, în engleză):** {{LINK_YOUTUBE_PITCH}}
-- **Demo video (max 3 min):** {{LINK_YOUTUBE_DEMO}}
+- **Pitch video (max 3 min, în engleză):** _link YouTube unlisted — va fi adăugat înainte de 1 mai_
+- **Demo video (max 3 min):** _link YouTube unlisted — va fi adăugat înainte de 1 mai_
 
 ## Funcționalități principale
 
@@ -131,4 +131,4 @@ firebase deploy --only functions
 
 ## Contact
 
-Echipa {{NUME_ECHIPA}} — {{EMAIL_CONTACT_ECHIPA}}
+Echipa TransylvanianBears — calin.nedelcu08@gmail.com

@@ -2,10 +2,10 @@
 
 **Concurs:** Hardcore Entrepreneur 6.0
 **Tema:** Incluziune pentru toți. Viitor durabil pentru fiecare.
-**Categorie:** {{CATEGORIE — gimnaziu / liceu}}
-**Echipa:** {{NUME_ECHIPA}}
-**Membri:** {{NUME_MEMBRI}}
-**Mentor:** {{MENTOR_SAU_NICIUNUL}}
+**Categorie:** liceu
+**Echipa:** TransylvanianBears
+**Membri:** Nedelcu Călin, Buloi Cristian, Boștină Vlad, Cheroiu Andrei (clasa 11i)
+**Mentor:** fără mentor
 
 ---
 
