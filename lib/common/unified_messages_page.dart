@@ -2,18 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../core/session.dart';
+import '../student/widgets/school_decor.dart';
 
-const _kHeaderGreen = Color(0xFF208DEA);
-const _kPageBg = Color(0xFFEAF1F7);
-const _kCardBg = Color(0xFFF8F8F8);
-const _kTextPrimary = Color(0xFF5C7B98);
-const _kTextMuted = Color(0xFF616962);
+const _kPrimary = Color(0xFF2848B0);
+const _kPageBg = Color(0xFFF2F4F8);
+const _kTextPrimary = Color(0xFF1A2050);
+const _kTextMid = Color(0xFF3A4A80);
+const _kTextMuted = Color(0xFF7A7E9A);
 
 enum UnifiedInboxRole { student, parent, teacher }
 
 enum _MessageKind { decision, system }
 
 enum _MessageState { pending, approved, rejected, system }
+
+enum _MessageCategory { requests, announcements, competition, camp, volunteer }
 
 class UnifiedMessagesPage extends StatefulWidget {
   final UnifiedInboxRole role;
@@ -29,6 +32,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
   bool _loadingChildren = false;
   List<String> _childrenUids = const <String>[];
   Map<String, String> _childNames = const <String, String>{};
+  _MessageCategory? _filter; // null == "All"
 
   @override
   void initState() {
@@ -145,6 +149,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
         ];
       case UnifiedInboxRole.parent:
         return [
+          // Parent-targeted: broadcasts + per-child messages
           base
               .where('recipientRole', isEqualTo: 'parent')
               .where('studentUid', isEqualTo: '')
@@ -153,6 +158,18 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
             (childUid) => base
                 .where('recipientRole', isEqualTo: 'parent')
                 .where('studentUid', isEqualTo: childUid)
+                .snapshots(),
+          ),
+          // Student-targeted: parents see school-wide broadcasts and
+          // messages addressed to any of their children.
+          base
+              .where('recipientRole', isEqualTo: 'student')
+              .where('recipientUid', isEqualTo: '')
+              .snapshots(),
+          ..._childrenUids.map(
+            (childUid) => base
+                .where('recipientRole', isEqualTo: 'student')
+                .where('recipientUid', isEqualTo: childUid)
                 .snapshots(),
           ),
         ];
@@ -261,23 +278,23 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
       final mm = dateTime.minute.toString().padLeft(2, '0');
       return '$hh:$mm';
     }
-    if (diff == 1) return 'Ieri';
+    if (diff == 1) return 'Yesterday';
     return _formatDate(dateTime);
   }
 
   String _formatDate(DateTime date) {
     const months = [
-      'Ian',
+      'Jan',
       'Feb',
       'Mar',
       'Apr',
-      'Mai',
-      'Iun',
-      'Iul',
+      'May',
+      'Jun',
+      'Jul',
       'Aug',
       'Sep',
       'Oct',
-      'Noi',
+      'Nov',
       'Dec',
     ];
     return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
@@ -288,10 +305,11 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
     if (value.isEmpty) return 'Secretariat';
     final lower = value.toLowerCase();
     if (lower.contains('secretariat')) return 'Secretariat';
-    if (lower.contains('dirigin') || lower.contains('prof')) {
-      return 'Prof. Diriginte';
+    if (lower.contains('dirigin') || lower.contains('prof') ||
+        lower.contains('teacher') || lower.contains('homeroom')) {
+      return 'Homeroom teacher';
     }
-    if (lower.contains('parinte')) return 'Părinte';
+    if (lower.contains('parinte') || lower.contains('parent')) return 'Parent';
     return value;
   }
 
@@ -307,7 +325,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
   Widget build(BuildContext context) {
     final uid = (AppSession.uid ?? '').trim();
     if (uid.isEmpty) {
-      return const Scaffold(body: Center(child: Text('Sesiune invalida.')));
+      return const Scaffold(body: Center(child: Text('Invalid session.')));
     }
 
     return Scaffold(
@@ -318,9 +336,29 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
         child: Column(
           children: [
             _InboxTopHeader(onBack: () => _goBack(context)),
+            const SizedBox(height: 14),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                widget.role == UnifiedInboxRole.parent
+                    ? "See your children's school announcements."
+                    : 'Manage your activities, requests and announcements.',
+                style: const TextStyle(
+                  color: _kTextMuted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _FilterPills(
+              selected: _filter,
+              onSelect: (f) => setState(() => _filter = f),
+            ),
+            const SizedBox(height: 8),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
+                padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
                 child: _loadingChildren
                     ? const Center(child: CircularProgressIndicator())
                     : _buildBody(uid),
@@ -359,7 +397,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
         stream: _buildStudentDecisionsStream(uid),
         builder: (context, leaveSnap) {
           if (leaveSnap.hasError) {
-            return Center(child: Text('Eroare: ${leaveSnap.error}'));
+            return Center(child: Text('Error: ${leaveSnap.error}'));
           }
 
           final decisionDocs =
@@ -398,7 +436,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
   ) {
     return docs.map((doc) {
       final data = doc.data();
-      final title = (data['title'] ?? 'Mesaj Secretariat').toString().trim();
+      final title = (data['title'] ?? 'Office message').toString().trim();
       final sender = _normalizeSender(
         (data['senderName'] ?? 'Secretariat').toString(),
       );
@@ -408,11 +446,19 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
               (data['reviewedAt'] as Timestamp?)?.toDate() ??
               (data['requestedAt'] as Timestamp?)?.toDate()) ??
           DateTime.fromMillisecondsSinceEpoch(0);
+      final categoryKey = (data['category'] ?? '').toString().trim();
+      final category = switch (categoryKey) {
+        'competition' => _MessageCategory.competition,
+        'camp' => _MessageCategory.camp,
+        'volunteer' => _MessageCategory.volunteer,
+        _ => _MessageCategory.announcements,
+      };
 
       return _UnifiedMessageItem(
         kind: _MessageKind.system,
         state: _MessageState.system,
-        title: title,
+        category: category,
+        title: title.isEmpty ? 'Office message' : title,
         sender: sender,
         message: message,
         createdAt: createdAt,
@@ -442,7 +488,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           final studentName = (data['studentName'] ?? '').toString().trim();
           final resolvedStudentName = studentName.isNotEmpty
               ? studentName
-              : (_childNames[studentUid] ?? 'Elev');
+              : (_childNames[studentUid] ?? 'Student');
 
           final reviewedAt = (data['reviewedAt'] as Timestamp?)?.toDate();
           final requestedAt = (data['requestedAt'] as Timestamp?)?.toDate();
@@ -460,13 +506,14 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           return _UnifiedMessageItem(
             kind: _MessageKind.decision,
             state: state,
+            category: _MessageCategory.requests,
             title: state == _MessageState.pending
-                ? 'Cerere Nouă - $resolvedStudentName'
-                : '${state == _MessageState.approved ? 'Cerere Aprobată' : 'Cerere Respinsă'} - $resolvedStudentName',
+                ? 'New request - $resolvedStudentName'
+                : '${state == _MessageState.approved ? 'Request approved' : 'Request rejected'} - $resolvedStudentName',
             sender: state == _MessageState.pending
-                ? 'Necesită aprobarea părintelui'
+                ? 'Awaiting parent approval'
                 : _normalizeSender(
-                    (data['reviewedByName'] ?? 'Părinte').toString(),
+                    (data['reviewedByName'] ?? 'Parent').toString(),
                   ),
             message: (data['message'] ?? '').toString().trim(),
             createdAt: when,
@@ -495,7 +542,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           final reviewedByUid = (data['reviewedByUid'] ?? '').toString().trim();
           final sender =
               usernamesByUid[reviewedByUid] ??
-              (data['reviewedByName'] ?? 'Diriginte').toString();
+              (data['reviewedByName'] ?? 'Homeroom teacher').toString();
           final reviewedAt = (data['reviewedAt'] as Timestamp?)?.toDate();
           final requestedAt = (data['requestedAt'] as Timestamp?)?.toDate();
           final when =
@@ -507,7 +554,8 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           return _UnifiedMessageItem(
             kind: _MessageKind.decision,
             state: approved ? _MessageState.approved : _MessageState.rejected,
-            title: approved ? 'Cerere Aprobată' : 'Cerere Respinsă',
+            category: _MessageCategory.requests,
+            title: approved ? 'Request approved' : 'Request rejected',
             sender: _normalizeSender(sender),
             message: (data['message'] ?? '').toString().trim(),
             createdAt: when,
@@ -519,11 +567,29 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
   }
 
   Widget _buildItemsList(List<_UnifiedMessageItem> items) {
-    if (items.isEmpty) {
-      return const Center(
-        child: Text(
-          'Nu exista mesaje.',
-          style: TextStyle(color: Color(0xFF7A8077), fontSize: 16),
+    final filtered = _filter == null
+        ? items
+        : items.where((it) => it.category == _filter).toList();
+
+    if (filtered.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Text(
+              _filter == null
+                  ? 'No messages yet.'
+                  : 'No messages in this category.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: _kTextMuted, fontSize: 14),
+            ),
+          ),
         ),
       );
     }
@@ -531,15 +597,114 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
     return ListView.separated(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.only(top: 2, bottom: 24),
-      itemCount: items.length,
+      itemCount: filtered.length,
       separatorBuilder: (_, _) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
         return _MessageCard(
-          item: items[index],
-          timeAgoLabel: _timeAgo(items[index].createdAt),
-          fallbackDate: _formatDate(items[index].createdAt),
+          item: filtered[index],
+          timeAgoLabel: _timeAgo(filtered[index].createdAt),
+          fallbackDate: _formatDate(filtered[index].createdAt),
         );
       },
+    );
+  }
+}
+
+class _FilterPills extends StatelessWidget {
+  final _MessageCategory? selected;
+  final ValueChanged<_MessageCategory?> onSelect;
+
+  const _FilterPills({required this.selected, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    final pills = <(_MessageCategory?, String)>[
+      (null, 'All'),
+      (_MessageCategory.requests, 'Requests'),
+      (_MessageCategory.announcements, 'Announcements'),
+      (_MessageCategory.volunteer, 'Volunteering'),
+      (_MessageCategory.competition, 'Competitions'),
+      (_MessageCategory.camp, 'Camps'),
+    ];
+
+    return SizedBox(
+      height: 42,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        itemCount: pills.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        itemBuilder: (_, i) {
+          final (cat, label) = pills[i];
+          final active = selected == cat;
+          return _Pill(
+            label: label,
+            active: active,
+            onTap: () => onSelect(cat),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+
+  const _Pill({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          decoration: BoxDecoration(
+            color: active ? _kPrimary : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: active ? _kPrimary : const Color(0xFFE0E3F0),
+              width: 1,
+            ),
+            boxShadow: active
+                ? const [
+                    BoxShadow(
+                      color: Color(0x352848B0),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ]
+                : const [
+                    BoxShadow(
+                      color: Color(0x08000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: active ? Colors.white : _kTextPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.1,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -551,75 +716,89 @@ class _InboxTopHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 390;
-    final headerHeight = compact ? 138.0 : 146.0;
-
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(54),
-        bottomRight: Radius.circular(54),
+    final topPadding = MediaQuery.of(context).padding.top;
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x302848B0),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
       ),
-      child: Container(
-        height: headerHeight,
-        width: double.infinity,
-        color: _kHeaderGreen,
-        child: Stack(
-          children: [
-            Positioned(top: -72, right: -52, child: _circle(220, 0.08)),
-            Positioned(top: 44, right: 34, child: _circle(72, 0.08)),
-            Positioned(left: 156, bottom: -28, child: _circle(82, 0.08)),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: onBack,
-                      behavior: HitTestBehavior.opaque,
-                      child: const SizedBox(
-                        width: 34,
-                        height: 34,
-                        child: Center(
-                          child: Icon(
-                            Icons.arrow_back_rounded,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                        ),
-                      ),
+      child: Stack(
+        children: [
+          const Positioned.fill(
+            child: CustomPaint(
+              painter: HeaderSparklesPainter(variant: 1),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 22),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    onPressed: onBack,
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                      size: 22,
                     ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Text(
-                        'Mesaje',
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Messages',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 29,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.6,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.3,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 42,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: kPencilYellow,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _circle(double size, double opacity) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: opacity),
-        shape: BoxShape.circle,
+          ),
+        ],
       ),
     );
   }
@@ -660,27 +839,33 @@ class _MessageCard extends StatelessWidget {
     }
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: scheme.accent,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: const EdgeInsets.only(left: 4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border(
+          left: BorderSide(color: scheme.accent, width: 4),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.white, _kCardBg],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x10000000),
+            blurRadius: 14,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          const Positioned.fill(
+            child: CustomPaint(
+              painter: WhiteCardSparklesPainter(
+                primary: _kPrimary,
+                variant: 2,
               ),
             ),
-            padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -695,8 +880,8 @@ class _MessageCard extends StatelessWidget {
                             mainTitle,
                             style: const TextStyle(
                               color: _kTextPrimary,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
                               letterSpacing: -0.3,
                               height: 1.2,
                             ),
@@ -706,9 +891,9 @@ class _MessageCard extends StatelessWidget {
                             Text(
                               nameSubtitle,
                               style: const TextStyle(
-                                color: _kTextMuted,
+                                color: _kTextMid,
                                 fontSize: 15,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -721,32 +906,43 @@ class _MessageCard extends StatelessWidget {
                       textAlign: TextAlign.right,
                       style: const TextStyle(
                         color: _kTextMuted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
                 if (metaText != null) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    metaText,
-                    style: const TextStyle(
-                      color: _kTextMuted,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8EAF2),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      metaText,
+                      style: const TextStyle(
+                        color: _kPrimary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                      ),
                     ),
                   ),
                 ],
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Text(
-                  item.message.isEmpty ? 'Fără conținut.' : item.message,
+                  item.message.isEmpty ? 'No content.' : item.message,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: _kTextMuted,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
+                    color: _kTextMid,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
                     height: 1.45,
                   ),
                 ),
@@ -760,7 +956,7 @@ class _MessageCard extends StatelessWidget {
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -811,6 +1007,7 @@ class _StatusPill extends StatelessWidget {
 class _UnifiedMessageItem {
   final _MessageKind kind;
   final _MessageState state;
+  final _MessageCategory category;
   final String title;
   final String sender;
   final String message;
@@ -821,6 +1018,7 @@ class _UnifiedMessageItem {
   const _UnifiedMessageItem({
     required this.kind,
     required this.state,
+    required this.category,
     required this.title,
     required this.sender,
     required this.message,
@@ -850,35 +1048,35 @@ _CardScheme _cardScheme(_MessageState state) {
   switch (state) {
     case _MessageState.pending:
       return const _CardScheme(
-        badgeLabel: 'În așteptare',
+        badgeLabel: 'Pending',
         badgeIcon: Icons.watch_later_rounded,
-        accent: Color(0xFF6E6E6E),
-        pillBg: Color(0xFFF4F4F4),
-        pillFg: Color(0xFF6D6D6D),
+        accent: Color(0xFFB0B5CC),
+        pillBg: Color(0xFFE8EAF2),
+        pillFg: Color(0xFF3A4A80),
       );
     case _MessageState.approved:
       return const _CardScheme(
-        badgeLabel: 'Aprobată',
+        badgeLabel: 'Approved',
         badgeIcon: Icons.check_circle_rounded,
-        accent: Color(0xFF258DE7),
-        pillBg: Color(0xFFD8E3ED),
-        pillFg: Color(0xFF238CE7),
+        accent: _kPrimary,
+        pillBg: Color(0xFFE8EAF2),
+        pillFg: _kPrimary,
       );
     case _MessageState.rejected:
       return const _CardScheme(
-        badgeLabel: 'Respinsă',
+        badgeLabel: 'Rejected',
         badgeIcon: Icons.cancel_rounded,
-        accent: Color(0xFF9D1F5F),
-        pillBg: Color(0xFFF0E4EB),
-        pillFg: Color(0xFF8E2356),
+        accent: Color(0xFFB03040),
+        pillBg: Color(0xFFF8E0E5),
+        pillFg: Color(0xFFB03040),
       );
     case _MessageState.system:
       return const _CardScheme(
-        badgeLabel: 'Sistem',
+        badgeLabel: 'System',
         badgeIcon: Icons.campaign_rounded,
-        accent: Color(0xFF48A3EF),
-        pillBg: Color(0xFFDBEEFC),
-        pillFg: Color(0xFF2F9BF1),
+        accent: _kPrimary,
+        pillBg: Color(0xFFE8EAF2),
+        pillFg: _kPrimary,
       );
   }
 }

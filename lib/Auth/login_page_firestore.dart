@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -119,6 +120,18 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+      overlays: SystemUiOverlay.values,
+    );
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+      systemNavigationBarContrastEnforced: false,
+    ));
     userC.addListener(() {
       if (mounted) setState(() {});
     });
@@ -653,27 +666,54 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
     super.dispose();
   }
 
-  // ── Colors ──
-  static const _darkBg = Color(0xFF1E3CA0);
+  // ── Colors (school theme) ──
   static const _accent = Color(0xFF2848B0);
-  static const _accentLight = Color(0xFF3460CC);
   static const _cardBg = Color(0xFFF2F4F8);
   static const _inputBorder = Color(0xFFC0C4D8);
   static const _hintColor = Color(0xFF7A7E9A);
+  static const _pencilYellow = Color(0xFFF5C518);
 
-  // ── Dot pattern painter ──
-  Widget _buildDotPattern({
-    int alpha = 10,
-    double spacing = 20,
-    double radius = 1.5,
-  }) {
-    return CustomPaint(
-      painter: _DotPatternPainter(
-        alpha: alpha,
-        spacing: spacing,
-        radius: radius,
+  // ── Math-symbol sparkles (school-themed background flourish) ──
+  Widget _buildMathSparkles({double opacity = 1.0}) {
+    return IgnorePointer(
+      child: CustomPaint(
+        painter: _MathSparklesPainter(opacity: opacity),
+        size: Size.infinite,
       ),
-      size: Size.infinite,
+    );
+  }
+
+  Widget _buildLogo({double size = 92, bool framed = true}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: framed ? Colors.white : Colors.transparent,
+        borderRadius: BorderRadius.circular(size * 0.28),
+        boxShadow: framed
+            ? const [
+                BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 18,
+                  offset: Offset(0, 6),
+                ),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x1A000000),
+                  blurRadius: 14,
+                  offset: Offset(0, 4),
+                ),
+              ],
+        border: framed ? Border.all(color: _pencilYellow, width: 2) : null,
+      ),
+      padding: EdgeInsets.all(framed ? size * 0.12 : 0),
+      child: Image.asset(
+        'assets/images/schoolmate_logo.png',
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
+        isAntiAlias: true,
+      ),
     );
   }
 
@@ -689,32 +729,50 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
       ),
       child: Stack(
         children: [
-          Positioned.fill(
-            child: _buildDotPattern(alpha: 18, spacing: 22, radius: 1.5),
-          ),
+          Positioned.fill(child: _buildMathSparkles(opacity: 1.0)),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 56),
+            padding: const EdgeInsets.symmetric(horizontal: 44, vertical: 48),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                _buildLogo(size: 84),
+                const SizedBox(height: 28),
                 const Text(
-                  'Your gateway to\nacademic security',
+                  'SchoolMate',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    height: 1.25,
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  height: 3,
+                  width: 48,
+                  decoration: BoxDecoration(
+                    color: _pencilYellow,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 18),
-                Text(
-                  'A mobile-optimized solution for managing school '
-                  'access and leave requests. Enhancing safety through '
-                  'dynamic QR identities, automatic schedule integration, '
-                  'and real-time parent approvals.',
+                const Text(
+                  'Student app',
                   style: TextStyle(
-                    color: Colors.white.withAlpha(180),
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'Schedule, leave requests and school announcements — '
+                  'all in one place. Fast access via dynamic QR and '
+                  'real-time approvals from parents.',
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(190),
                     fontSize: 14,
                     height: 1.55,
                   ),
@@ -950,24 +1008,37 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
   Widget build(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width > 750;
 
-    return Scaffold(
-      backgroundColor: _darkBg,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
-                ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarContrastEnforced: false,
+      ),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
+          ),
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(child: _buildMathSparkles(opacity: 0.55)),
+            Scaffold(
+              backgroundColor: Colors.transparent,
+              extendBody: true,
+              extendBodyBehindAppBar: true,
+              body: SafeArea(
+                child: isWide ? _buildLandscape() : _buildPortrait(),
               ),
             ),
-          ),
-          Positioned.fill(child: _buildDotPattern(alpha: 10, radius: 1.0)),
-          SafeArea(child: isWide ? _buildLandscape() : _buildPortrait()),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1007,17 +1078,44 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
 
   // ── PORTRAIT: card over dark background ──
   Widget _buildPortrait() {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
-        child: Material(
-          color: Colors.transparent,
-          elevation: 20,
-          shadowColor: const Color(0x40000000),
-          borderRadius: BorderRadius.circular(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: _buildLoginForm(compact: true),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 28),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              _buildLogo(size: 104, framed: false),
+              const SizedBox(height: 18),
+              const Text(
+                'SchoolMate',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: 3,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: _pencilYellow,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 28),
+              Material(
+                color: Colors.transparent,
+                elevation: 20,
+                shadowColor: const Color(0x40000000),
+                borderRadius: BorderRadius.circular(24),
+                child: _buildLoginForm(compact: true),
+              ),
+            ],
           ),
         ),
       ),
@@ -1025,33 +1123,61 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
   }
 }
 
-// ── Dot pattern painter ──
-class _DotPatternPainter extends CustomPainter {
-  final int alpha;
-  final double spacing;
-  final double radius;
+// ── Math-symbol sparkles painter (school theme) ──
+class _MathSparklesPainter extends CustomPainter {
+  final double opacity;
 
-  const _DotPatternPainter({
-    this.alpha = 10,
-    this.spacing = 20,
-    this.radius = 1.5,
-  });
+  const _MathSparklesPainter({this.opacity = 1.0});
+
+  static const _symbols = <({String s, double dx, double dy, double size, bool yellow})>[
+    (s: 'π', dx: 0.08, dy: 0.10, size: 26, yellow: true),
+    (s: '+', dx: 0.22, dy: 0.18, size: 18, yellow: false),
+    (s: '×', dx: 0.34, dy: 0.08, size: 16, yellow: false),
+    (s: '√', dx: 0.50, dy: 0.14, size: 22, yellow: false),
+    (s: '∞', dx: 0.66, dy: 0.07, size: 24, yellow: true),
+    (s: '÷', dx: 0.82, dy: 0.16, size: 18, yellow: false),
+    (s: '=', dx: 0.92, dy: 0.32, size: 18, yellow: false),
+    (s: '∆', dx: 0.06, dy: 0.36, size: 22, yellow: true),
+    (s: '²', dx: 0.18, dy: 0.46, size: 16, yellow: false),
+    (s: 'π', dx: 0.78, dy: 0.50, size: 20, yellow: false),
+    (s: '+', dx: 0.42, dy: 0.58, size: 16, yellow: false),
+    (s: '√', dx: 0.10, dy: 0.66, size: 20, yellow: false),
+    (s: '∞', dx: 0.30, dy: 0.74, size: 22, yellow: true),
+    (s: '×', dx: 0.58, dy: 0.70, size: 18, yellow: false),
+    (s: '÷', dx: 0.74, dy: 0.82, size: 18, yellow: false),
+    (s: '∆', dx: 0.88, dy: 0.62, size: 20, yellow: false),
+    (s: '=', dx: 0.16, dy: 0.88, size: 16, yellow: false),
+    (s: '²', dx: 0.50, dy: 0.92, size: 18, yellow: true),
+  ];
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withAlpha(alpha)
-      ..style = PaintingStyle.fill;
-    for (double y = 0; y < size.height; y += spacing) {
-      for (double x = 0; x < size.width; x += spacing) {
-        canvas.drawCircle(Offset(x, y), radius, paint);
-      }
+    final whiteStrong = Colors.white.withValues(alpha: 0.30 * opacity);
+    final whiteSoft = Colors.white.withValues(alpha: 0.20 * opacity);
+    final yellow = const Color(0xFFF5C518).withValues(alpha: 0.42 * opacity);
+
+    for (var i = 0; i < _symbols.length; i++) {
+      final sym = _symbols[i];
+      final color = sym.yellow ? yellow : (i.isEven ? whiteStrong : whiteSoft);
+      final tp = TextPainter(
+        text: TextSpan(
+          text: sym.s,
+          style: TextStyle(
+            color: color,
+            fontSize: sym.size,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(
+        canvas,
+        Offset(size.width * sym.dx, size.height * sym.dy),
+      );
     }
   }
 
   @override
-  bool shouldRepaint(covariant _DotPatternPainter oldDelegate) =>
-      oldDelegate.alpha != alpha ||
-      oldDelegate.spacing != spacing ||
-      oldDelegate.radius != radius;
+  bool shouldRepaint(covariant _MathSparklesPainter oldDelegate) =>
+      oldDelegate.opacity != opacity;
 }

@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:ui' show ImageFilter;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firster/student/bookmarks_service.dart';
 import 'package:firster/student/meniu.dart';
+import 'package:firster/student/widgets/no_anim_route.dart';
 import 'package:firster/student/widgets/school_decor.dart';
 import 'package:firster/core/session.dart';
 import 'package:flutter/material.dart';
@@ -44,8 +46,6 @@ class _InboxScreenState extends State<InboxScreen> {
   Stream<QuerySnapshot<Map<String, dynamic>>>? _leaveStream;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _secretariatStream;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _secretariatGlobalStream;
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _volunteerStream;
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _volunteerSignupsStream;
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _itemKeys = {};
   String? _activeHighlightId;
@@ -78,17 +78,6 @@ class _InboxScreenState extends State<InboxScreen> {
           .limit(50)
           .snapshots();
 
-      _volunteerStream = FirebaseFirestore.instance
-          .collection('volunteerOpportunities')
-          .where('status', isEqualTo: 'active')
-          .orderBy('date', descending: true)
-          .limit(30)
-          .snapshots();
-
-      _volunteerSignupsStream = FirebaseFirestore.instance
-          .collection('volunteerSignups')
-          .where('studentUid', isEqualTo: uid)
-          .snapshots();
     }
   }
 
@@ -150,9 +139,7 @@ class _InboxScreenState extends State<InboxScreen> {
       return;
     }
 
-    navigator.pushReplacement(
-      MaterialPageRoute(builder: (_) => const MeniuScreen()),
-    );
+    navigator.pushReplacement(noAnimRoute((_) => const MeniuScreen()));
   }
 
   String _formatRequestDate(DateTime? date) {
@@ -322,6 +309,13 @@ class _InboxScreenState extends State<InboxScreen> {
         iconBg = const Color(0xFFD9EFD8);
         iconFg = const Color(0xFF3F8B3A);
         break;
+      case 'volunteer':
+        category = _InboxFilter.volunteer;
+        fallbackTitle = 'Volunteering';
+        icon = Icons.volunteer_activism_rounded;
+        iconBg = const Color(0xFFEDE0F4);
+        iconFg = const Color(0xFF7B1FA2);
+        break;
       case 'announcement':
         category = _InboxFilter.announcements;
         fallbackTitle = 'School announcement';
@@ -392,68 +386,6 @@ class _InboxScreenState extends State<InboxScreen> {
     );
   }
 
-  void _showVolunteerDetailSheet(
-    BuildContext context,
-    _VolunteerInboxData data,
-  ) {
-    showGeneralDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Close',
-      barrierColor: const Color(0xCC0A0F2A),
-      transitionDuration: const Duration(milliseconds: 220),
-      pageBuilder: (dlgCtx, _, _) => _VolunteerDetailDialog(
-        data: data,
-        onSignUp: data.alreadySignedUp
-            ? null
-            : () async {
-                Navigator.of(dlgCtx).pop();
-                await _signUpVolunteer(data.docId, data.raw);
-              },
-      ),
-      transitionBuilder: (_, anim, _, child) {
-        final curved = CurvedAnimation(
-          parent: anim,
-          curve: Curves.easeOutCubic,
-          reverseCurve: Curves.easeInCubic,
-        );
-        return FadeTransition(
-          opacity: curved,
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 0.92, end: 1.0).animate(curved),
-            child: child,
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _signUpVolunteer(
-    String opportunityId,
-    Map<String, dynamic> opp,
-  ) async {
-    final uid = AppSession.uid;
-    if (uid == null) return;
-
-    await FirebaseFirestore.instance.collection('volunteerSignups').add({
-      'opportunityId': opportunityId,
-      'opportunityTitle': opp['title'] ?? '',
-      'studentUid': uid,
-      'studentName': AppSession.fullName ?? '',
-      'classId': AppSession.classId ?? '',
-      'signedUpAt': FieldValue.serverTimestamp(),
-      'status': 'signed_up',
-      'hoursLogged': 0,
-      'validatedBy': null,
-      'validatedAt': null,
-    });
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Successfully signed up!')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -507,26 +439,11 @@ class _InboxScreenState extends State<InboxScreen> {
                   return Center(child: Text('Error: ${globalSnap.error}'));
                 }
 
-                return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                  stream: _volunteerStream,
-                  builder: (context, volunteerSnap) {
-                    return StreamBuilder<
-                      QuerySnapshot<Map<String, dynamic>>
-                    >(
-                      stream: _volunteerSignupsStream,
-                      builder: (context, signupsSnap) {
-                        return _buildLoadedBody(
-                          leaveDocs: snapshot.data!.docs,
-                          secretariatDocs:
-                              secretariatSnap.data?.docs ?? const [],
-                          globalDocs: globalSnap.data?.docs ?? const [],
-                          volunteerDocs:
-                              volunteerSnap.data?.docs ?? const [],
-                          signupDocs: signupsSnap.data?.docs ?? const [],
-                        );
-                      },
-                    );
-                  },
+                return _buildLoadedBody(
+                  leaveDocs: snapshot.data!.docs,
+                  secretariatDocs:
+                      secretariatSnap.data?.docs ?? const [],
+                  globalDocs: globalSnap.data?.docs ?? const [],
                 );
               },
             );
@@ -540,8 +457,6 @@ class _InboxScreenState extends State<InboxScreen> {
     required List<QueryDocumentSnapshot<Map<String, dynamic>>> leaveDocs,
     required List<QueryDocumentSnapshot<Map<String, dynamic>>> secretariatDocs,
     required List<QueryDocumentSnapshot<Map<String, dynamic>>> globalDocs,
-    required List<QueryDocumentSnapshot<Map<String, dynamic>>> volunteerDocs,
-    required List<QueryDocumentSnapshot<Map<String, dynamic>>> signupDocs,
   }) {
     final leaveItems = leaveDocs
         .where((doc) {
@@ -586,78 +501,26 @@ class _InboxScreenState extends State<InboxScreen> {
           ].where((item) => item.topLabel != null).toList())
           ..sort((a, b) => b.sortAt.compareTo(a.sortAt));
 
-    // Build set of opportunity IDs the student is already signed up to (active)
-    final signedUpOppIds = <String>{};
-    for (final doc in signupDocs) {
-      final data = doc.data();
-      final status = (data['status'] ?? '').toString();
-      if (status != 'cancelled') {
-        final oppId = (data['opportunityId'] ?? '').toString();
-        if (oppId.isNotEmpty) signedUpOppIds.add(oppId);
-      }
-    }
-
-    final volunteerItems = volunteerDocs
-        .where((doc) => _broadcastVisibleToMe(doc.data()))
-        .map((doc) {
-      final data = doc.data();
-      final when = (data['date'] as Timestamp?)?.toDate() ?? DateTime.now();
-      return _VolunteerInboxData(
-        docId: doc.id,
-        title: (data['title'] ?? '').toString(),
-        location: (data['location'] ?? '').toString(),
-        hoursWorth: ((data['hoursWorth'] as num?) ?? 0).toInt(),
-        when: when,
-        topLabel: _formatSentLabel(when),
-        alreadySignedUp: signedUpOppIds.contains(doc.id),
-        raw: data,
-      );
-    }).toList()
-      ..sort((a, b) => b.when.compareTo(a.when));
-
     // Apply filter
-    List<_InboxCardData> filteredCards;
-    List<_VolunteerInboxData> filteredVolunteer;
-    switch (_filter) {
-      case _InboxFilter.all:
-        filteredCards = cards;
-        filteredVolunteer = volunteerItems;
-        break;
-      case _InboxFilter.requests:
-        filteredCards = cards
-            .where((c) => c.category == _InboxFilter.requests)
-            .toList();
-        filteredVolunteer = const [];
-        break;
-      case _InboxFilter.announcements:
-        filteredCards = cards
-            .where((c) => c.category == _InboxFilter.announcements)
-            .toList();
-        filteredVolunteer = const [];
-        break;
-      case _InboxFilter.competition:
-        filteredCards = cards
-            .where((c) => c.category == _InboxFilter.competition)
-            .toList();
-        filteredVolunteer = const [];
-        break;
-      case _InboxFilter.camp:
-        filteredCards = cards
-            .where((c) => c.category == _InboxFilter.camp)
-            .toList();
-        filteredVolunteer = const [];
-        break;
-      case _InboxFilter.volunteer:
-        filteredCards = const [];
-        filteredVolunteer = volunteerItems;
-        break;
-    }
+    final List<_InboxCardData> filteredCards = switch (_filter) {
+      _InboxFilter.all => cards,
+      _InboxFilter.requests =>
+          cards.where((c) => c.category == _InboxFilter.requests).toList(),
+      _InboxFilter.announcements => cards
+          .where((c) => c.category == _InboxFilter.announcements)
+          .toList(),
+      _InboxFilter.volunteer =>
+          cards.where((c) => c.category == _InboxFilter.volunteer).toList(),
+      _InboxFilter.competition =>
+          cards.where((c) => c.category == _InboxFilter.competition).toList(),
+      _InboxFilter.camp =>
+          cards.where((c) => c.category == _InboxFilter.camp).toList(),
+    };
 
-    // Combine into a single chronologically sorted list
-    final combined = <_InboxRow>[
-      ...filteredCards.map((c) => _InboxRow.card(c)),
-      ...filteredVolunteer.map((v) => _InboxRow.volunteer(v)),
-    ]..sort((a, b) => b.sortAt.compareTo(a.sortAt));
+    final combined = filteredCards
+        .map((c) => _InboxRow.card(c))
+        .toList()
+      ..sort((a, b) => b.sortAt.compareTo(a.sortAt));
 
     final horizontalPadding =
         MediaQuery.sizeOf(context).width < 390 ? 14.0 : 18.0;
@@ -699,20 +562,6 @@ class _InboxScreenState extends State<InboxScreen> {
                     highlighted: _activeHighlightId == row.card!.docId,
                     onTap: () => _showCardDetailSheet(context, row.card!),
                   ),
-                if (row.volunteer != null)
-                  _VolunteerInboxTile(
-                    data: row.volunteer!,
-                    onSignUp: row.volunteer!.alreadySignedUp
-                        ? null
-                        : () => _signUpVolunteer(
-                              row.volunteer!.docId,
-                              row.volunteer!.raw,
-                            ),
-                    onTap: () => _showVolunteerDetailSheet(
-                      context,
-                      row.volunteer!,
-                    ),
-                  ),
                 const SizedBox(height: 12),
               ],
               const SizedBox(height: 4),
@@ -723,18 +572,11 @@ class _InboxScreenState extends State<InboxScreen> {
 
 class _InboxRow {
   final _InboxCardData? card;
-  final _VolunteerInboxData? volunteer;
   final DateTime sortAt;
 
   _InboxRow.card(_InboxCardData c)
       : card = c,
-        volunteer = null,
         sortAt = c.sortAt;
-
-  _InboxRow.volunteer(_VolunteerInboxData v)
-      : card = null,
-        volunteer = v,
-        sortAt = v.when;
 }
 
 class _InboxHeader extends StatefulWidget {
@@ -1217,235 +1059,6 @@ class _InboxCardData {
   });
 }
 
-class _VolunteerInboxData {
-  final String docId;
-  final String title;
-  final String location;
-  final int hoursWorth;
-  final DateTime when;
-  final String? topLabel;
-  final bool alreadySignedUp;
-  final Map<String, dynamic> raw;
-
-  const _VolunteerInboxData({
-    required this.docId,
-    required this.title,
-    required this.location,
-    required this.hoursWorth,
-    required this.when,
-    required this.topLabel,
-    required this.alreadySignedUp,
-    required this.raw,
-  });
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// VOLUNTEER INBOX TILE — opportunity card with inline "Mă înscriu" button
-// ────────────────────────────────────────────────────────────────────────────
-class _VolunteerInboxTile extends StatelessWidget {
-  final _VolunteerInboxData data;
-  final VoidCallback? onSignUp;
-  final VoidCallback? onTap;
-
-  const _VolunteerInboxTile({
-    required this.data,
-    required this.onSignUp,
-    this.onTap,
-  });
-
-  String _formatDate(DateTime date) {
-    const months = <String>[
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return '${months[date.month - 1]} ${date.day}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = const Color(0xFF2848B0);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: accent,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: const EdgeInsets.only(left: 4),
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: ClipRRect(
-          borderRadius: BorderRadius.circular(14),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: WhiteCardSparklesPainter(
-                    primary: accent,
-                    variant: data.docId.hashCode % 5,
-                  ),
-                ),
-              ),
-              Padding(
-            padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: accent.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.volunteer_activism_rounded,
-                            color: accent,
-                            size: 14,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'VOLUNTEERING',
-                            style: TextStyle(
-                              color: accent,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      data.topLabel ?? '',
-                      style: const TextStyle(
-                        color: _textMuted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  data.title,
-                  style: const TextStyle(
-                    color: _textDark,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  width: 36,
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: kPencilYellow,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 14,
-                  runSpacing: 6,
-                  children: [
-                    if (data.location.isNotEmpty)
-                      _MetaChip(
-                        icon: Icons.place_outlined,
-                        text: data.location,
-                      ),
-                    _MetaChip(
-                      icon: Icons.calendar_month_rounded,
-                      text: _formatDate(data.when),
-                    ),
-                    if (data.hoursWorth > 0)
-                      _MetaChip(
-                        icon: Icons.schedule_rounded,
-                        text: '${data.hoursWorth}h',
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                GestureDetector(
-                  onTap: onSignUp,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      gradient: onSignUp == null
-                          ? null
-                          : const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFF2848B0), Color(0xFF3460CC)],
-                            ),
-                      color: onSignUp == null
-                          ? const Color(0xFFDDE0EC)
-                          : null,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          onSignUp == null
-                              ? Icons.check_circle_rounded
-                              : Icons.add_rounded,
-                          color: onSignUp == null
-                              ? accent
-                              : Colors.white,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          onSignUp == null ? 'Signed up' : 'Sign up',
-                          style: TextStyle(
-                            color: onSignUp == null
-                                ? accent
-                                : Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-              ),
-            ],
-          ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _MetaChip extends StatelessWidget {
   final IconData icon;
   final String text;
@@ -1517,6 +1130,7 @@ Widget _dialogShell({
   required String title,
   required Widget body,
   Widget? footer,
+  Widget? headerAction,
 }) {
   final size = MediaQuery.sizeOf(context);
   final maxW = size.width < 460 ? size.width - 32 : 420.0;
@@ -1604,6 +1218,10 @@ Widget _dialogShell({
                                     ),
                                   ),
                                   const Spacer(),
+                                  if (headerAction != null) ...[
+                                    headerAction,
+                                    const SizedBox(width: 6),
+                                  ],
                                   IconButton(
                                     onPressed: () =>
                                         Navigator.of(context).maybePop(),
@@ -1703,6 +1321,13 @@ class _InboxCardDetailDialog extends StatelessWidget {
     final audienceLabel = (raw['audienceLabel'] ?? '').toString().trim();
 
     final accent = data.leadingForeground;
+    final isRequest = data.category == _InboxFilter.requests;
+    final bookmarkCategory = switch (data.category) {
+      _InboxFilter.competition => 'competition',
+      _InboxFilter.camp => 'camp',
+      _InboxFilter.announcements => 'announcement',
+      _ => '',
+    };
 
     return _dialogShell(
       context: context,
@@ -1711,6 +1336,20 @@ class _InboxCardDetailDialog extends StatelessWidget {
       icon: data.leadingIcon,
       categoryText: _categoryLabel(data.category),
       title: data.title,
+      headerAction: (isRequest || bookmarkCategory.isEmpty)
+          ? null
+          : _BookmarkToggleButton(
+              itemId: data.docId,
+              itemType: 'post',
+              category: bookmarkCategory,
+              title: data.title,
+              message: data.message,
+              link: link,
+              senderName: senderName,
+              location: location,
+              eventDate: eventDate,
+              eventEndDate: eventEndDate,
+            ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1767,142 +1406,6 @@ class _InboxCardDetailDialog extends StatelessWidget {
             isRequest: data.category == _InboxFilter.requests,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _VolunteerDetailDialog extends StatelessWidget {
-  final _VolunteerInboxData data;
-  final VoidCallback? onSignUp;
-
-  const _VolunteerDetailDialog({required this.data, required this.onSignUp});
-
-  @override
-  Widget build(BuildContext context) {
-    const accent = Color(0xFF2848B0);
-    const accentBg = Color(0xFFE5EBF8);
-
-    final raw = data.raw;
-    final description = (raw['description'] ?? '').toString().trim();
-    final link = (raw['link'] ?? '').toString().trim();
-    final maxParticipants = (raw['maxParticipants'] as num?)?.toInt();
-    final createdByName = (raw['createdByName'] ?? '').toString().trim();
-
-    return _dialogShell(
-      context: context,
-      accent: accent,
-      accentBg: accentBg,
-      icon: Icons.volunteer_activism_rounded,
-      categoryText: 'VOLUNTEERING',
-      title: data.title,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            spacing: 14,
-            runSpacing: 8,
-            children: [
-              _MetaChip(
-                icon: Icons.calendar_month_rounded,
-                text: _formatLongDateTime(data.when),
-              ),
-              if (data.location.isNotEmpty)
-                _MetaChip(
-                  icon: Icons.place_outlined,
-                  text: data.location,
-                ),
-              if (data.hoursWorth > 0)
-                _MetaChip(
-                  icon: Icons.schedule_rounded,
-                  text: '${data.hoursWorth}h',
-                ),
-              if (maxParticipants != null && maxParticipants > 0)
-                _MetaChip(
-                  icon: Icons.groups_rounded,
-                  text: 'max $maxParticipants',
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            description.isEmpty
-                ? 'No additional description.'
-                : description,
-            style: const TextStyle(
-              color: _textDark,
-              fontSize: 15,
-              fontWeight: FontWeight.w400,
-              height: 1.5,
-            ),
-          ),
-          if (link.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            _DetailLinkBlock(link: link, accent: accent),
-          ],
-          if (createdByName.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                const Icon(
-                  Icons.person_outline_rounded,
-                  size: 16,
-                  color: _textMuted,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    'Posted by $createdByName',
-                    style: const TextStyle(
-                      color: _textMuted,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-      footer: GestureDetector(
-        onTap: onSignUp,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(
-            gradient: onSignUp == null
-                ? null
-                : const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF2848B0), Color(0xFF3460CC)],
-                  ),
-            color: onSignUp == null ? const Color(0xFFDDE0EC) : null,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                onSignUp == null
-                    ? Icons.check_circle_rounded
-                    : Icons.add_rounded,
-                color: onSignUp == null ? accent : Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                onSignUp == null ? 'Signed up' : 'Sign up',
-                style: TextStyle(
-                  color: onSignUp == null ? accent : Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -2045,6 +1548,83 @@ class _DetailFooterMeta extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _BookmarkToggleButton extends StatelessWidget {
+  final String itemId;
+  final String itemType;
+  final String category;
+  final String title;
+  final String message;
+  final String link;
+  final String senderName;
+  final String location;
+  final DateTime? eventDate;
+  final DateTime? eventEndDate;
+
+  const _BookmarkToggleButton({
+    required this.itemId,
+    required this.itemType,
+    required this.category,
+    required this.title,
+    this.message = '',
+    this.link = '',
+    this.senderName = '',
+    this.location = '',
+    this.eventDate,
+    this.eventEndDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = AppSession.uid ?? '';
+    if (uid.isEmpty) return const SizedBox.shrink();
+
+    return StreamBuilder<bool>(
+      stream: BookmarksService.isBookmarked(uid, itemId),
+      builder: (context, snap) {
+        final bookmarked = snap.data ?? false;
+        return IconButton(
+          onPressed: () async {
+            if (bookmarked) {
+              await BookmarksService.remove(uid: uid, itemId: itemId);
+            } else {
+              await BookmarksService.add(
+                uid: uid,
+                itemId: itemId,
+                itemType: itemType,
+                category: category,
+                title: title,
+                message: message,
+                link: link,
+                senderName: senderName,
+                location: location,
+                eventDate: eventDate,
+                eventEndDate: eventEndDate,
+              );
+            }
+          },
+          splashRadius: 22,
+          tooltip: bookmarked ? 'Remove bookmark' : 'Bookmark',
+          icon: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              bookmarked
+                  ? Icons.bookmark_rounded
+                  : Icons.bookmark_border_rounded,
+              color: bookmarked ? kPencilYellow : Colors.white,
+              size: 18,
+            ),
+          ),
+        );
+      },
     );
   }
 }

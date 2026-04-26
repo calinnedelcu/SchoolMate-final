@@ -7,9 +7,8 @@ import 'package:firster/admin/secretariat_raw_page.dart'
     show SecretariatRawPage;
 import 'package:firster/gate/gate_scan_page.dart';
 import 'package:firster/teacher/teacher_dashboard_page.dart';
-import 'package:firster/parent/parent_home_page.dart';
+import 'package:firster/parent/parent_shell.dart';
 import 'package:firster/services/security_flags_service.dart';
-import 'package:firster/services/accessibility_service.dart';
 import 'package:firster/core/session.dart';
 import 'package:firster/auth/onboarding_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -35,7 +34,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await AccessibilityService.instance.load();
   await FirebaseAuth.instance.signOut(); // TEMP: force logout
   if (kIsWeb) {
     FirebaseFirestore.instance.settings = const Settings(
@@ -219,50 +217,15 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: AccessibilityService.instance,
-      builder: (context, _) {
-        final a11y = AccessibilityService.instance;
-        final theme = a11y.highContrast
-            ? ThemeData(
-                useMaterial3: true,
-                brightness: Brightness.light,
-                colorScheme: const ColorScheme.light(
-                  primary: Color(0xFF000000),
-                  onPrimary: Color(0xFFFFFFFF),
-                  secondary: Color(0xFF000000),
-                  onSecondary: Color(0xFFFFFFFF),
-                  surface: Color(0xFFFFFFFF),
-                  onSurface: Color(0xFF000000),
-                  error: Color(0xFFB00020),
-                  onError: Color(0xFFFFFFFF),
-                ),
-                scaffoldBackgroundColor: const Color(0xFFFFFFFF),
-                dividerColor: const Color(0xFF000000),
-                textTheme: const TextTheme().apply(
-                  bodyColor: const Color(0xFF000000),
-                  displayColor: const Color(0xFF000000),
-                ),
-              )
-            : ThemeData(
-                useMaterial3: true,
-                colorScheme: ColorScheme.fromSeed(
-                  seedColor: const Color(0xFF84B0D2),
-                ),
-              );
-        return MaterialApp(
+    return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'SchoolMate',
-          theme: theme,
-          builder: (context, child) {
-            final mq = MediaQuery.of(context);
-            return MediaQuery(
-              data: mq.copyWith(
-                textScaler: TextScaler.linear(a11y.textScale),
-              ),
-              child: child ?? const SizedBox.shrink(),
-            );
-          },
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF84B0D2),
+            ),
+          ),
           home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
@@ -438,7 +401,7 @@ class _MyAppState extends State<MyApp> {
                           } else if (role == 'teacher') {
                             return const TeacherDashboardPage();
                           } else if (role == 'parent') {
-                            return const ParentHomePage();
+                            return const ParentShell();
                           }
 
                           unawaited(_cleanupAuthState());
@@ -454,8 +417,6 @@ class _MyAppState extends State<MyApp> {
           );
         },
       ),
-    );
-      },
     );
   }
 }

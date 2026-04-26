@@ -8,8 +8,6 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:firster/utils/csv_download.dart';
 import 'services/admin_api.dart';
 import 'services/admin_store.dart';
 import 'admin_classes_page.dart';
@@ -139,20 +137,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     }
   }
 
-  String _friendlyCreateClassError(Object error, String classId) {
-    final raw = error.toString().toLowerCase();
-    final alreadyExists =
-        raw.contains('deja') && raw.contains('exista') ||
-        raw.contains('already exists') ||
-        (raw.contains('class') && raw.contains('exists'));
-
-    if (alreadyExists) {
-      return 'Class $classId already exists.';
-    }
-
-    return _friendlyError('create-class');
-  }
-
   String _friendlyCreateUserError(Object error, String role, String? classId) {
     final raw = error.toString().toLowerCase();
 
@@ -171,18 +155,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     }
 
     return _friendlyError('create-user');
-  }
-
-  String _friendlyMoveUserError(Object error, String classId) {
-    final raw = error.toString().toLowerCase();
-    if (raw.contains('deja') && raw.contains('diriginte')) {
-      final cid = classId.trim().toUpperCase();
-      if (cid.isNotEmpty) {
-        return 'Class $cid already has a homeroom teacher. The user cannot be moved.';
-      }
-      return 'The selected class already has a homeroom teacher. The user cannot be moved.';
-    }
-    return _friendlyError('move-user');
   }
 
   bool _isActionBusy(String key) => _busyActions.contains(key);
@@ -233,15 +205,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     const chars =
         "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#";
     return List.generate(len, (_) => chars[_rng.nextInt(chars.length)]).join();
-  }
-
-  Future<void> _copy(String text) async {
-    await Clipboard.setData(ClipboardData(text: text));
-    _logSuccess('Data copied to clipboard.');
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Copied to clipboard ✅")));
   }
 
   Future<Directory> _getCredentialsExportDirectory() async {
@@ -321,70 +284,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     return file.path;
   }
 
-  Future<void> _shareCredentialsCsv() async {
-    try {
-      if (kIsWeb) {
-        if (!_webCsvHasHeader) {
-          _logFailure('The credentials CSV is empty or does not exist yet.');
-          _showInfoMessage('No CSV with generated users exists yet.');
-          return;
-        }
-        await downloadCsvWeb(
-          _webCsvBuffer.toString(),
-          'credentiale_utilizatori.csv',
-        );
-        _logSuccess('CSV downloaded in browser.');
-        _showInfoMessage('CSV downloaded in browser. ✅');
-        return;
-      }
-
-      final file = await _getCredentialsCsvFile();
-      if (!await file.exists() || await file.length() == 0) {
-        _logFailure('The credentials CSV is empty or does not exist yet.');
-        _showInfoMessage('There is no CSV with generated users yet.');
-        return;
-      }
-
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(file.path)],
-          text: 'CSV with users and passwords generated from secretariat.',
-          subject: 'User credentials',
-        ),
-      );
-
-      _logSuccess('CSV exported: ${file.path}');
-      _showInfoMessage('CSV ready for sharing.');
-    } catch (error) {
-      _logFailure('The CSV could not be exported: $error');
-      _showInfoMessage('The CSV could not be exported.');
-    }
-  }
-
-  String _formatTimeOfDay(TimeOfDay time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
-
-  void _generateCreds() {
-    final full = fullNameC.text.trim();
-    if (full.isEmpty) {
-      _logFailure('Fill in the Full Name before generating.');
-      _showInfoMessage('Fill in the Full Name before generating.');
-      return;
-    }
-    final base = _baseFromFullName(full);
-    final uname = "$base${_randDigits(3)}";
-    final pass = _randPassword(10);
-
-    setState(() {
-      usernameC.text = uname;
-      passwordC.text = pass;
-    });
-
-    _log("GENERATED: $uname / $pass");
-  }
 
   Future<void> _showLogoutDialog() async {
     const Color primaryGreen = Color(0xFF2848B0);
@@ -677,31 +576,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     );
   }
 
-  Future<bool> _confirmMajorAction({
-    required String title,
-    required String message,
-  }) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('No'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Yes'),
-          ),
-        ],
-      ),
-    );
-    return confirmed == true;
-  }
-
   Future<void> _ensureRecentAdminActivityDoc() async {
     try {
       final collection = FirebaseFirestore.instance.collection(
@@ -788,7 +662,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryGreen = Color(0xFF2848B0);
     const Color surfaceColor = Color(0xFFF2F4F8);
 
     return Scaffold(
@@ -1573,67 +1446,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
               child: child,
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-  }) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF7A7E9A)),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.blue.withValues(alpha: 0.30)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.blue.withValues(alpha: 0.30)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFF2848B0), width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildButton({
-    required String label,
-    required Color primaryGreen,
-    required VoidCallback? onPressed,
-    bool fullWidth = false,
-  }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        elevation: 0,
-        shadowColor: Colors.transparent,
-        backgroundColor: primaryGreen,
-        foregroundColor: Colors.white,
-        disabledBackgroundColor: primaryGreen.withValues(alpha: 0.45),
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 18),
-        minimumSize: fullWidth ? const Size.fromHeight(52) : const Size(0, 52),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-          fontSize: 14,
-          letterSpacing: 0.2,
         ),
       ),
     );

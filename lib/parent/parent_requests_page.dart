@@ -2,9 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../core/session.dart';
+import '../student/widgets/school_decor.dart';
 
-const _kHeaderGreen = Color(0xFF208DEA);
-const _kPageBg = Color(0xFFEAF1F7);
+const _kPageBg = Color(0xFFF2F4F8);
+const _kPrimary = Color(0xFF2848B0);
+const _kOnSurface = Color(0xFF1A2050);
+const _kOnSurfaceMid = Color(0xFF3A4A80);
+const _kLabelColor = Color(0xFF7A7E9A);
 
 class ParentRequestsPage extends StatefulWidget {
   const ParentRequestsPage({super.key});
@@ -48,15 +52,15 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(approved ? 'Cerere aprobata!' : 'Cerere respinsa.'),
-          backgroundColor: approved ? Colors.blue : const Color(0xFFAD3765),
+          content: Text(approved ? 'Request approved!' : 'Request rejected.'),
+          backgroundColor: approved ? const Color(0xFF2848B0) : const Color(0xFFB03040),
         ),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Eroare: $e')));
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -121,8 +125,8 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
           if (docs.isEmpty) {
             return const Center(
               child: Text(
-                'Nu exista cereri noi.',
-                style: TextStyle(color: Color(0xFF7A8077), fontSize: 16),
+                'No new requests.',
+                style: TextStyle(color: _kLabelColor, fontSize: 16),
               ),
             );
           }
@@ -257,76 +261,92 @@ class _TopHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 390;
-    final headerHeight = compact ? 138.0 : 146.0;
-
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(54),
-        bottomRight: Radius.circular(54),
+    final topPadding = MediaQuery.of(context).padding.top;
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x302848B0),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
       ),
-      child: Container(
-        height: headerHeight,
-        width: double.infinity,
-        color: _kHeaderGreen,
-        child: Stack(
-          children: [
-            Positioned(top: -72, right: -52, child: _circle(220)),
-            Positioned(top: 44, right: 34, child: _circle(72)),
-            Positioned(left: 156, bottom: -28, child: _circle(82)),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: onBack,
-                      behavior: HitTestBehavior.opaque,
-                      child: const SizedBox(
-                        width: 34,
-                        height: 34,
-                        child: Center(
-                          child: Icon(
-                            Icons.arrow_back_rounded,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                        ),
-                      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: const HeaderSparklesPainter(variant: 1),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 24),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    onPressed: onBack,
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                      size: 22,
                     ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Text(
-                        'Cereri de invoire',
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Leave requests',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 29,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.6,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.3,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 42,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: kPencilYellow,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-
-  Widget _circle(double size) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: Colors.white.withValues(alpha: 0.08),
-    ),
-  );
 }
 
 class _RequestCard extends StatelessWidget {
@@ -342,153 +362,135 @@ class _RequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final studentName = (data['studentName'] ?? 'Elev necunoscut')
+    final studentName = (data['studentName'] ?? 'Unknown student')
         .toString()
         .trim();
     final classId = (data['classId'] ?? '').toString().trim();
     final dateText = (data['dateText'] ?? '-').toString();
     final timeText = (data['timeText'] ?? '-').toString();
-    final reason = (data['message'] ?? 'Fara motiv').toString().trim();
+    final reason = (data['message'] ?? 'No reason').toString().trim();
 
     final initials = _initials(studentName);
     final classLabel = classId.isEmpty
-        ? 'ELEV'
-        : 'ELEV • CLASA ${classId.toUpperCase()}';
+        ? 'STUDENT'
+        : 'STUDENT • CLASS ${classId.toUpperCase()}';
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: Color(0x10000000),
+            blurRadius: 14,
+            offset: Offset(0, 4),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(22),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFCAD9E5),
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      initials,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF188DF1),
-                        height: 1,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: const WhiteCardSparklesPainter(
+                primary: _kPrimary,
+                variant: 2,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
                       children: [
-                        Text(
-                          studentName,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            color: Color(0xFF5A7E9B),
-                            fontWeight: FontWeight.w800,
-                            height: 1.18,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
+                          width: 60,
+                          height: 60,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFD9E4ED),
-                            borderRadius: BorderRadius.circular(14),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                _kPrimary.withValues(alpha: 0.14),
+                                _kPrimary.withValues(alpha: 0.06),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: _kPrimary.withValues(alpha: 0.10),
+                              width: 1,
+                            ),
                           ),
+                          alignment: Alignment.center,
                           child: Text(
-                            classLabel,
+                            initials,
                             style: const TextStyle(
-                              fontSize: 12,
-                              letterSpacing: 1.2,
+                              fontSize: 22,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF288DE3),
+                              color: _kPrimary,
                               height: 1,
                             ),
                           ),
                         ),
+                        Positioned(
+                          right: -2,
+                          top: -2,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: kPencilYellow,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _InfoLine(
-                icon: Icons.calendar_today_rounded,
-                text: dateText.isEmpty ? '-' : dateText,
-              ),
-              const SizedBox(height: 10),
-              _InfoLine(
-                icon: Icons.access_time_filled_rounded,
-                text: timeText.isEmpty ? '-' : timeText,
-              ),
-              const SizedBox(height: 14),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F0F6),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(top: 2),
-                      child: Icon(
-                        Icons.description_rounded,
-                        size: 28,
-                        color: Color(0xFF1E8CEA),
-                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'MOTIV SOLICITARE',
-                            style: TextStyle(
-                              fontSize: 12,
+                          Text(
+                            studentName,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              color: _kOnSurface,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF6586A3),
-                              letterSpacing: 0.6,
+                              height: 1.18,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            reason.isEmpty ? '-' : '"$reason"',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic,
-                              color: Color(0xFF5D819D),
-                              height: 1.3,
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8EAF2),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Text(
+                              classLabel,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                letterSpacing: 1.2,
+                                fontWeight: FontWeight.w800,
+                                color: _kPrimary,
+                                height: 1,
+                              ),
                             ),
                           ),
                         ],
@@ -496,62 +498,124 @@ class _RequestCard extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 48,
-                      child: ElevatedButton.icon(
-                        onPressed: onAccept,
-                        icon: const Icon(Icons.check_rounded, size: 18),
-                        label: const Text('Acceptă'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1F8BE7),
-                          foregroundColor: Colors.white,
-                          elevation: 2,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                const SizedBox(height: 16),
+                _InfoLine(
+                  icon: Icons.calendar_today_rounded,
+                  text: dateText.isEmpty ? '-' : dateText,
+                ),
+                const SizedBox(height: 10),
+                _InfoLine(
+                  icon: Icons.access_time_filled_rounded,
+                  text: timeText.isEmpty ? '-' : timeText,
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8EAF2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: const Border(
+                      left: BorderSide(color: _kPrimary, width: 3),
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.description_rounded,
+                          size: 26,
+                          color: _kPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'REASON',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: _kLabelColor,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              reason.isEmpty ? '-' : '"$reason"',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                                color: _kOnSurfaceMid,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: onAccept,
+                          icon: const Icon(Icons.check_rounded, size: 18),
+                          label: const Text('Approve'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _kPrimary,
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: SizedBox(
-                      height: 48,
-                      child: ElevatedButton.icon(
-                        onPressed: onReject,
-                        icon: const Icon(Icons.close_rounded, size: 18),
-                        label: const Text('Respinge'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF7E7EE),
-                          foregroundColor: const Color(0xFF9C2D62),
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: onReject,
+                          icon: const Icon(Icons.close_rounded, size: 18),
+                          label: const Text('Reject'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF8E0E5),
+                            foregroundColor: const Color(0xFFB03040),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -578,14 +642,14 @@ class _InfoLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF1B8DEF)),
+        Icon(icon, size: 20, color: _kPrimary),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             text,
             style: const TextStyle(
               fontSize: 15,
-              color: Color(0xFF6584A0),
+              color: _kOnSurfaceMid,
               fontWeight: FontWeight.w600,
               height: 1.2,
             ),

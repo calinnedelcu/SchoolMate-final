@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firster/core/session.dart';
 import 'package:firster/student/meniu.dart';
-import 'package:firster/student/orar.dart';
-import 'package:firster/student/widgets/profile_bottom_sheet.dart';
-import 'package:firster/student/cereri.dart';
+import 'package:firster/student/profile_page.dart';
+import 'package:firster/student/schedule_page.dart';
+import 'package:firster/student/widgets/maniubara.dart';
+import 'package:firster/student/leave_requests_overview.dart';
 import 'package:firster/student/inbox.dart';
 import 'package:flutter/material.dart';
 
@@ -19,10 +19,9 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   late int _currentIndex;
-  bool _profilePressed = false;
   String? _inboxHighlightId;
 
-  static const int _maxIndex = 3; // 4 children: 0..3
+  static const int _maxIndex = 4; // 5 children: 0..4 (4 = Profile)
 
   @override
   void initState() {
@@ -59,85 +58,50 @@ class _AppShellState extends State<AppShell> {
     });
   }
 
-  Widget _buildAvatar() {
-    final photoUrl = FirebaseAuth.instance.currentUser?.photoURL;
-    if (photoUrl != null && photoUrl.isNotEmpty) {
-      return Image.network(
-        photoUrl,
-        width: 44,
-        height: 44,
-        fit: BoxFit.cover,
-        errorBuilder: (_, e, s) => Container(
-          width: 44,
-          height: 44,
-          color: const Color(0xFF2848B0),
-          child: const Icon(Icons.person, color: Colors.white, size: 22),
-        ),
-      );
+  int _navIndexForCurrentTab() {
+    switch (_currentIndex) {
+      case 0:
+        return 0;
+      case 1:
+        return 1;
+      case 4:
+        return 2;
+      default:
+        return -1;
     }
-    return Container(
-      width: 44,
-      height: 44,
-      color: const Color(0xFF2848B0),
-      child: const Icon(Icons.person, color: Colors.white, size: 22),
-    );
+  }
+
+  void _onBottomNavTap(int index) {
+    if (index == 2) {
+      _setTab(4);
+      return;
+    }
+    _setTab(index);
   }
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
     return Scaffold(
-      body: Stack(
+      bottomNavigationBar: FixedBottomNav(
+        currentIndex: _navIndexForCurrentTab(),
+        onTap: _onBottomNavTap,
+      ),
+      body: IndexedStack(
+        index: _currentIndex,
         children: [
-          IndexedStack(
-            index: _currentIndex,
-            children: [
-              MeniuScreen(
-                onNavigateTab: _setTab,
-                onNavigateToActiveLeave: _openInboxWithHighlight,
-              ),
-              OrarScreen(onBackToHome: () => _setTab(0)),
-              CereriScreen(onNavigateTab: _setTab),
-              InboxScreen(
-                onNavigateTab: _setTab,
-                highlightDocId: _inboxHighlightId,
-                onHighlightConsumed: () =>
-                    setState(() => _inboxHighlightId = null),
-              ),
-            ],
+          MeniuScreen(
+            onNavigateTab: _setTab,
+            onNavigateToActiveLeave: _openInboxWithHighlight,
           ),
-          if (_currentIndex == 0)
-            Positioned(
-              top: topPadding + 6,
-              right: 16,
-              child: GestureDetector(
-                onTapDown: (_) => setState(() => _profilePressed = true),
-                onTapUp: (_) {
-                  setState(() => _profilePressed = false);
-                  showProfileSheet(context);
-                },
-                onTapCancel: () => setState(() => _profilePressed = false),
-                child: AnimatedScale(
-                  scale: _profilePressed ? 0.78 : 1.0,
-                  duration: const Duration(milliseconds: 100),
-                  curve: Curves.easeOut,
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFF2848B0),
-                        width: 2,
-                      ),
-                    ),
-                    child: ClipOval(
-                      child: _buildAvatar(),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          SchedulePage(onBackToHome: () => _setTab(0)),
+          LeaveRequestsOverviewScreen(onNavigateTab: _setTab),
+          InboxScreen(
+            onNavigateTab: _setTab,
+            highlightDocId: _inboxHighlightId,
+            onHighlightConsumed: () =>
+                setState(() => _inboxHighlightId = null),
+          ),
+          ProfilePage(onBackToHome: () => _setTab(0)),
         ],
       ),
     );

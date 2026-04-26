@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firster/admin/services/admin_api.dart';
-import 'package:firster/common/accessibility_settings_page.dart';
 import 'package:firster/student/logout_dialog.dart';
 import 'package:firster/core/session.dart';
 import 'package:firster/student/widgets/qr_bottom_sheet.dart';
@@ -711,19 +710,6 @@ class _SettingsSheet extends StatelessWidget {
             onTap: () {
               Navigator.pop(ctx);
               _showEditProfileSheet(ctx);
-            },
-          ),
-          const SizedBox(height: 10),
-          _SettingsTile(
-            icon: Icons.accessibility_new_rounded,
-            label: 'Accessibility',
-            onTap: () {
-              Navigator.pop(ctx);
-              Navigator.of(ctx).push(
-                MaterialPageRoute(
-                  builder: (_) => const AccessibilitySettingsPage(),
-                ),
-              );
             },
           ),
           const SizedBox(height: 10),

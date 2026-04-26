@@ -162,8 +162,6 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
   final _descCtrl = TextEditingController();
   final _locationCtrl = TextEditingController();
   final _linkCtrl = TextEditingController();
-  final _hoursCtrl = TextEditingController(text: '2');
-  final _maxCtrl = TextEditingController(text: '30');
 
   DateTime? _eventDate;
   DateTime? _eventEndDate;
@@ -187,14 +185,14 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     _descCtrl.dispose();
     _locationCtrl.dispose();
     _linkCtrl.dispose();
-    _hoursCtrl.dispose();
-    _maxCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _pickEventDate({required bool isEnd}) async {
     final initial = isEnd
-        ? (_eventEndDate ?? _eventDate ?? DateTime.now().add(const Duration(days: 1)))
+        ? (_eventEndDate ??
+              _eventDate ??
+              DateTime.now().add(const Duration(days: 1)))
         : (_eventDate ?? DateTime.now().add(const Duration(days: 1)));
     final picked = await showDatePicker(
       context: context,
@@ -291,101 +289,81 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           'endDate': Timestamp.fromDate(_eventEndDate!),
           'createdAt': FieldValue.serverTimestamp(),
         });
-        // Also broadcast to students as a secretariatMessages notification
-        await FirebaseFirestore.instance
-            .collection('secretariatMessages')
-            .add({
-              'recipientRole': 'student',
-              'recipientUid': '',
-              'studentUid': '',
-              'studentUsername': '',
-              'studentName': '',
-              'classId': '',
-              'recipientName': '',
-              'recipientUsername': '',
-              'message':
-                  'Vacanță: $vacationName\n'
-                  '${_fmtDate(_eventDate!)} – ${_fmtDate(_eventEndDate!)}',
-              'title': vacationName,
-              'category': 'vacation',
-              'audienceClassIds': const [kAudienceAll],
-              'audienceLabel': 'Toată școala',
-              'location': '',
-              'link': '',
-              'eventDate': Timestamp.fromDate(_eventDate!),
-              'eventEndDate': Timestamp.fromDate(_eventEndDate!),
-              'createdAt': FieldValue.serverTimestamp(),
-              'senderUid': senderUid,
-              'senderName': senderName,
-              'senderRole': senderRole,
-              'broadcastId':
-                  '${DateTime.now().millisecondsSinceEpoch}_vacation',
-              'messageType': 'secretariatGlobal',
-              'source': 'secretariat',
-              'status': 'active',
-            });
-      } else if (_kind == PostKind.volunteer) {
-        await FirebaseFirestore.instance
-            .collection('volunteerOpportunities')
-            .add({
-              'title': title,
-              'description': desc,
-              'date': Timestamp.fromDate(_eventDate!),
-              'location': location,
-              'link': link,
-              'maxParticipants': int.tryParse(_maxCtrl.text) ?? 30,
-              'hoursWorth': int.tryParse(_hoursCtrl.text) ?? 2,
-              'createdBy': senderUid,
-              'createdByName': senderName,
-              'createdByRole': senderRole,
-              'audienceClassIds': audience,
-              'classId': audience.contains(kAudienceAll)
-                  ? null
-                  : (audience.length == 1 ? audience.first : null),
-              'status': 'active',
-              'createdAt': FieldValue.serverTimestamp(),
-            });
+        // Broadcast to students; parents see student-targeted broadcasts via
+        // Firestore rules.
+        await FirebaseFirestore.instance.collection('secretariatMessages').add({
+          'recipientRole': 'student',
+          'recipientUid': '',
+          'studentUid': '',
+          'studentUsername': '',
+          'studentName': '',
+          'classId': '',
+          'recipientName': '',
+          'recipientUsername': '',
+          'message':
+              'Vacanță: $vacationName\n'
+              '${_fmtDate(_eventDate!)} – ${_fmtDate(_eventEndDate!)}',
+          'title': vacationName,
+          'category': 'vacation',
+          'audienceClassIds': const [kAudienceAll],
+          'audienceLabel': 'Toată școala',
+          'location': '',
+          'link': '',
+          'eventDate': Timestamp.fromDate(_eventDate!),
+          'eventEndDate': Timestamp.fromDate(_eventEndDate!),
+          'createdAt': FieldValue.serverTimestamp(),
+          'senderUid': senderUid,
+          'senderName': senderName,
+          'senderRole': senderRole,
+          'broadcastId': '${DateTime.now().millisecondsSinceEpoch}_vacation',
+          'messageType': 'secretariatGlobal',
+          'source': 'secretariat',
+          'status': 'active',
+        });
       } else {
-        // Anunț / Competiție / Tabără → secretariatMessages broadcast
-        await FirebaseFirestore.instance
-            .collection('secretariatMessages')
-            .add({
-              'recipientRole': 'student',
-              'recipientUid': '',
-              'studentUid': '',
-              'studentUsername': '',
-              'studentName': '',
-              'classId': '',
-              'recipientName': '',
-              'recipientUsername': '',
-              'message': desc,
-              'title': title,
-              'category': _kind.categoryKey,
-              'audienceClassIds': audience,
-              'audienceLabel': _audienceLabel(audience),
-              'location': location,
-              'link': link,
-              'eventDate': _eventDate != null
-                  ? Timestamp.fromDate(_eventDate!)
-                  : null,
-              'eventEndDate': _eventEndDate != null
-                  ? Timestamp.fromDate(_eventEndDate!)
-                  : null,
-              'createdAt': FieldValue.serverTimestamp(),
-              'senderUid': senderUid,
-              'senderName': senderName,
-              'senderRole': senderRole,
-              'broadcastId':
-                  '${DateTime.now().millisecondsSinceEpoch}_${_kind.categoryKey}',
-              'messageType': 'secretariatGlobal',
-              'source': senderRole == 'teacher' ? 'teacher' : 'secretariat',
-              'status': 'active',
-            });
+        // Anunț / Competiție / Tabără → secretariatMessages broadcast.
+        // Parents see student-targeted broadcasts via Firestore rules.
+        await FirebaseFirestore.instance.collection('secretariatMessages').add({
+          'recipientRole': 'student',
+          'recipientUid': '',
+          'studentUid': '',
+          'studentUsername': '',
+          'studentName': '',
+          'classId': '',
+          'recipientName': '',
+          'recipientUsername': '',
+          'message': desc,
+          'title': title,
+          'category': _kind.categoryKey,
+          'audienceClassIds': audience,
+          'audienceLabel': _audienceLabel(audience),
+          'location': location,
+          'link': link,
+          'eventDate': _eventDate != null
+              ? Timestamp.fromDate(_eventDate!)
+              : null,
+          'eventEndDate': _eventEndDate != null
+              ? Timestamp.fromDate(_eventEndDate!)
+              : null,
+          'createdAt': FieldValue.serverTimestamp(),
+          'senderUid': senderUid,
+          'senderName': senderName,
+          'senderRole': senderRole,
+          'broadcastId':
+              '${DateTime.now().millisecondsSinceEpoch}_${_kind.categoryKey}',
+          'messageType': 'secretariatGlobal',
+          'source': senderRole == 'teacher' ? 'teacher' : 'secretariat',
+          'status': 'active',
+        });
       }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${_kind.label} publicat${_kind == PostKind.competition || _kind == PostKind.camp || _kind == PostKind.vacation ? 'ă' : ''}!')),
+        SnackBar(
+          content: Text(
+            '${_kind.label} publicat${_kind == PostKind.competition || _kind == PostKind.camp || _kind == PostKind.vacation ? 'ă' : ''}!',
+          ),
+        ),
       );
       if (widget.formOnly) {
         Navigator.of(context).pop();
@@ -394,9 +372,9 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
       _resetForm();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Eroare: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Eroare: $e')));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -410,8 +388,6 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     _descCtrl.clear();
     _locationCtrl.clear();
     _linkCtrl.clear();
-    _hoursCtrl.text = '2';
-    _maxCtrl.text = '30';
     setState(() {
       _eventDate = null;
       _eventEndDate = null;
@@ -450,7 +426,11 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 22),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                   splashRadius: 20,
                 ),
               ],
@@ -646,28 +626,6 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
               keyboardType: TextInputType.url,
             ),
             const SizedBox(height: 10),
-            if (_kind == PostKind.volunteer) ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: _ComposerInput(
-                      controller: _hoursCtrl,
-                      hint: 'Ore acordate',
-                      isNum: true,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _ComposerInput(
-                      controller: _maxCtrl,
-                      hint: 'Max participanți',
-                      isNum: true,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-            ],
             if (_kind != PostKind.announcement) _buildDatePickers(),
           ],
           const SizedBox(height: 14),
@@ -710,7 +668,9 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
 
   Widget _buildDatePickers() {
     final showRange = _kind == PostKind.camp || _kind == PostKind.vacation;
-    final startLabel = _kind == PostKind.vacation ? 'Început *' : (showRange ? 'Început' : 'Data *');
+    final startLabel = _kind == PostKind.vacation
+        ? 'Început *'
+        : (showRange ? 'Început' : 'Data *');
     final endLabel = _kind == PostKind.vacation ? 'Sfârșit *' : 'Sfârșit';
     return Row(
       children: [
@@ -812,9 +772,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
         ),
         const SizedBox(height: 10),
         StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('classes')
-              .snapshots(),
+          stream: FirebaseFirestore.instance.collection('classes').snapshots(),
           builder: (context, snap) {
             if (!snap.hasData) {
               return const SizedBox(
@@ -834,14 +792,14 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
                 id: d.id,
                 name: (m['name'] ?? d.id).toString(),
               );
-            }).toList()
-              ..sort((a, b) => a.name.compareTo(b.name));
+            }).toList()..sort((a, b) => a.name.compareTo(b.name));
             return Wrap(
               spacing: 8,
               runSpacing: 8,
               children: classes.map((c) {
                 final selected =
-                    _selectedClassIds != null && _selectedClassIds!.contains(c.id);
+                    _selectedClassIds != null &&
+                    _selectedClassIds!.contains(c.id);
                 return GestureDetector(
                   onTap: () {
                     setState(() {
@@ -898,7 +856,6 @@ class _ComposerInput extends StatelessWidget {
   final String hint;
   final int maxLines;
   final int? maxLength;
-  final bool isNum;
   final TextInputType? keyboardType;
 
   const _ComposerInput({
@@ -906,7 +863,6 @@ class _ComposerInput extends StatelessWidget {
     required this.hint,
     this.maxLines = 1,
     this.maxLength,
-    this.isNum = false,
     this.keyboardType,
   });
 
@@ -916,8 +872,7 @@ class _ComposerInput extends StatelessWidget {
       controller: controller,
       maxLines: maxLines,
       maxLength: maxLength,
-      keyboardType:
-          keyboardType ?? (isNum ? TextInputType.number : TextInputType.text),
+      keyboardType: keyboardType ?? TextInputType.text,
       style: const TextStyle(
         color: _onSurface,
         fontSize: 14,
@@ -971,11 +926,7 @@ class _DateField extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(
-              Icons.calendar_today_rounded,
-              size: 15,
-              color: _outline,
-            ),
+            const Icon(Icons.calendar_today_rounded, size: 15, color: _outline),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -1041,45 +992,53 @@ class _PostsManagementList extends StatelessWidget {
                   final d = doc.data();
                   if (!_canSee(d)) continue;
                   final created = (d['createdAt'] as Timestamp?)?.toDate();
-                  items.add(_PostItem(
-                    id: doc.id,
-                    collection: 'secretariatMessages',
-                    title: (d['title'] ?? '').toString(),
-                    message: (d['message'] ?? '').toString(),
-                    category: (d['category'] ?? 'announcement').toString(),
-                    audienceLabel: (d['audienceLabel'] ?? '').toString(),
-                    audienceClassIds: List<String>.from(
-                      (d['audienceClassIds'] ?? const []) as List,
+                  items.add(
+                    _PostItem(
+                      id: doc.id,
+                      collection: 'secretariatMessages',
+                      title: (d['title'] ?? '').toString(),
+                      message: (d['message'] ?? '').toString(),
+                      category: (d['category'] ?? 'announcement').toString(),
+                      audienceLabel: (d['audienceLabel'] ?? '').toString(),
+                      audienceClassIds: List<String>.from(
+                        (d['audienceClassIds'] ?? const []) as List,
+                      ),
+                      createdAt: created,
+                      archived:
+                          (d['status'] ?? 'active').toString() == 'archived',
+                      senderName: (d['senderName'] ?? '').toString(),
                     ),
-                    createdAt: created,
-                    archived: (d['status'] ?? 'active').toString() == 'archived',
-                    senderName: (d['senderName'] ?? '').toString(),
-                  ));
+                  );
                 }
 
                 for (final doc in volSnap.data!.docs) {
                   final d = doc.data();
                   if (!_canSee(d)) continue;
                   final created = (d['createdAt'] as Timestamp?)?.toDate();
-                  items.add(_PostItem(
-                    id: doc.id,
-                    collection: 'volunteerOpportunities',
-                    title: (d['title'] ?? '').toString(),
-                    message: (d['description'] ?? '').toString(),
-                    category: 'volunteer',
-                    audienceLabel: _legacyAudienceLabel(d),
-                    audienceClassIds: List<String>.from(
-                      (d['audienceClassIds'] ?? const []) as List,
+                  items.add(
+                    _PostItem(
+                      id: doc.id,
+                      collection: 'volunteerOpportunities',
+                      title: (d['title'] ?? '').toString(),
+                      message: (d['description'] ?? '').toString(),
+                      category: 'volunteer',
+                      audienceLabel: _legacyAudienceLabel(d),
+                      audienceClassIds: List<String>.from(
+                        (d['audienceClassIds'] ?? const []) as List,
+                      ),
+                      createdAt: created,
+                      archived:
+                          (d['status'] ?? 'active').toString() == 'archived',
+                      senderName: (d['createdByName'] ?? '').toString(),
                     ),
-                    createdAt: created,
-                    archived: (d['status'] ?? 'active').toString() == 'archived',
-                    senderName: (d['createdByName'] ?? '').toString(),
-                  ));
+                  );
                 }
 
                 items.sort((a, b) {
-                  final ad = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-                  final bd = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+                  final ad =
+                      a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+                  final bd =
+                      b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
                   return bd.compareTo(ad);
                 });
 
@@ -1224,10 +1183,7 @@ class _PostCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Șterge',
-              style: TextStyle(color: _danger),
-            ),
+            child: const Text('Șterge', style: TextStyle(color: _danger)),
           ),
         ],
       ),
