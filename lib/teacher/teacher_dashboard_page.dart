@@ -1,6 +1,7 @@
 ﻿import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import '../core/session.dart';
 import '../student/logout_dialog.dart';
 import 'orardir.dart';
@@ -19,8 +20,166 @@ class _DampedScrollPhysics extends ScrollPhysics {
       super.applyPhysicsToUserOffset(position, offset) * 0.55;
 }
 
-const _kGreen = Color(0xFF1F8BE7);
+const _kGreen = Color(0xFF2848B0);
+const _pencilYellow = Color(0xFFF5C518);
 const _kBg = Color(0xFFEFF5FA);
+
+void _drawSymbol(
+  Canvas canvas,
+  String text,
+  Offset pos,
+  double fontSize,
+  Color color,
+) {
+  final painter = TextPainter(
+    text: TextSpan(
+      text: text,
+      style: TextStyle(
+        color: color,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+  );
+  painter.layout();
+  painter.paint(canvas, pos - Offset(painter.width / 2, painter.height / 2));
+}
+
+// Painter copied/adapted from student header to match exact visuals
+class _HeaderWavePainterTeacher extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..shader = ui.Gradient.linear(
+        Offset.zero,
+        Offset(size.width, size.height),
+        const [Color(0xFF2040A0), Color(0xFF3058C8)],
+      );
+
+    final path = Path()
+      ..lineTo(0, size.height - 40)
+      ..quadraticBezierTo(
+        size.width * 0.25,
+        size.height,
+        size.width * 0.5,
+        size.height - 20,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.75,
+        size.height - 42,
+        size.width,
+        size.height - 14,
+      )
+      ..lineTo(size.width, 0)
+      ..close();
+
+    canvas.drawPath(path, paint);
+    canvas.save();
+    canvas.clipPath(path);
+
+    // Large soft blob top-right
+    final blobPaint = Paint()..color = Colors.white.withOpacity(0.06);
+    canvas.drawCircle(Offset(size.width - 30, 40), 85, blobPaint);
+
+    // Outlined ring top-right
+    final ringPaint = Paint()
+      ..color = Colors.white.withOpacity(0.14)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6;
+    canvas.drawCircle(Offset(size.width - 30, 40), 85, ringPaint);
+
+    // Soft blob bottom-left behind wave
+    canvas.drawCircle(
+      Offset(size.width * 0.12, size.height - 70),
+      55,
+      Paint()..color = Colors.white.withOpacity(0.04),
+    );
+
+    // Math symbols scattered as school-themed sparkles
+    final c1 = Colors.white.withOpacity(0.3);
+    final c2 = Colors.white.withOpacity(0.22);
+    final cy = _pencilYellow.withOpacity(0.35);
+    _drawSymbol(canvas, 'π', Offset(size.width * 0.54, 26), 15, cy);
+    _drawSymbol(canvas, '+', Offset(size.width * 0.62, 52), 13, c1);
+    _drawSymbol(canvas, '×', Offset(size.width * 0.48, 72), 11, c2);
+    _drawSymbol(canvas, '√', Offset(size.width * 0.72, 38), 13, c2);
+    _drawSymbol(canvas, '∞', Offset(size.width * 0.82, 65), 14, cy);
+    _drawSymbol(canvas, '÷', Offset(size.width * 0.90, 42), 12, c2);
+    _drawSymbol(
+      canvas,
+      '=',
+      Offset(size.width * 0.22, size.height - 88),
+      11,
+      c2,
+    );
+    _drawSymbol(
+      canvas,
+      '∆',
+      Offset(size.width * 0.38, size.height - 100),
+      12,
+      cy,
+    );
+    _drawSymbol(
+      canvas,
+      '²',
+      Offset(size.width * 0.46, size.height - 75),
+      11,
+      c2,
+    );
+
+    canvas.restore();
+
+    // Wave highlight line
+    final linePaint = Paint()
+      ..color = Colors.white.withOpacity(0.22)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+
+    final linePath = Path()
+      ..moveTo(0, size.height - 52)
+      ..quadraticBezierTo(
+        size.width * 0.3,
+        size.height - 12,
+        size.width * 0.55,
+        size.height - 34,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.78,
+        size.height - 54,
+        size.width,
+        size.height - 22,
+      );
+
+    canvas.drawPath(linePath, linePaint);
+
+    // Second wave accent (filled)
+    final accentPaint = Paint()..color = const Color(0x14FFFFFF);
+
+    final accentPath = Path()
+      ..moveTo(0, size.height - 58)
+      ..quadraticBezierTo(
+        size.width * 0.35,
+        size.height - 16,
+        size.width * 0.6,
+        size.height - 42,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.8,
+        size.height - 60,
+        size.width,
+        size.height - 28,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawPath(accentPath, accentPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
 
 class TeacherDashboardPage extends StatefulWidget {
   const TeacherDashboardPage({super.key});
@@ -200,37 +359,53 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
     );
   }
 
-  // ─── Header verde cu cercuri + salut + buton profil ─────────────────────────
-  Widget _buildHeader(String name) {
+  // ─── Blue hero header (copied from student design) ─────────────────────────
+  Widget _buildHeader(String displayName) {
     final topPadding = MediaQuery.of(context).padding.top;
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(52),
-        bottomRight: Radius.circular(52),
-      ),
-      child: Container(
-        height: 220 + topPadding,
-        color: _kGreen,
+    final now = DateTime.now();
+    final dateStr = '${now.day} aprilie ${now.year}';
+
+    return SizedBox(
+      width: double.infinity,
+      height: topPadding + 170,
+      child: CustomPaint(
+        painter: _HeaderWavePainterTeacher(),
         child: Stack(
-          clipBehavior: Clip.none,
           children: [
-            Positioned(right: -80, top: -90, child: _headerCircle(290, 0.08)),
-            Positioned(
-              right: 38,
-              top: 54 + topPadding,
-              child: _headerCircle(78, 0.07),
-            ),
-            Positioned(left: -60, bottom: -44, child: _headerCircle(186, 0.08)),
             Padding(
-              padding: EdgeInsets.fromLTRB(28, 8 + topPadding, 18, 0),
-              child: Text(
-                'Bine ai venit,\n$name',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  height: 1.08,
-                  fontWeight: FontWeight.w900,
-                ),
+              padding: EdgeInsets.fromLTRB(26, topPadding + 16, 70, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome, $displayName',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      height: 1.25,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 46,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: _pencilYellow,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    dateStr,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -269,8 +444,8 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
             _ActivityData(
               icon: Icons.warning_amber_rounded,
               iconColor: const Color(0xFF9D1F5F),
-              title: 'Cerere în așteptare - $classId',
-              time: 'ACUM',
+              title: 'Pending request - $classId',
+              time: 'NOW',
             ),
           );
         }
@@ -279,8 +454,8 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
           const _ActivityData(
             icon: Icons.campaign_rounded,
             iconColor: _kGreen,
-            title: 'Anunț școlar nou',
-            time: 'ASTĂZI',
+            title: 'New school announcement',
+            time: 'TODAY',
           ),
         );
 
@@ -291,8 +466,8 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
             _ActivityData(
               icon: Icons.cancel_rounded,
               iconColor: _kGreen,
-              title: 'Cerere respinsă - $studentName',
-              time: 'ASTĂZI',
+              title: 'Request rejected - $studentName',
+              time: 'TODAY',
             ),
           );
         }
@@ -300,93 +475,101 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
         return Container(
           width: double.infinity,
           height: 390,
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(34),
-            boxShadow: [
+            borderRadius: BorderRadius.circular(24),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF2848B0), Color(0xFF3460CC), Color(0xFF4070E0)],
+            ),
+            boxShadow: const [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                color: Color(0x282848B0),
+                blurRadius: 20,
+                offset: Offset(0, 8),
               ),
             ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-            child: Column(
-              children: [
-                const SizedBox(height: 4),
-                const Text(
-                  'Activitate Recentă',
-                  style: TextStyle(
-                    fontSize: 31,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.7,
-                    color: Color(0xFF4B83B2),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDDDDDD),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      children: items
-                          .map((item) => _ActivityItemWidget(data: item))
-                          .toList(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                StreamBuilder<QuerySnapshot>(
-                  stream: _studentsStream,
-                  builder: (context, stuSnap) {
-                    final students = stuSnap.data?.docs ?? [];
-                    final inSchool = students
-                        .where(
-                          (d) =>
-                              (d.data() as Map<String, dynamic>)['inSchool'] ==
-                              true,
-                        )
-                        .length;
-                    final absent = students.length - inSchool;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _StatBox(
-                              label: 'PREZENȚI',
-                              value: students.isEmpty ? '--' : '$inSchool',
-                              valueColor: _kGreen,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _StatBox(
-                              label: 'ABSENȚI',
-                              value: students.isEmpty ? '--' : '$absent',
-                              valueColor: absent > 0
-                                  ? const Color(0xFF8E3557)
-                                  : const Color(0xFF717B6E),
-                            ),
-                          ),
-                        ],
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(painter: _AziCardDecorPainter()),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 4),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Recent Activity',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.2,
+                          color: Colors.white,
+                        ),
                       ),
-                    );
-                  },
+                    ),
+                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          children: items
+                              .map((item) => _ActivityItemWidget(data: item))
+                              .toList(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    StreamBuilder<QuerySnapshot>(
+                      stream: _studentsStream,
+                      builder: (context, stuSnap) {
+                        final students = stuSnap.data?.docs ?? [];
+                        final inSchool = students
+                            .where(
+                              (d) =>
+                                  (d.data()
+                                      as Map<String, dynamic>)['inSchool'] ==
+                                  true,
+                            )
+                            .length;
+                        final absent = students.length - inSchool;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _StatBox(
+                                  label: 'PRESENT',
+                                  value: students.isEmpty ? '--' : '$inSchool',
+                                  valueColor: _kGreen,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _StatBox(
+                                  label: 'ABSENT',
+                                  value: students.isEmpty ? '--' : '$absent',
+                                  valueColor: absent > 0
+                                      ? const Color(0xFF8E3557)
+                                      : const Color(0xFF717B6E),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 6),
+                  ],
                 ),
-                const SizedBox(height: 6),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -399,42 +582,64 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
       stream: _pendingStream,
       builder: (context, snap) {
         final count = snap.data?.docs.length ?? 0;
-        final cereriSub = count > 0
-            ? '$count ${count == 1 ? 'cerere nouă' : 'cereri noi'}'
-            : 'Nicio cerere nouă';
+        final requestsSubtitle = count > 0
+            ? '$count ${count == 1 ? 'new request' : 'new requests'}'
+            : 'No new requests';
 
         return Column(
           children: [
+            // Top full-width white long button: Leave Requests
             _GridCard(
-              icon: Icons.group_rounded,
-              title: 'Clasa Mea',
-              subtitle: 'Gestionare elevi',
+              icon: Icons.article_rounded,
+              title: 'Leave requests',
+              subtitle: requestsSubtitle,
               isDark: false,
               wide: true,
               onTap: () => Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => const StatusEleviPage(),
+                  pageBuilder: (_, __, ___) => const CereriAsteptarePage(),
                   transitionDuration: Duration.zero,
                   reverseTransitionDuration: Duration.zero,
                 ),
               ),
             ),
             const SizedBox(height: 12),
+
+            // Top full-width white long button: Messages
+            _GridCard(
+              icon: Icons.chat_bubble_rounded,
+              title: 'Messages',
+              subtitle: 'No new messages',
+              isDark: false,
+              wide: true,
+              onTap: () => Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (_, __, ___) => const MesajeDirPage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Row with two student-style quick tiles: My Class (left) and Schedule (right)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: _GridCard(
-                    icon: Icons.article_rounded,
-                    title: 'Cereri',
-                    subtitle: cereriSub,
-                    isDark: true,
+                  child: _QuickActionTileTeacher(
+                    icon: Icons.group_rounded,
+                    label: 'My Class',
+                    gradientColors: const [
+                      Color(0xFF2848B0),
+                      Color(0xFF4070E0),
+                    ],
                     onTap: () => Navigator.push(
                       context,
                       PageRouteBuilder(
-                        pageBuilder: (_, __, ___) =>
-                            const CereriAsteptarePage(),
+                        pageBuilder: (_, __, ___) => const StatusEleviPage(),
                         transitionDuration: Duration.zero,
                         reverseTransitionDuration: Duration.zero,
                       ),
@@ -443,24 +648,21 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _GridCard(
-                    icon: Icons.chat_bubble_rounded,
-                    title: 'Mesaje',
-                    subtitle: 'Istoric cereri',
-                    isDark: false,
-                    onTap: () => Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (_, __, ___) => const MesajeDirPage(),
-                        transitionDuration: Duration.zero,
-                        reverseTransitionDuration: Duration.zero,
-                      ),
-                    ),
+                  child: _QuickActionTileTeacher(
+                    icon: Icons.event_rounded,
+                    label: 'Schedule',
+                    gradientColors: const [
+                      Color(0xFF3460CC),
+                      Color(0xFF4878E8),
+                    ],
+                    onTap: () => showTeacherScheduleSheet(context, _classId),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
+
+            // Post Announcement (kept wide)
             _GridCard(
               icon: Icons.dynamic_feed_rounded,
               title: 'Postări pentru clasă',
@@ -767,4 +969,209 @@ class _GridCard extends StatelessWidget {
       ),
     );
   }
+}
+
+// Student-style quick action tile (copied/adapted from student meniu.dart)
+class _QuickActionTileTeacher extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final List<Color> gradientColors;
+  final VoidCallback onTap;
+
+  const _QuickActionTileTeacher({
+    required this.icon,
+    required this.label,
+    required this.gradientColors,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 184,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0C000000),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              child: CustomPaint(painter: _QuickTileDecorPainterTeacher()),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: gradientColors,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 22),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: _kGreen,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Container(
+                    width: 16,
+                    height: 2,
+                    decoration: BoxDecoration(
+                      color: _pencilYellow,
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickTileDecorPainterTeacher extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final gridPaint = Paint()
+      ..color = _kGreen.withOpacity(0.04)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.7;
+    const gridSize = 22.0;
+    for (double x = gridSize; x < size.width; x += gridSize) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+    }
+    for (double y = gridSize; y < size.height; y += gridSize) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    // Soft corner blob bottom-right
+    canvas.drawCircle(
+      Offset(size.width + 5, size.height + 5),
+      28,
+      Paint()..color = _kGreen.withOpacity(0.05),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Reuse the student's Azi card decor painter (not the whole card) to match the
+// notebook grid + symbols background used by Today's Schedule.
+class _AziCardDecorPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Notebook grid pattern (math squared paper)
+    final gridPaint = Paint()
+      ..color = Colors.white.withOpacity(0.05)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+    const gridSize = 26.0;
+    for (double x = gridSize; x < size.width; x += gridSize) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+    }
+    for (double y = gridSize; y < size.height; y += gridSize) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    // Large soft circle top-right
+    canvas.drawCircle(
+      Offset(size.width + 10, -10),
+      90,
+      Paint()..color = Colors.white.withOpacity(0.06),
+    );
+
+    // Outlined ring top-right
+    canvas.drawCircle(
+      Offset(size.width + 10, -10),
+      90,
+      Paint()
+        ..color = Colors.white.withOpacity(0.12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    // Medium soft circle bottom-right
+    canvas.drawCircle(
+      Offset(size.width - 30, size.height + 10),
+      70,
+      Paint()..color = Colors.white.withOpacity(0.05),
+    );
+
+    // Math symbols as school-themed sparkles
+    final c1 = Colors.white.withOpacity(0.3);
+    final c2 = Colors.white.withOpacity(0.22);
+    final cy = _pencilYellow.withOpacity(0.35);
+    _drawSymbol(
+      canvas,
+      '∑',
+      Offset(size.width - 28, size.height * 0.42),
+      14,
+      cy,
+    );
+    _drawSymbol(
+      canvas,
+      '=',
+      Offset(size.width * 0.88, size.height - 38),
+      12,
+      c1,
+    );
+    _drawSymbol(
+      canvas,
+      '∫',
+      Offset(size.width * 0.82, size.height * 0.28),
+      15,
+      c2,
+    );
+    _drawSymbol(
+      canvas,
+      'π',
+      Offset(size.width * 0.93, size.height * 0.55),
+      13,
+      c2,
+    );
+    _drawSymbol(
+      canvas,
+      '+',
+      Offset(size.width * 0.72, size.height * 0.58),
+      11,
+      cy,
+    );
+    _drawSymbol(
+      canvas,
+      '√',
+      Offset(size.width * 0.78, size.height - 28),
+      12,
+      c2,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

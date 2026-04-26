@@ -5,7 +5,7 @@ import '../admin/services/admin_api.dart';
 import '../core/session.dart';
 import '../student/logout_dialog.dart';
 
-const _primary = Color(0xFF1F8BE7);
+const _primary = Color(0xFF2848B0);
 const _surfaceLowest = Color(0xFFFFFFFF);
 const _surfaceContainerLow = Color(0xFFE7F0F6);
 const _outline = Color(0xFF7C99B1);

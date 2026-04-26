@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import '../core/session.dart';
 
-const _kHeaderGreen = Color(0xFF1F8BE7);
+const _kHeaderGreen = Color(0xFF2848B0);
 const _kPageBg = Color(0xFFEFF5FA);
 const _kCardBg = Color(0xFFFFFFFF);
 
@@ -38,7 +38,7 @@ class _StatusEleviPageState extends State<StatusEleviPage> {
         child: Column(
           children: [
             _TopHeader(
-              title: 'Clasa Mea',
+              title: 'My Class',
               onBack: () => Navigator.of(context).maybePop(),
             ),
             Expanded(

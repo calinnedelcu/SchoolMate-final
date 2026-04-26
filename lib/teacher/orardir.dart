@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/session.dart';
 import 'account_bottom_sheet.dart';
 
-const _kOrarHeaderGreen = Color(0xFF1F8BE7);
+const _kOrarHeaderGreen = Color(0xFF2848B0);
 const _kOrarPageBg = Color(0xFFEFF5FA);
 
 // ─── Roman numeral helpers ────────────────────────────────────────────────────
