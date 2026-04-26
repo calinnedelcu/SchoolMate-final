@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:school_mate/student/widgets/school_decor.dart';
 
 const _primary = Color(0xFF2848B0);
@@ -84,7 +85,7 @@ class GateScanResultPage extends StatelessWidget {
                     const SizedBox(height: 14),
                     _LeaveRequestCard(hasActiveLeave: args.hasActiveLeave),
                     const SizedBox(height: 14),
-                    _ScheduleCard(),
+                    _ScheduleCard(classId: args.classId),
                   ],
                 ),
               ),
@@ -338,39 +339,106 @@ class _LeaveRequestCard extends StatelessWidget {
 // SCHEDULE CARD (placeholder mock — wired to real schedule when available)
 // ─────────────────────────────────────────────────────────────────────────────
 class _ScheduleCard extends StatelessWidget {
+  final String? classId;
+  const _ScheduleCard({this.classId});
+
   @override
   Widget build(BuildContext context) {
     return _ThemedCard(
       variant: 4,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.schedule_rounded, color: _labelColor, size: 16),
-              SizedBox(width: 6),
-              Text(
-                "TODAY'S SCHEDULE",
-                style: TextStyle(
-                  color: _labelColor,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.2,
-                ),
+      child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        future: (classId != null && classId!.isNotEmpty)
+            ? FirebaseFirestore.instance.collection('timetables').doc(classId).get()
+            : Future.value(null),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: CircularProgressIndicator(strokeWidth: 2, color: _primary),
               ),
+            );
+          }
+          if (snapshot.hasError) {
+            return const Text('Error loading schedule', style: TextStyle(color: _statusRed));
+          }
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Text('No schedule available', style: TextStyle(color: _labelColor));
+          }
+
+          final data = snapshot.data!.data();
+          if (data == null) return const SizedBox.shrink();
+
+          final String startStr = data['startTime'] ?? '08:00';
+          final List slots = data['slots'] ?? [];
+          final now = DateTime.now();
+          final parts = startStr.split(':');
+          DateTime current = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+          );
+
+          final List<Widget> scheduleWidgets = [];
+          int lessonCount = 0;
+
+          for (int i = 0; i < slots.length; i++) {
+            final slot = slots[i] as Map<String, dynamic>;
+            final type = (slot['type'] ?? '').toString();
+            final duration = (slot['duration'] ?? 0) as int;
+
+            if (type == 'lesson') {
+              lessonCount++;
+              final lessonEnd = current.add(Duration(minutes: duration));
+              
+              final startFmt = '${current.hour.toString().padLeft(2, '0')}:${current.minute.toString().padLeft(2, '0')}';
+              final endFmt = '${lessonEnd.hour.toString().padLeft(2, '0')}:${lessonEnd.minute.toString().padLeft(2, '0')}';
+
+              final bool isNow = now.isAfter(current) && now.isBefore(lessonEnd);
+              final bool isCompleted = now.isAfter(lessonEnd);
+              final bool isFuture = now.isBefore(current);
+
+              scheduleWidgets.add(
+                _ScheduleItem(
+                  time: '$startFmt - $endFmt',
+                  subject: 'Lesson $lessonCount',
+                  isNow: isNow,
+                  isCompleted: isCompleted,
+                  isFuture: isFuture,
+                ),
+              );
+            }
+            current = current.add(Duration(minutes: duration));
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.schedule_rounded, color: _labelColor, size: 16),
+                  SizedBox(width: 6),
+                  Text(
+                    "TODAY'S SCHEDULE",
+                    style: TextStyle(
+                      color: _labelColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              for (int i = 0; i < scheduleWidgets.length; i++) ...[
+                scheduleWidgets[i],
+                if (i < scheduleWidgets.length - 1) _DottedDivider(),
+              ],
             ],
-          ),
-          const SizedBox(height: 8),
-          _ScheduleItem(time: '08:00', subject: 'Mathematics', isCompleted: true),
-          _DottedDivider(),
-          _ScheduleItem(time: '09:00', subject: 'Physics', isCompleted: true),
-          _DottedDivider(),
-          _ScheduleItem(time: '10:00', subject: 'History', isCompleted: true),
-          _DottedDivider(),
-          _ScheduleItem(time: '11:00', subject: 'Chemistry', isNow: true),
-          _DottedDivider(),
-          _ScheduleItem(time: '12:00', subject: '—', isFuture: true),
-        ],
+          );
+        },
       ),
     );
   }
@@ -397,13 +465,13 @@ class _ScheduleItem extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 56,
+            width: 100,
             child: Text(
               time,
               style: const TextStyle(
                 color: _primary,
                 fontWeight: FontWeight.w900,
-                fontSize: 13.5,
+                fontSize: 13,
                 fontFeatures: [FontFeature.tabularFigures()],
               ),
             ),
