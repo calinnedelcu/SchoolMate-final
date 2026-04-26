@@ -1,114 +1,119 @@
-# Aplicația Elevului
+# SchoolMate
 
-A Flutter + Firebase application built around the daily life of a high‑school student. The app brings the school's announcements, competitions, camps, volunteering opportunities, weekly schedule and direct messaging into a single mobile experience, with dedicated views for teachers, form masters, parents and the secretariat.
-
-The project is bilingual (Romanian / English) and ships with accessibility settings (font scaling, high contrast, reduced motion).
-
----
-
-## What the app is for
-
-The goal is to give a student one place where they can:
-
-- read everything the school sends out (general announcements, competitions, summer camps, volunteering calls, tutoring offers);
-- check the weekly timetable and any changes the form master publishes;
-- send and receive direct requests (absences, leave permissions, document requests);
-- keep a personal profile with a school QR identifier used for in‑school identification.
-
-Teachers and the secretariat have their own surfaces for publishing posts, managing classes and replying to requests.
+**Hardcore Entrepreneur 6.0 — categoria {{CATEGORIE: gimnaziu / liceu}}**
+**Tema concursului:** *„Incluziune pentru toți. Viitor durabil pentru fiecare."*
+**Echipa:** {{NUME_ECHIPA}}
+**Membri:** {{NUME_MEMBRI}}
+**Mentor:** {{MENTOR_SAU_„fără mentor"}}
 
 ---
 
-## Main features
+## Ce este SchoolMate
 
-### For students
+SchoolMate este o aplicație mobilă (Flutter + Firebase) care unifică toate fluxurile de comunicare ale unei școli — anunțuri, concursuri, tabere, voluntariat, meditații, cereri, orar, identificare la poartă — într-o singură experiență accesibilă, gratuită pentru elev și părinte, bilingvă (RO / EN).
 
-- **Inbox** with category filters: *Requests*, *Announcements*, *Competitions*, *Camps*, *Volunteering*, *Tutoring*. Posts can be school‑wide or targeted to specific classes.
-- **Weekly schedule** rendered as a grid, with current period highlighted.
-- **Requests** module — absence justifications, permission slips, document requests sent to the form master / secretariat.
-- **Profile** screen with personal info and a personal QR identifier.
-- **Notifications** for new posts and replies (Firebase Cloud Messaging + local notifications).
+Aplicația are roluri distincte pentru **elev**, **profesor**, **diriginte**, **secretariat**, **părinte** și **portar**, fiecare cu surface-ul propriu.
 
-### For form masters and teachers
+## Cum respectă tema concursului
 
-- Dashboard with class overview, pending requests and quick access to the schedule editor.
-- **Post composer** locked to the teacher's own class — publish announcements, camps, tutoring offers or volunteering calls.
-- Manage volunteering opportunities and student sign‑ups.
-- View and reply to student requests.
+Aplicația țintește direct pilonul *„Incluziune pentru toți. Viitor durabil pentru fiecare."* prin:
 
-### For the secretariat / administrators
+- **Incluziune digitală** — elevii din zone defavorizate primesc același acces la informații despre olimpiade, burse, tabere și voluntariat ca elevii din școli de top, prin canalul oficial al școlii.
+- **Incluziune lingvistică** — interfața bilingvă RO/EN deschide app-ul pentru părinții non-vorbitori de română (refugiați, comunități rome, expați).
+- **Accesibilitate** — setări built-in pentru scalare font, contrast ridicat și reducerea animațiilor, pentru elevi cu deficiențe de vedere, dislexie sau sensibilități motorii.
+- **Reziliență în criză** — un canal unic, oficial, fără dependență de WhatsApp/grupuri neoficiale, util în pandemii, valuri de refugiați, evenimente meteo extreme.
+- **Sustenabilitate ecologică** — eliminarea complet a fluturașilor și formularelor pe hârtie (~12 kg hârtie/elev/an).
+- **Sustenabilitate economică** — model freemium B2B2C: gratuit pentru elev și părinte, subvenționabil prin ONG-uri pentru școlile rurale (vezi `livrabile/business-plan.md`).
 
-- **Unified post composer** with four post types (school announcement, competition, camp, volunteering), configurable audience (whole school or a multi‑class selection), with mandatory external link instead of file uploads.
-- User management: create / disable / delete student, teacher, parent and admin accounts.
-- Class and schedule management, vacation calendar, global broadcast messages.
+## Livrabile pentru juriu
 
-### For parents
+Toate materialele cerute de regulament sunt în [livrabile/](livrabile/):
 
-- Linked view of their children: inbox, requests and basic profile information.
+- [livrabile/business-plan.md](livrabile/business-plan.md) — plan de afaceri (cu obiective SMART, grup-țintă, sustenabilitate, monetizare).
+- `livrabile/app-release.apk` — APK Android release (generat cu `flutter build apk --release`).
+- **Pitch video (max 3 min, în engleză):** {{LINK_YOUTUBE_PITCH}}
+- **Demo video (max 3 min):** {{LINK_YOUTUBE_DEMO}}
 
----
+## Funcționalități principale
 
-## Technology stack
+### Elev
+- Inbox cu filtre pe categorii: cereri, anunțuri, concursuri, tabere, voluntariat, meditații.
+- Orar săptămânal cu evidențierea orei curente.
+- Cereri digitale: motivare absențe, învoire, adeverință.
+- QR personal de identificare la poarta școlii.
+- Notificări push (Firebase Cloud Messaging) + notificări locale.
+- Profil cu setări de accesibilitate.
 
-- **Flutter** (Dart SDK ^3.11) — Material 3 UI, custom themed components.
+### Profesor / Diriginte
+- Dashboard cu clasa proprie, cereri în așteptare, acces rapid la orar.
+- Compunere postări (anunțuri, tabere, meditații, voluntariat) cu audiență configurabilă.
+- Gestionare voluntariat și înscrieri elevi.
+- Răspuns la cereri elev/părinte.
+
+### Secretariat / Admin
+- Compunere unificată pentru anunțuri școlare, concursuri, tabere, voluntariat — audiență „toată școala" sau listă de clase.
+- Management conturi: elevi, profesori, părinți, admini.
+- Management clase, orar, calendar de vacanțe, mesaje globale.
+
+### Părinte
+- Vizualizare unificată pentru toți copiii: inbox, cereri, profil.
+
+### Portar
+- Modul scanare QR la intrarea în școală.
+
+## Stack tehnic
+
+- **Flutter** (Dart SDK ^3.11) — UI Material 3, componente custom temate.
 - **Firebase**:
-  - Authentication (custom username/password flow + 2FA verify screen)
-  - Cloud Firestore (posts, requests, schedules, users)
-  - Cloud Functions (server‑side validation and admin operations)
-  - Cloud Messaging + local notifications
-  - Firebase Storage (profile pictures)
-- **Localization** via `flutter_localizations` and ARB files (`lib/l10n`).
-- **Other packages**: `qr_flutter`, `mobile_scanner`, `google_fonts`, `excel`, `file_saver`, `share_plus`, `image_picker`, `audioplayers`, `shared_preferences`.
+  - Authentication (flux custom username/parolă + ecran 2FA)
+  - Cloud Firestore (postări, cereri, orar, utilizatori)
+  - Cloud Functions (validare server-side + operațiuni admin)
+  - Cloud Messaging + notificări locale
+  - Storage (poze de profil)
+- **Pachete:** `qr_flutter`, `mobile_scanner`, `google_fonts`, `excel`, `file_saver`, `share_plus`, `image_picker`, `audioplayers`, `shared_preferences`.
 
----
-
-## Project structure
+## Structura proiectului
 
 ```
 lib/
 ├── main.dart
-├── firebase_options.dart
-│
+├── core/                    # firebase_options, session, modele partajate
 ├── Auth/                    # login, onboarding, 2FA
-├── student/                 # student inbox, schedule, requests, profile
-│   └── widgets/             # bottom sheets and visual decor
-├── teacher/                 # teacher dashboard, requests, volunteering, schedules
-├── parent/                  # parent home, inbox, requests, linked students
-├── admin/                   # secretariat: composer, users, classes, schedules
-│   └── services/
-├── common/                  # accessibility, language picker, shared messages page
-├── core/                    # shared models, theming, utilities
-├── services/                # Firebase wrappers and notification glue
-├── gate/                    # personal QR identifier helpers
-├── l10n/                    # ARB files (RO + EN)
-└── utils/
+├── student/                 # inbox, orar, cereri, profil, QR personal
+│   └── widgets/
+├── teacher/                 # dashboard, cereri, mesaje diriginte, status elevi
+│   └── widgets/
+├── parent/                  # home părinte, inbox, cereri, copii
+├── admin/                   # secretariat: composer, useri, clase, orar
+│   ├── services/
+│   └── widgets/
+├── gate/                    # modul portar (scanner QR)
+├── common/                  # mesaje partajate, accesibilitate
+├── services/                # wrappers Firebase, glue notificări
+└── utils/                   # CSV download (mobile + web)
 ```
 
-Firestore rules (`firestore.rules`), indexes (`firestore.indexes.json`) and Cloud Functions (`functions/`) live at the repo root.
+Regulile Firestore: [firestore.rules](firestore.rules). Indexurile: [firestore.indexes.json](firestore.indexes.json). Cloud Functions: [functions/](functions/).
 
----
+## Modelul de postări
 
-## Posts model (high level)
+Postările au un compositor unic dar sunt salvate în două colecții:
 
-Posts share a single composer but land in two collections so the inbox keeps backward compatibility with earlier modules:
+- `secretariatMessages` — anunțuri, concursuri, tabere. Audiența este descrisă prin `audienceClassIds` (`['__ALL__']` pentru toată școala sau listă explicită de class IDs) și un `audienceLabel` lizibil.
+- `volunteerOpportunities` — voluntariat, ținut separat pentru că gestionează înscrieri și ore de muncă.
 
-- `secretariatMessages` — announcements, competitions, camps. Audience is described by `audienceClassIds` (`['__ALL__']` for school‑wide or an explicit list of class IDs) and a human‑readable `audienceLabel`.
-- `volunteerOpportunities` — volunteering posts, kept as a separate collection because they manage participant sign‑ups and tracked hours.
+Fiecare postare are: `category`, `senderRole`, `eventDate`, `eventEndDate` (opțional, pentru tabere), `link`, `location`, `status` (`active` / `archived`).
 
-Each post carries `category`, `senderRole`, `eventDate`, optional `eventEndDate` (for camps), `link`, `location` and a `status` of `active` or `archived`.
+## Rulare locală
 
----
-
-## Running the project
-
-Prerequisites: Flutter SDK, a configured Firebase project, and `flutterfire` CLI for `firebase_options.dart`.
+**Cerințe:** Flutter SDK ≥ 3.11, un proiect Firebase configurat, CLI `flutterfire` pentru `firebase_options.dart`.
 
 ```bash
 flutter pub get
 flutter run
 ```
 
-For Cloud Functions:
+Pentru Cloud Functions:
 
 ```bash
 cd functions
@@ -117,18 +122,13 @@ npm run build
 firebase deploy --only functions
 ```
 
----
+## Instalarea APK-ului din `livrabile/`
 
-## Roadmap
+1. Pe un telefon Android (≥ 8.0), descarcă `livrabile/app-release.apk`.
+2. Activează „Instalare din surse necunoscute" în Setări → Securitate.
+3. Instalează APK-ul și deschide aplicația.
+4. Folosește unul din conturile demo (descrise în [livrabile/README.md](livrabile/README.md)).
 
-Planned next steps (see project notes for detail):
+## Contact
 
-- **Tutoring (Meditații) overhaul** — dedicated tab with teacher‑driven offers and student requests.
-- Richer notifications and post pinning.
-- Attendance and grades integration.
-
----
-
-## Purpose
-
-The project is built as a personal study project exploring full‑stack mobile development — Flutter on the client, Firebase on the backend, and a multi‑role data model that mirrors how a real school operates.
+Echipa {{NUME_ECHIPA}} — {{EMAIL_CONTACT_ECHIPA}}
