@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GateScanResultPageArguments {
   final bool isAllowed;
@@ -246,21 +247,90 @@ class GateScanResultPage extends StatelessWidget {
                     const SizedBox(height: 12), // 12px gap between cards
 
                     _buildCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("TODAY'S SCHEDULE", style: TextStyle(color: labelGray, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-                          const SizedBox(height: 4),
-                          _buildScheduleItem("08:00", "Mathematics", isCompleted: true),
-                          _buildDottedDivider(),
-                          _buildScheduleItem("09:00", "Physics", isCompleted: true),
-                          _buildDottedDivider(),
-                          _buildScheduleItem("10:00", "History", isCompleted: true),
-                          _buildDottedDivider(),
-                          _buildScheduleItem("11:00", "Chemistry", isNow: true),
-                          _buildDottedDivider(),
-                          _buildScheduleItem("12:00", "—", isFuture: true),
-                        ],
+                      child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                        future: args.classId != null && args.classId!.isNotEmpty
+                            ? FirebaseFirestore.instance.collection('timetables').doc(args.classId).get()
+                            : Future.value(null),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          if (snapshot.hasError) {
+                            return Text('Error loading schedule: ${snapshot.error}');
+                          }
+                          if (!snapshot.hasData || !snapshot.data!.exists) {
+                            return const Text('No schedule available for this class.');
+                          }
+            
+                          final timetableData = snapshot.data!.data();
+                          if (timetableData == null) {
+                            return const Text('No schedule available for this class.');
+                          }
+            
+                          final String initialStartTimeStr = timetableData['startTime'] ?? '08:00';
+                          final List<dynamic> slotsRaw = timetableData['slots'] ?? [];
+            
+                          final now = DateTime.now();
+                          DateTime currentSlotTime = DateTime(
+                            now.year,
+                            now.month,
+                            now.day,
+                            int.parse(initialStartTimeStr.split(':')[0]),
+                            int.parse(initialStartTimeStr.split(':')[1]),
+                          );
+            
+                          final List<Widget> scheduleWidgets = [];
+                          int lessonCount = 0;
+            
+                          for (var i = 0; i < slotsRaw.length; i++) {
+                            final slot = slotsRaw[i] as Map<String, dynamic>;
+                            final int duration = slot['duration'] ?? 0;
+                            final String type = slot['type'] ?? 'unknown';
+            
+                            if (type == 'lesson') {
+                              lessonCount++;
+                              final lessonStartTime = currentSlotTime;
+                              final lessonEndTime = currentSlotTime.add(Duration(minutes: duration));
+            
+                              final String formattedStartTime =
+                                  '${lessonStartTime.hour.toString().padLeft(2, '0')}:${lessonStartTime.minute.toString().padLeft(2, '0')}';
+                              final String formattedEndTime =
+                                  '${lessonEndTime.hour.toString().padLeft(2, '0')}:${lessonEndTime.minute.toString().padLeft(2, '0')}';
+            
+                              final bool isNowSlot = now.isAfter(lessonStartTime) && now.isBefore(lessonEndTime);
+                              final bool isCompletedSlot = now.isAfter(lessonEndTime);
+                              final bool isFutureSlot = now.isBefore(lessonStartTime);
+            
+                              scheduleWidgets.add(
+                                _buildScheduleItem(
+                                  '$formattedStartTime - $formattedEndTime',
+                                  'Lesson $lessonCount',
+                                  isCompleted: isCompletedSlot,
+                                  isNow: isNowSlot,
+                                  isFuture: isFutureSlot,
+                                ),
+                              );
+            
+                              if (i < slotsRaw.length - 1) {
+                                scheduleWidgets.add(_buildDottedDivider());
+                              }
+                            }
+                            currentSlotTime = currentSlotTime.add(Duration(minutes: duration));
+                          }
+            
+                          if (scheduleWidgets.isEmpty) {
+                            return const Text('No lessons scheduled for today.');
+                          }
+            
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("TODAY'S SCHEDULE", style: TextStyle(color: labelGray, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                              const SizedBox(height: 4),
+                              ...scheduleWidgets,
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -359,10 +429,10 @@ class GateScanResultPage extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 60,
+            width: 100,
             child: Text(
               time,
-              style: const TextStyle(color: primaryBlue, fontWeight: FontWeight.bold, fontSize: 14),
+              style: const TextStyle(color: primaryBlue, fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
           Expanded(
