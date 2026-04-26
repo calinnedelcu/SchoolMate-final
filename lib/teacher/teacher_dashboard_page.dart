@@ -9,6 +9,7 @@ import 'cereriasteptare.dart';
 import 'statuselevi.dart';
 import 'mesajedir.dart';
 import '../admin/admin_post_composer_page.dart';
+import 'widgets/schedule_bottom_sheet_teacher.dart';
 
 class _DampedScrollPhysics extends ScrollPhysics {
   const _DampedScrollPhysics({super.parent});
@@ -409,19 +410,6 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _headerCircle(double size, double opacity) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(opacity),
-          shape: BoxShape.circle,
         ),
       ),
     );
