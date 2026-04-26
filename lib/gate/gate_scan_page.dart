@@ -6,6 +6,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'gate_scan_result_page.dart';
 
 class GateScanPage extends StatefulWidget {
   const GateScanPage({super.key});
@@ -17,8 +18,6 @@ class GateScanPage extends StatefulWidget {
 class _GateScanPageState extends State<GateScanPage> {
   static const String _scanSoundAsset = 'sounds/gate_scan.mp3';
 
-  String _status = "Scanează un QR...";
-  bool _isAllowed = false;
   bool _lock = false;
   final AudioPlayer _scanPlayer = AudioPlayer();
 
@@ -37,10 +36,6 @@ class _GateScanPageState extends State<GateScanPage> {
     }
   }
 
-  Future<void> _logout() async {
-    await FirebaseAuth.instance.signOut();
-  }
-
   Future<Map<String, dynamic>> _redeemToken(String tokenId) async {
     final callable = FirebaseFunctions.instance.httpsCallable('redeemQrToken');
 
@@ -54,9 +49,7 @@ class _GateScanPageState extends State<GateScanPage> {
   // Logging is now handled in the backend (Cloud Function)
 
   Future<void> _handleToken(String tokenId) async {
-    setState(() {
-      _status = "Verificare...";
-    });
+    // Navigation logic handles UI updates now
 
     try {
       final res = await _redeemToken(tokenId);
@@ -67,51 +60,39 @@ class _GateScanPageState extends State<GateScanPage> {
       final classId = (res["classId"] ?? "").toString();
       final reason = (res["reason"] ?? "").toString();
       final scanType = (res["type"] ?? (ok ? "entry" : "deny")).toString();
-
-      // Logging is now handled in the backend (Cloud Function)
-
-      String statusMessage;
+      final hasActiveLeave = (res["hasActiveLeave"] ?? false) as bool;
+      
       if (ok) {
         await _playScanSound();
-        if (scanType == "exit") {
-          statusMessage = "✅ EXIT\n$fullName\n$classId\n(userId=$userId)";
-        } else {
-          statusMessage = "✅ ALLOW\n$fullName\n$classId\n(userId=$userId)";
-        }
-      } else if (reason == "ALREADY_IN_SCHOOL") {
-        statusMessage =
-            "❌ DENY (already in school)\nClasele nu s-au terminat încă";
-      } else if (reason == "OUTSIDE_CLASS_DAY") {
-        statusMessage =
-            "❌ DENY (outside class day)\nNu se pot ieși în afara zilei de școală";
-      } else if (reason == "NO_SCHEDULE") {
-        statusMessage =
-            "❌ DENY (no schedule)\nOrarul nu este setat pentru clasa acestui elev";
-      } else {
-        statusMessage =
-            "❌ DENY ($reason)\n$fullName\n$classId\n(userId=$userId)";
       }
 
-      setState(() {
-        _isAllowed = ok;
-        _status = statusMessage;
-      });
+      if (!mounted) return;
+      await Navigator.of(context).pushNamed(
+        '/gateScanResult',
+        arguments: GateScanResultPageArguments(
+          isAllowed: ok,
+          userId: userId,
+          fullName: fullName,
+          classId: classId,
+          reason: reason,
+          scanType: scanType,
+          hasActiveLeave: hasActiveLeave,
+        ),
+      );
     } catch (e) {
-      setState(() {
-        _isAllowed = false;
-        _status = "❌ Eroare validare: $e";
-      });
+      if (!mounted) return;
+      await Navigator.of(context).pushNamed(
+        '/gateScanResult',
+        arguments: GateScanResultPageArguments(
+          isAllowed: false,
+          errorMessage: "Eroare validare: $e",
+        ),
+      );
     }
 
-    _lock = true;
-
-    await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
-
     setState(() {
       _lock = false;
-      _status = "Scanează un QR...";
-      _isAllowed = false;
     });
   }
 
@@ -119,12 +100,7 @@ class _GateScanPageState extends State<GateScanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Deconecteaza-te',
-          icon: const Icon(Icons.logout),
-          onPressed: _logout,
-        ),
-        title: const Text("Poartă - Scan (Firebase)"),
+        title: const Text("Gate - QR Scanner"),
       ),
       body: Column(
         children: [
@@ -147,16 +123,6 @@ class _GateScanPageState extends State<GateScanPage> {
 
                 _handleToken(raw);
               },
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            color: _isAllowed ? Colors.blue : Colors.red,
-            child: Text(
-              _status,
-              style: const TextStyle(color: Colors.white, fontSize: 18),
-              textAlign: TextAlign.center,
             ),
           ),
         ],

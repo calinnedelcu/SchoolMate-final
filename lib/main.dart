@@ -6,6 +6,8 @@ import 'package:school_mate/student/mainnavigation.dart';
 import 'package:school_mate/admin/secretariat_raw_page.dart'
     show SecretariatRawPage;
 import 'package:school_mate/gate/gate_scan_page.dart';
+import 'package:school_mate/gate/gate_menu_page.dart';
+import 'package:school_mate/gate/gate_scan_result_page.dart';
 import 'package:school_mate/teacher/teacher_dashboard_page.dart';
 import 'package:school_mate/parent/parent_shell.dart';
 import 'package:school_mate/services/security_flags_service.dart';
@@ -226,6 +228,10 @@ class _MyAppState extends State<MyApp> {
               seedColor: const Color(0xFF84B0D2),
             ),
           ),
+          routes: {
+            '/gateScan': (context) => const GateScanPage(),
+            '/gateScanResult': (context) => const GateScanResultPage(),
+          },
           home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
@@ -395,7 +401,7 @@ class _MyAppState extends State<MyApp> {
                           if (role == 'student') {
                             return const AppShell();
                           } else if (role == 'gate') {
-                            return const GateScanPage();
+                            return const GateMenuPage();
                           } else if (role == 'admin') {
                             return const SecretariatRawPage();
                           } else if (role == 'teacher') {

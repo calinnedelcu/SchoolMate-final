@@ -65,7 +65,7 @@ class GateScanResultPage extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           spreadRadius: 1,
                         )
@@ -94,7 +94,7 @@ class GateScanResultPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
+                          color: Colors.black.withValues(alpha: 0.03),
                           blurRadius: 4,
                         )
                       ],
@@ -151,7 +151,7 @@ class GateScanResultPage extends StatelessWidget {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: primaryBlue.withOpacity(0.3),
+                                  color: primaryBlue.withValues(alpha: 0.3),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 )
@@ -337,7 +337,7 @@ class GateScanResultPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08), // Increased opacity for more visibility
+            color: Colors.black.withValues(alpha: 0.08), // Increased opacity for more visibility
             blurRadius: 25, // Increased blur for a softer, wider shadow
             offset: const Offset(0, 8), // Increased vertical offset for more perceived lift
           ),
