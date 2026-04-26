@@ -10,7 +10,7 @@
 
 ## Ce este SchoolMate
 
-SchoolMate este o aplicație mobilă (Flutter + Firebase) care unifică toate fluxurile de comunicare ale unei școli — anunțuri, concursuri, tabere, voluntariat, meditații, cereri, orar, identificare la poartă — într-o singură experiență accesibilă, gratuită pentru elev și părinte, bilingvă (RO / EN).
+SchoolMate este o aplicație mobilă (Flutter + Firebase) care unifică toate fluxurile de comunicare ale unei școli — anunțuri, concursuri, tabere, voluntariat, meditații, cereri, orar, identificare la poartă — într-o singură experiență accesibilă, gratuită pentru elev și părinte. Interfața principală este în engleză, cu arhitectură pregătită pentru a fi extinsă multilingv (vezi roadmap).
 
 Aplicația are roluri distincte pentru **elev**, **profesor**, **diriginte**, **secretariat**, **părinte** și **portar**, fiecare cu surface-ul propriu.
 
@@ -19,8 +19,8 @@ Aplicația are roluri distincte pentru **elev**, **profesor**, **diriginte**, **
 Aplicația țintește direct pilonul *„Incluziune pentru toți. Viitor durabil pentru fiecare."* prin:
 
 - **Incluziune digitală** — elevii din zone defavorizate primesc același acces la informații despre olimpiade, burse, tabere și voluntariat ca elevii din școli de top, prin canalul oficial al școlii.
-- **Incluziune lingvistică** — interfața bilingvă RO/EN deschide app-ul pentru părinții non-vorbitori de română (refugiați, comunități rome, expați).
-- **Accesibilitate** — setări built-in pentru scalare font, contrast ridicat și reducerea animațiilor, pentru elevi cu deficiențe de vedere, dislexie sau sensibilități motorii.
+- **Incluziune lingvistică (planificat)** — interfața principală este în engleză și deschide app-ul către părinți non-vorbitori de română (expați, refugiați); pe roadmap este suport multi-limbă (RO + UA) prin ARB files, pentru a acoperi complet comunitățile vulnerabile.
+- **Accesibilitate (planificat)** — pe roadmap intră setări dedicate pentru scalare font, contrast ridicat și reducerea animațiilor, pentru elevi cu deficiențe de vedere, dislexie sau sensibilități motorii.
 - **Reziliență în criză** — un canal unic, oficial, fără dependență de WhatsApp/grupuri neoficiale, util în pandemii, valuri de refugiați, evenimente meteo extreme.
 - **Sustenabilitate ecologică** — eliminarea complet a fluturașilor și formularelor pe hârtie (~12 kg hârtie/elev/an).
 - **Sustenabilitate economică** — model freemium B2B2C: gratuit pentru elev și părinte, subvenționabil prin ONG-uri pentru școlile rurale (vezi `livrabile/business-plan.md`).
@@ -42,7 +42,7 @@ Toate materialele cerute de regulament sunt în [livrabile/](livrabile/):
 - Cereri digitale: motivare absențe, învoire, adeverință.
 - QR personal de identificare la poarta școlii.
 - Notificări push (Firebase Cloud Messaging) + notificări locale.
-- Profil cu setări de accesibilitate.
+- Profil personal cu poză și informații de contact.
 
 ### Profesor / Diriginte
 - Dashboard cu clasa proprie, cereri în așteptare, acces rapid la orar.
@@ -88,7 +88,7 @@ lib/
 │   ├── services/
 │   └── widgets/
 ├── gate/                    # modul portar (scanner QR)
-├── common/                  # mesaje partajate, accesibilitate
+├── common/                  # pagini și componente partajate între roluri
 ├── services/                # wrappers Firebase, glue notificări
 └── utils/                   # CSV download (mobile + web)
 ```

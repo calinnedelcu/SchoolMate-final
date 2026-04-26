@@ -20,9 +20,9 @@ Două video-uri obligatorii, fiecare **maxim 3 minute**, conform regulamentului.
 - During crises (pandemic, war refugees), no single official channel exists.
 
 **0:50 – 1:30 — Solution: SchoolMate**
-> *"SchoolMate is one app for the entire school: announcements, schedule, requests, volunteering, school-gate ID — all in one place, free for students and parents, bilingual, accessibility-first."*
+> *"SchoolMate is one app for the entire school: announcements, schedule, requests, volunteering, school-gate ID — all in one place, free for students and parents, accessibility-first, ready to be localized for the communities that need it most."*
 - Mention 6 roles (student / teacher / form master / secretariat / parent / gate keeper).
-- Mention key inclusion features: bilingual UI, font scaling, high contrast, reduced motion.
+- Mention key inclusion drivers (today + roadmap): English UI to lower the language barrier for non-Romanian-speaking parents, segmented audiences so no class is left out, official school channel that doesn't depend on private WhatsApp groups, planned multi-language and accessibility settings.
 
 **1:30 – 2:00 — Target & traction**
 - Target: 2.5M students + 280k teachers in Romania.
@@ -61,7 +61,7 @@ Două video-uri obligatorii, fiecare **maxim 3 minute**, conform regulamentului.
 - Click pe o postare — detaliu.
 - Orar săptămânal, ora curentă evidențiată.
 - Cerere nouă (motivare absență).
-- QR personal + buton settings → font scale + contrast.
+- QR personal pentru identificare la poartă.
 
 **0:45 – 1:15 — Rol diriginte / profesor**
 - Login profesor.
