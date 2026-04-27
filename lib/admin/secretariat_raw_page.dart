@@ -43,7 +43,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
 
   String role = "student";
 
-  // orar
+  // schedule
   String selectedScheduleClassId = "";
   TimeOfDay noExitStart = const TimeOfDay(hour: 7, minute: 30);
   TimeOfDay noExitEnd = const TimeOfDay(hour: 12, minute: 30);
@@ -90,7 +90,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
   }
 
   void _logFailure(String message) {
-    _log("EROARE: $message");
+    _log("ERROR: $message");
   }
 
   void _showInfoMessage(String message) {
@@ -715,7 +715,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                                         'Secretariat',
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 17,
+                                          fontSize: 24,
                                           fontWeight: FontWeight.w900,
                                           letterSpacing: -0.3,
                                         ),
@@ -749,8 +749,8 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                                     ),
                                     _buildSidebarItem(
                                       icon: Icons.badge_rounded,
-                                      label: "Homeroom Teachers",
-                                      onTap: () => _goTo('Homeroom Teachers'),
+                                      label: "Teachers",
+                                      onTap: () => _goTo('Teachers'),
                                     ),
                                     _buildSidebarItem(
                                       icon: Icons.family_restroom_rounded,
@@ -764,8 +764,8 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                                     ),
                                     _buildSidebarItem(
                                       icon: Icons.door_front_door_rounded,
-                                      label: "Turnstiles",
-                                      onTap: () => _goTo('Turnstiles'),
+                                      label: "Guardians",
+                                      onTap: () => _goTo('Guardians'),
                                     ),
                                     _buildSidebarItem(
                                       icon: Icons.dynamic_feed_rounded,
@@ -882,7 +882,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                           Row(
                             children: [
                               const Text(
-                                'Liceul Mihai Viteazul · 2025/26',
+                                'Tudor Vianu · 2025/26',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
@@ -999,7 +999,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // ── STATISTICI ──────────────────────────
+                                // ── STATISTICS ──────────────────────────
                                 if (activeSidebarLabel == 'Menu') ...[
                                   const SizedBox(height: 12),
                                   _buildStatsRow(),
@@ -1181,7 +1181,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                           child: Text('Parent'),
                         ),
                         DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                        DropdownMenuItem(value: 'gate', child: Text('Gate')),
+                        DropdownMenuItem(value: 'gate', child: Text('Guardian')),
                       ],
                       onChanged: (v) => localSetState(() {
                         role = v ?? 'student';
@@ -1462,9 +1462,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
         );
       case 'Parents':
         return AdminParentsPage(searchQuery: _globalSearchQuery);
-      case 'Homeroom Teachers':
+      case 'Teachers':
         return AdminTeachersPage(searchQuery: _globalSearchQuery);
-      case 'Turnstiles':
+      case 'Guardians':
         return AdminTurnstilesPage(
           embedded: true,
           searchQuery: _globalSearchQuery,
@@ -2533,7 +2533,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Text(
-                      'Eroare la încărcare: ${snap.error}',
+                      'Error loading: ${snap.error}',
                       style: const TextStyle(color: Colors.red, fontSize: 12),
                     ),
                   )

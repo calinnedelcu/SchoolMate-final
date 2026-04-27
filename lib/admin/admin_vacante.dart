@@ -260,7 +260,7 @@ class _Sidebar extends StatelessWidget {
             onTap: onClaseTap,
           ),
           _SidebarTile(
-            label: 'Turnstiles',
+            label: 'Guardians',
             icon: Icons.door_front_door_rounded,
             onTap: onTurnichetiTap,
           ),
@@ -324,7 +324,7 @@ class _Sidebar extends StatelessWidget {
                         ),
                       ),
                       const Text(
-                        'Liceul Central',
+                        'Central High School',
                         style: TextStyle(
                           color: Color(0xFFE8EAF2),
                           fontSize: 11,
@@ -1790,7 +1790,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
     final data = doc.data() as Map<String, dynamic>;
     final startDate = (data['startDate'] as Timestamp).toDate();
     final endDate = (data['endDate'] as Timestamp).toDate();
-    final name = data['name'] ?? 'Vacanță';
+    final name = data['name'] ?? 'Vacation';
 
     final now = DateTime.now();
     final isFinished = endDate.isBefore(DateTime(now.year, now.month, now.day));
@@ -1907,7 +1907,7 @@ class _VacanciesContentState extends State<_VacanciesContent> {
                 }
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Vacanta stearsa cu succes')),
+                  const SnackBar(content: Text('Vacation deleted successfully')),
                 );
               },
               icon: const Icon(

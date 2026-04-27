@@ -64,8 +64,8 @@ const List<Color> _kPalette = [
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const _kPrimary = Color(0xFF2848B0);
-const _kDayHeaders = ['LUN', 'MAR', 'MIE', 'JOI', 'VIN'];
-const _kDayNames = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri'];
+const _kDayHeaders = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+const _kDayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
 // ─── Blur dialog ─────────────────────────────────────────────────────────────
 
@@ -153,7 +153,7 @@ class _ClassSelectorState extends State<_ClassSelector> {
   @override
   Widget build(BuildContext context) {
     final isOpen = _entry != null;
-    String label = 'Selectează clasa';
+    String label = 'Select class';
     if (widget.selectedId != null) {
       final doc = widget.classes.cast<QueryDocumentSnapshot?>().firstWhere(
         (d) => d?.id == widget.selectedId,
@@ -193,7 +193,7 @@ class _ClassSelectorState extends State<_ClassSelector> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'CLASĂ: ',
+                'CLASS: ',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -290,7 +290,7 @@ class _ClassDropdownOverlayState extends State<_ClassDropdownOverlay> {
                         autofocus: true,
                         style: const TextStyle(fontSize: 13),
                         decoration: InputDecoration(
-                          hintText: 'Caută clasă...',
+                          hintText: 'Search class...',
                           hintStyle: const TextStyle(fontSize: 13),
                           prefixIcon:
                               const Icon(Icons.search, size: 16),
@@ -313,7 +313,7 @@ class _ClassDropdownOverlayState extends State<_ClassDropdownOverlay> {
                           ? const Padding(
                               padding: EdgeInsets.all(16),
                               child: Text(
-                                'Nicio clasă găsită',
+                                'No class found',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: Color(0xFF999999),
@@ -364,7 +364,7 @@ class _ClassDropdownOverlayState extends State<_ClassDropdownOverlay> {
                                                   BorderRadius.circular(5),
                                             ),
                                             child: const Text(
-                                              'orar',
+                                              'timetable',
                                               style: TextStyle(
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.w700,
@@ -551,7 +551,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
   Widget build(BuildContext context) {
     if (!AppSession.isAdmin) {
       return const Scaffold(
-        body: Center(child: Text('Acces interzis.')),
+        body: Center(child: Text('Access denied.')),
       );
     }
 
@@ -568,7 +568,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                 onPressed: () => Navigator.pop(context),
               ),
               title: const Text(
-                'Orare',
+                'Timetables',
                 style: TextStyle(
                   color: Color(0xFF1A2050),
                   fontSize: 20,
@@ -635,9 +635,9 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
             icon: Icons.class_outlined,
             iconBg: const Color(0xFFEEF1FB),
             iconColor: _kPrimary,
-            label: 'CLASE TOTALE',
+            label: 'TOTAL CLASSES',
             value: '$totalClasses',
-            subtitle: 'în sistem',
+            subtitle: 'in system',
           ),
         ),
         const SizedBox(width: 14),
@@ -646,9 +646,9 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
             icon: Icons.calendar_today_outlined,
             iconBg: const Color(0xFFEDF7F0),
             iconColor: const Color(0xFF2E8B57),
-            label: 'CU ORAR',
+            label: 'WITH TIMETABLE',
             value: '$withTimetable',
-            subtitle: 'din $totalClasses clase',
+            subtitle: 'of $totalClasses classes',
           ),
         ),
         const SizedBox(width: 14),
@@ -657,9 +657,9 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
             icon: Icons.auto_stories_outlined,
             iconBg: const Color(0xFFF3EDFB),
             iconColor: const Color(0xFF7B4FCC),
-            label: 'MATERII',
+            label: 'SUBJECTS',
             value: '$totalSubjects',
-            subtitle: 'definite',
+            subtitle: 'defined',
           ),
         ),
         const SizedBox(width: 14),
@@ -668,9 +668,9 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
             icon: Icons.pending_actions_outlined,
             iconBg: const Color(0xFFFFF8E8),
             iconColor: const Color(0xFFF5A623),
-            label: 'FĂRĂ ORAR',
+            label: 'NO TIMETABLE',
             value: '${totalClasses - withTimetable}',
-            subtitle: 'necesită configurare',
+            subtitle: 'requires setup',
           ),
         ),
       ],
@@ -794,7 +794,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Orar Săptămânal',
+                            'Weekly Timetable',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
@@ -803,7 +803,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                           ),
                           SizedBox(height: 2),
                           Text(
-                            'Vizualizează și editează orarul săptămânal al clasei.',
+                            'View and edit the weekly timetable of the class.',
                             style: TextStyle(
                               fontSize: 13,
                               color: Color(0xFF7A7E9A),
@@ -813,10 +813,10 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                         ],
                       ),
                     ),
-                    // Materii button
+                    // Subjects button
                     OutlinedButton.icon(
                       icon: const Icon(Icons.menu_book_outlined, size: 15, color: Color(0xFF2848B0)),
-                      label: const Text('Materii', style: TextStyle(color: Color(0xFF2848B0))),
+                      label: const Text('Subjects', style: TextStyle(color: Color(0xFF2848B0))),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF2848B0),
                         backgroundColor: Colors.transparent,
@@ -927,7 +927,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Selectează o clasă',
+              'Select a class',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -936,7 +936,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Folosește dropdown-ul de mai sus pentru\na vedea sau crea orarul unei clase.',
+              'Use the dropdown above to\nview or create a class timetable.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: Color(0xFF9AA0B0)),
             ),
@@ -965,7 +965,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Clasa $classId nu are orar',
+              'Class $classId has no timetable',
               style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -974,14 +974,14 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Creează un orar pentru a asigna materii și profesori.',
+              'Create a timetable to assign subjects and teachers.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: Color(0xFF9AA0B0)),
             ),
             const SizedBox(height: 22),
             ElevatedButton.icon(
               icon: const Icon(Icons.add),
-              label: const Text('Creează orar'),
+              label: const Text('Create timetable'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kPrimary,
                 foregroundColor: Colors.white,
@@ -1053,7 +1053,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
 
         if (times.isEmpty) {
           return const Center(
-            child: Text('Niciun slot de ore în această structură.'),
+            child: Text('No lesson slots in this structure.'),
           );
         }
 
@@ -1210,7 +1210,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
     final teacherName = teacherMap[teacherU] ?? teacherU;
 
     return Tooltip(
-      message: '$subjectName\nProf. $teacherName',
+      message: '$subjectName\nTeacher $teacherName',
       preferBelow: true,
       decoration: BoxDecoration(
         color: const Color(0xFF1A2050),
@@ -1247,7 +1247,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
               ),
               const SizedBox(height: 3),
               Text(
-                'Prof. ${_shortName(teacherName)}',
+                'Teacher ${_shortName(teacherName)}',
                 style: const TextStyle(
                   fontSize: 11,
                   color: Color(0xFF777777),
@@ -1338,8 +1338,8 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                           Expanded(
                             child: Text(
                               isNew
-                                  ? 'Configurare orar – $classId'
-                                  : 'Editează structură – $classId',
+                                  ? 'Timetable setup – $classId'
+                                  : 'Edit structure – $classId',
                               style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w700,
@@ -1364,7 +1364,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                           Row(
                             children: [
                               const Text(
-                                'Ora de start:',
+                                'Start time:',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -1414,7 +1414,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                             children: [
                               const Expanded(
                                 child: Text(
-                                  'Sloturi',
+                                  'Slots',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -1423,7 +1423,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                               ),
                               TextButton.icon(
                                 icon: const Icon(Icons.add, size: 15),
-                                label: const Text('Oră'),
+                                label: const Text('Hour'),
                                 onPressed: () => setS(() => slots.add(
                                       _SlotDef(
                                           type: 'lesson', duration: 50),
@@ -1434,7 +1434,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                                   Icons.free_breakfast_outlined,
                                   size: 15,
                                 ),
-                                label: const Text('Pauză'),
+                                label: const Text('Break'),
                                 onPressed: () => setS(() => slots.add(
                                       _SlotDef(
                                           type: 'break', duration: 10),
@@ -1494,8 +1494,8 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                                       children: [
                                         Text(
                                           isLesson
-                                              ? 'Ora ${li + 1}'
-                                              : 'Pauza${slot.duration >= 15 ? ' mare' : ''}',
+                                              ? 'Hour ${li + 1}'
+                                              : 'Break${slot.duration >= 15 ? ' long' : ''}',
                                           style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w700,
@@ -1578,7 +1578,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                             TextButton.icon(
                               icon: const Icon(Icons.delete_outline,
                                   size: 16, color: Colors.red),
-                              label: const Text('Șterge orar',
+                              label: const Text('Delete timetable',
                                   style: TextStyle(color: Colors.red)),
                               onPressed: () async {
                                 Navigator.pop(ctx);
@@ -1588,7 +1588,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                           const Spacer(),
                           TextButton(
                             onPressed: () => Navigator.pop(ctx),
-                            child: const Text('Anulează'),
+                            child: const Text('Cancel'),
                           ),
                           const SizedBox(width: 10),
                           ElevatedButton(
@@ -1610,7 +1610,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(const SnackBar(
                                   content: Text(
-                                      'Adaugă cel puțin o oră.'),
+                                      'Add at least one lesson.'),
                                 ));
                                 return;
                               }
@@ -1624,7 +1624,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                               }
                             },
                             child: Text(
-                                isNew ? 'Creează orar' : 'Salvează'),
+                                isNew ? 'Create timetable' : 'Save'),
                           ),
                         ],
                       ),
@@ -1716,7 +1716,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                             icon: const Icon(Icons.clear,
                                 size: 14, color: Colors.red),
                             label: const Text(
-                              'Golește',
+                              'Clear',
                               style: TextStyle(
                                   color: Colors.red, fontSize: 13),
                             ),
@@ -1729,14 +1729,14 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    _dropdownLabel('Materie'),
+                    _dropdownLabel('Subject'),
                     const SizedBox(height: 8),
                     subjectDocs.isEmpty
                         ? _hint(
-                            'Nicio materie. Apasă "Materii" în header pentru a adăuga.')
+                            'No subjects. Press "Subjects" in the header to add.')
                         : DropdownButtonFormField<String>(
                             initialValue: selSubject,
-                            hint: const Text('Selectează materia'),
+                            hint: const Text('Select subject'),
                             decoration: _dropDeco(),
                             items: subjectDocs.map((doc) {
                               final d = doc.data()
@@ -1765,14 +1765,14 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                                 setS(() => selSubject = v),
                           ),
                     const SizedBox(height: 16),
-                    _dropdownLabel('Profesor'),
+                    _dropdownLabel('Teacher'),
                     const SizedBox(height: 8),
                     teacherDocs.isEmpty
-                        ? _hint('Niciun profesor înregistrat.')
+                        ? _hint('No teachers registered.')
                         : DropdownButtonFormField<String>(
                             initialValue: selTeacher,
                             hint:
-                                const Text('Selectează profesorul'),
+                                const Text('Select teacher'),
                             decoration: _dropDeco(),
                             items: teacherDocs.map((doc) {
                               final d = doc.data()
@@ -1797,7 +1797,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx),
-                          child: const Text('Anulează'),
+                          child: const Text('Cancel'),
                         ),
                         const SizedBox(width: 10),
                         ElevatedButton(
@@ -1825,7 +1825,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                                     selTeacher!,
                                   );
                                 },
-                          child: const Text('Salvează'),
+                          child: const Text('Save'),
                         ),
                       ],
                     ),
@@ -1886,18 +1886,18 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Șterge orar'),
+        title: const Text('Delete timetable'),
         content: Text(
-          'Ești sigur că vrei să ștergi orarul clasei $classId?\nToate asignările vor fi pierdute.',
+          'Are you sure you want to delete the timetable for class $classId?\nAll assignments will be lost.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Anulează'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Șterge',
+            child: const Text('Delete',
                 style: TextStyle(color: Colors.red)),
           ),
         ],
@@ -1937,7 +1937,7 @@ class _SubjectsPanelContent extends StatelessWidget {
             children: [
               const Expanded(
                 child: Text(
-                  'Gestionare materii',
+                  'Manage subjects',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -1959,7 +1959,7 @@ class _SubjectsPanelContent extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton.icon(
               icon: const Icon(Icons.add, size: 16),
-              label: const Text('Adaugă materie nouă'),
+              label: const Text('Add new subject'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kPrimary,
                 foregroundColor: Colors.white,
@@ -1991,7 +1991,7 @@ class _SubjectsPanelContent extends StatelessWidget {
                           size: 48, color: Colors.grey.shade300),
                       const SizedBox(height: 12),
                       Text(
-                        'Nicio materie adăugată',
+                        'No subjects added',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade500,
@@ -2045,7 +2045,7 @@ class _SubjectsPanelContent extends StatelessWidget {
                             icon: Icon(Icons.edit_outlined,
                                 size: 17,
                                 color: Colors.grey.shade500),
-                            tooltip: 'Editează',
+                            tooltip: 'Edit',
                             onPressed: () => _showSubjectDialog(
                                 context,
                                 existing: d,
@@ -2057,7 +2057,7 @@ class _SubjectsPanelContent extends StatelessWidget {
                           IconButton(
                             icon: const Icon(Icons.delete_outline,
                                 size: 17, color: Colors.redAccent),
-                            tooltip: 'Șterge',
+                            tooltip: 'Delete',
                             onPressed: () =>
                                 _confirmDeleteSubject(context, doc.id, name),
                             padding: EdgeInsets.zero,
@@ -2104,7 +2104,7 @@ class _SubjectsPanelContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      id == null ? 'Materie nouă' : 'Editează materie',
+                      id == null ? 'New subject' : 'Edit subject',
                       style: const TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
@@ -2116,7 +2116,7 @@ class _SubjectsPanelContent extends StatelessWidget {
                       controller: nameCtrl,
                       autofocus: true,
                       decoration: InputDecoration(
-                        labelText: 'Denumire',
+                        labelText: 'Name',
                         errorText: nameError,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -2127,7 +2127,7 @@ class _SubjectsPanelContent extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     const Text(
-                      'Culoare',
+                      'Color',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -2178,7 +2178,7 @@ class _SubjectsPanelContent extends StatelessWidget {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx),
-                          child: const Text('Anulează'),
+                          child: const Text('Cancel'),
                         ),
                         const SizedBox(width: 10),
                         ElevatedButton(
@@ -2197,7 +2197,7 @@ class _SubjectsPanelContent extends StatelessWidget {
                             final name = nameCtrl.text.trim();
                             if (name.isEmpty) {
                               setS(
-                                  () => nameError = 'Câmp obligatoriu');
+                                  () => nameError = 'Required field');
                               return;
                             }
                             Navigator.pop(ctx);
@@ -2205,7 +2205,7 @@ class _SubjectsPanelContent extends StatelessWidget {
                                 id, name, selected.toARGB32());
                           },
                           child: Text(
-                              id == null ? 'Adaugă' : 'Salvează'),
+                              id == null ? 'Add' : 'Save'),
                         ),
                       ],
                     ),
@@ -2228,16 +2228,16 @@ class _SubjectsPanelContent extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Șterge materie'),
-        content: Text('Ești sigur că vrei să ștergi "$name"?'),
+        title: const Text('Delete subject'),
+        content: Text('Are you sure you want to delete "$name"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Anulează'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Șterge',
+            child: const Text('Delete',
                 style: TextStyle(color: Colors.red)),
           ),
         ],

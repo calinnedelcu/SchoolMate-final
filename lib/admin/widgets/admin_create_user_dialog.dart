@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../services/admin_api.dart';
 
@@ -60,7 +62,8 @@ Future<void> showAdminCreateUserDialog(
         child: Center(
           child: StatefulBuilder(
             builder: (ctx, setS) {
-              final needsClass = role == 'student' || role == 'teacher';
+              final showsClassPicker = role == 'student' || role == 'teacher';
+              final needsClass = role == 'student';
 
               InputDecoration fieldDeco(String hint) => InputDecoration(
                 hintText: hint,
@@ -132,15 +135,15 @@ Future<void> showAdminCreateUserDialog(
                               const SizedBox(height: 16),
                             ],
                             if (createdUsername != null) ...[
-                              _credentialRow('Username', createdUsername!),
+                              _credentialCopyRow('Username', createdUsername!),
                               const SizedBox(height: 8),
-                              _credentialRow('Parolă', createdPassword!),
+                              _credentialCopyRow('Password', createdPassword!),
                               const SizedBox(height: 20),
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
                                   onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('Închide', style: TextStyle(fontWeight: FontWeight.w700)),
+                                  child: const Text('Close', style: TextStyle(fontWeight: FontWeight.w700)),
                                 ),
                               ),
                             ] else ...[
@@ -181,7 +184,7 @@ Future<void> showAdminCreateUserDialog(
                                       ],
                                     ),
                                   ),
-                                  if (needsClass) ...[
+                                  if (showsClassPicker) ...[
                                     const SizedBox(width: 16),
                                     Expanded(
                                       child: StreamBuilder<QuerySnapshot>(
@@ -202,10 +205,10 @@ Future<void> showAdminCreateUserDialog(
                                           return Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              fieldLabel('CLASS'),
+                                              fieldLabel(needsClass ? 'CLASS' : 'CLASS (optional)'),
                                               dropdownBox(
                                                 value: hasSelected ? selectedClassId : null,
-                                                hint: 'Select...',
+                                                hint: needsClass ? 'Select...' : 'No class',
                                                 items: options.map((o) => DropdownMenuItem<String>(value: o['id'], child: Text(o['name']!))).toList(),
                                                 onChanged: (v) => setS(() => selectedClassId = v ?? ''),
                                               ),
@@ -231,7 +234,7 @@ Future<void> showAdminCreateUserDialog(
                                               return;
                                             }
                                             if (needsClass && selectedClassId.trim().isEmpty) {
-                                              setS(() { resultMsg = 'Select a class for the student/teacher.'; resultIsError = true; });
+                                              setS(() { resultMsg = 'Select a class for the student.'; resultIsError = true; });
                                               return;
                                             }
                                             final uname = '${baseFromFullName(full)}${randDigits(3)}';
@@ -243,13 +246,15 @@ Future<void> showAdminCreateUserDialog(
                                                 password: pass,
                                                 role: role,
                                                 fullName: full,
-                                                classId: needsClass ? selectedClassId : null,
+                                                classId: showsClassPicker && selectedClassId.trim().isNotEmpty
+                                                    ? selectedClassId
+                                                    : null,
                                               );
                                               setS(() {
                                                 busy = false;
                                                 createdUsername = uname.toLowerCase();
                                                 createdPassword = pass;
-                                                resultMsg = 'Contul a fost creat cu succes!';
+                                                resultMsg = 'Account was created successfully!';
                                                 resultIsError = false;
                                                 fullNameC.clear();
                                                 selectedClassId = '';
@@ -295,7 +300,7 @@ Future<void> showAdminCreateUserDialog(
   fullNameC.dispose();
 }
 
-Widget _credentialRow(String label, String value) {
+Widget _credentialCopyRow(String label, String value) {
   return Container(
     width: double.infinity,
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -308,9 +313,81 @@ Widget _credentialRow(String label, String value) {
       children: [
         Text('$label: ', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF2848B0))),
         Expanded(child: SelectableText(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF111111)))),
+        const SizedBox(width: 8),
+        _CopyButton(value: value),
       ],
     ),
   );
+}
+
+class _CopyButton extends StatefulWidget {
+  final String value;
+  const _CopyButton({required this.value});
+
+  @override
+  State<_CopyButton> createState() => _CopyButtonState();
+}
+
+class _CopyButtonState extends State<_CopyButton> {
+  bool _copied = false;
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _copy() async {
+    await Clipboard.setData(ClipboardData(text: widget.value));
+    if (!mounted) return;
+    setState(() => _copied = true);
+    _timer?.cancel();
+    _timer = Timer(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      setState(() => _copied = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: _copy,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: _copied
+              ? const Color(0xFF2E7D32).withValues(alpha: 0.12)
+              : const Color(0xFF2848B0).withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _copied ? Icons.check_rounded : Icons.copy_rounded,
+              size: 14,
+              color: _copied
+                  ? const Color(0xFF2E7D32)
+                  : const Color(0xFF2848B0),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              _copied ? 'Copied!' : 'Copy',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: _copied
+                    ? const Color(0xFF2E7D32)
+                    : const Color(0xFF2848B0),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 Widget _buildCard({required String title, required Widget child}) {

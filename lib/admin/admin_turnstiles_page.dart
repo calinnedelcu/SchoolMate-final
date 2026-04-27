@@ -17,14 +17,14 @@ import 'admin_students_page.dart';
 import 'admin_teachers_page.dart';
 import 'admin_vacante.dart' as admin_vacante;
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Helpers -----------------------------------------------------------
 
 String _timeAgo(Timestamp ts) {
   final diff = DateTime.now().difference(ts.toDate());
-  if (diff.inSeconds < 60) return 'acum ${diff.inSeconds} sec';
-  if (diff.inMinutes < 60) return 'acum ${diff.inMinutes} min';
-  if (diff.inHours < 24) return 'acum ${diff.inHours} ore';
-  return 'acum ${diff.inDays} zile';
+  if (diff.inSeconds < 60) return '${diff.inSeconds} sec ago';
+  if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+  if (diff.inHours < 24) return '${diff.inHours} hours ago';
+  return '${diff.inDays} days ago';
 }
 
 String _hhmm(Timestamp ts) {
@@ -49,27 +49,27 @@ String _randPassword(int len) {
 String _humanizeAccessReason(String reason) {
   switch (reason.trim().toUpperCase()) {
     case 'ALREADY_IN_SCHOOL':
-      return 'Elevul era deja în școală.';
+      return 'The student was already in school.';
     case 'ALREADY_USED':
-      return 'Codul QR a fost deja folosit.';
+      return 'The QR code has already been used.';
     case 'EXPIRED':
-      return 'Codul QR a expirat.';
+      return 'The QR code has expired.';
     case 'NOT_FOUND':
-      return 'Codul QR nu a fost găsit.';
+      return 'The QR code was not found.';
     case 'USER_NOT_FOUND':
-      return 'Utilizatorul nu a fost găsit.';
+      return 'The user was not found.';
     case 'USER_DISABLED':
-      return 'Contul elevului este dezactivat.';
+      return 'The student account is disabled.';
     case 'NO_CLASS_ASSIGNED':
-      return 'Elevul nu are clasă atribuită.';
+      return 'The student has no class assigned.';
     case 'NO_SCHEDULE':
-      return 'Nu există orar pentru clasa elevului.';
+      return 'There is no schedule for the student\'s class.';
     case 'BAD_SCHEDULE':
-      return 'Orarul clasei este invalid.';
+      return 'The class schedule is invalid.';
     case 'BAD_EXPIRES':
-      return 'Codul QR nu are o expirare validă.';
+      return 'The QR code does not have a valid expiration.';
     default:
-      return reason.isEmpty ? 'Fără motiv suplimentar.' : reason;
+      return reason.isEmpty ? 'No additional reason.' : reason;
   }
 }
 
@@ -77,13 +77,13 @@ String _eventActionLabel(Map<String, dynamic> data) {
   final type = (data['type'] ?? '').toString();
   switch (type) {
     case 'entry':
-      return 'Elevul a intrat';
+      return 'Student entered';
     case 'exit':
-      return 'Elevul a ieșit';
+      return 'Student exited';
     case 'deny':
-      return 'Acces respins';
+      return 'Access denied';
     default:
-      return 'Acces procesat';
+      return 'Access processed';
   }
 }
 
@@ -94,9 +94,9 @@ String _eventReasonText(Map<String, dynamic> data) {
   }
 
   final type = (data['type'] ?? '').toString();
-  if (type == 'entry') return 'Acces acordat pentru intrare în școală.';
-  if (type == 'exit') return 'Acces acordat pentru ieșire din școală.';
-  return 'Eveniment înregistrat fără detalii suplimentare.';
+  if (type == 'entry') return 'Access granted for entry into school.';
+  if (type == 'exit') return 'Access granted for exit from school.';
+  return 'Event recorded without additional details.';
 }
 
 String _eventMetaText(Map<String, dynamic> data, {String? fallbackClassId}) {
@@ -108,10 +108,10 @@ String _eventMetaText(Map<String, dynamic> data, {String? fallbackClassId}) {
       ? classId
       : (fallbackClassId ?? '');
 
-  if (effectiveClassId.isNotEmpty) parts.add('Clasa $effectiveClassId');
+  if (effectiveClassId.isNotEmpty) parts.add('Class $effectiveClassId');
   if (scanResult.isNotEmpty) {
     parts.add(
-      scanResult == 'allowed' ? 'Scanare acceptată' : 'Scanare respinsă',
+      scanResult == 'allowed' ? 'Scan accepted' : 'Scan denied',
     );
   }
 
@@ -169,9 +169,9 @@ Future<T?> _showBlurDialog<T>({
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  AdminTurnstilesPage
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 
 class AdminTurnstilesPage extends StatefulWidget {
   const AdminTurnstilesPage({super.key, this.embedded = false, this.searchQuery});
@@ -235,12 +235,12 @@ class _AdminTurnstilesPageState extends State<AdminTurnstilesPage> {
     await _showBlurDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Deconectare'),
-        content: const Text('Esti sigur ca vrei sa te deloghezi?'),
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to log out?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Nu'),
+            child: const Text('No'),
           ),
           TextButton(
             onPressed: () async {
@@ -248,7 +248,7 @@ class _AdminTurnstilesPageState extends State<AdminTurnstilesPage> {
               if (!mounted) return;
               Navigator.of(context).popUntil((r) => r.isFirst);
             },
-            child: const Text('Da'),
+            child: const Text('Yes'),
           ),
         ],
       ),
@@ -312,9 +312,9 @@ class _AdminTurnstilesPageState extends State<AdminTurnstilesPage> {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  _TurnstileBody
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 
 class _TurnstileBody extends StatelessWidget {
   final VoidCallback onRefresh;
@@ -347,6 +347,13 @@ class _TurnstileBody extends StatelessWidget {
                   .limit(200)
                   .snapshots(),
               builder: (context, eventSnap) {
+                return StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('leaveRequests')
+                      .where('status', isEqualTo: 'pending')
+                      .snapshots(),
+                  builder: (context, leaveSnap) {
+                final pendingLeaveCount = leaveSnap.data?.docs.length ?? 0;
                 final gates = List<QueryDocumentSnapshot>.from(
                   gateSnap.data?.docs ?? [],
                 );
@@ -357,7 +364,7 @@ class _TurnstileBody extends StatelessWidget {
                   eventSnap.data?.docs ?? [],
                 );
 
-                // gate UID â†’ name map
+                // gate UID -> name map
                 final gateMap = <String, String>{};
                 for (final g in gates) {
                   final d = g.data() as Map<String, dynamic>;
@@ -397,6 +404,25 @@ class _TurnstileBody extends StatelessWidget {
                   return !ts.toDate().isBefore(todayStart);
                 }).length;
 
+                final exitsTodayCount = allEvents.where((e) {
+                  final d = e.data() as Map<String, dynamic>;
+                  final ts = d['timestamp'] as Timestamp?;
+                  if (ts == null) return false;
+                  if (ts.toDate().isBefore(todayStart)) return false;
+                  return (d['type'] ?? '').toString() == 'exit';
+                }).length;
+
+                final deniedTodayCount = allEvents.where((e) {
+                  final d = e.data() as Map<String, dynamic>;
+                  final ts = d['timestamp'] as Timestamp?;
+                  if (ts == null) return false;
+                  if (ts.toDate().isBefore(todayStart)) return false;
+                  final scanResult =
+                      (d['scanResult'] ?? '').toString().toLowerCase();
+                  final type = (d['type'] ?? '').toString().toLowerCase();
+                  return scanResult == 'denied' || type == 'deny';
+                }).length;
+
                 final yesterdayCount = allEvents.where((e) {
                   final d = e.data() as Map<String, dynamic>;
                   final ts = d['timestamp'] as Timestamp?;
@@ -411,14 +437,14 @@ class _TurnstileBody extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // --- Header --------------------------------------
                     Padding(
                       padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Control Turnicheți',
+                            'Control Guardians',
                             style: TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.w800,
@@ -427,7 +453,7 @@ class _TurnstileBody extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Gestionează punctele de acces și jurnalele live de securitate.',
+                            'Manage access points and live security logs.',
                             style: TextStyle(
                               fontSize: 13,
                               color: const Color(0xFF7A7E9A),
@@ -437,14 +463,14 @@ class _TurnstileBody extends StatelessWidget {
                       ),
                     ),
 
-                    // â”€â”€ Two-column content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // --- Two-column content --------------------------
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Stanga: turnichete
+                            // Left: turnstiles
                             Expanded(
                               flex: 6,
                               child: _ActiveHubsPanel(
@@ -453,7 +479,7 @@ class _TurnstileBody extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 16),
-                            // Dreapta: trafic live + scanari zilnice
+                            // Right: live traffic + daily scans
                             Expanded(
                               flex: 4,
                               child: Column(
@@ -472,6 +498,37 @@ class _TurnstileBody extends StatelessWidget {
                                     todayCount: todayCount,
                                     yesterdayCount: yesterdayCount,
                                   ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _SmallStatCard(
+                                          label: 'Exits today',
+                                          value: exitsTodayCount,
+                                          color: const Color(0xFF2848B0),
+                                          icon: Icons.logout_rounded,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _SmallStatCard(
+                                          label: 'Denied today',
+                                          value: deniedTodayCount,
+                                          color: const Color(0xFFB03040),
+                                          icon: Icons.block_rounded,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _SmallStatCard(
+                                          label: 'Pending leaves',
+                                          value: pendingLeaveCount,
+                                          color: const Color(0xFFB07D2A),
+                                          icon: Icons.schedule_rounded,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -480,6 +537,8 @@ class _TurnstileBody extends StatelessWidget {
                       ),
                     ),
                   ],
+                );
+                  },
                 );
               },
             );
@@ -490,9 +549,9 @@ class _TurnstileBody extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  _ActiveHubsPanel
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 
 class _ActiveHubsPanel extends StatefulWidget {
   final List<QueryDocumentSnapshot> gates;
@@ -635,7 +694,7 @@ class _ActiveHubsPanelState extends State<_ActiveHubsPanel> {
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'Turnichete',
+                  'Guardians',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -653,7 +712,7 @@ class _ActiveHubsPanelState extends State<_ActiveHubsPanel> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    '${widget.gates.length} turnichete',
+                    '${widget.gates.length} turnstiles',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
@@ -669,7 +728,7 @@ class _ActiveHubsPanelState extends State<_ActiveHubsPanel> {
             child: widget.gates.isEmpty
                 ? const Center(
                     child: Text(
-                      'Nu există turnichete înregistrate.',
+                      'No turnstiles registered.',
                       style: TextStyle(color: Color(0xFF7A7E9A), fontSize: 14),
                     ),
                   )
@@ -750,9 +809,9 @@ class _ActiveHubsPanelState extends State<_ActiveHubsPanel> {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  _GateCard
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 
 class _GateCard extends StatefulWidget {
   final QueryDocumentSnapshot doc;
@@ -812,7 +871,7 @@ class _GateCardState extends State<_GateCard> {
         setDialogState(() {
           busy = false;
           currentName = newName;
-          msg = 'Numele a fost schimbat în "$newName".';
+          msg = 'The name was changed to "$newName".';
           msgIsError = false;
         });
       } catch (e) {
@@ -837,7 +896,7 @@ class _GateCardState extends State<_GateCard> {
       final confirmed = await _showBlurDialog<bool>(
         context: dialogContext,
         barrierDismissible: true,
-        barrierLabel: 'Confirmare stergere turnicheta',
+        barrierLabel: 'Confirm turnstile deletion',
         builder: (confirmContext) => SafeArea(
           child: Center(
             child: Padding(
@@ -885,7 +944,7 @@ class _GateCardState extends State<_GateCard> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Sterge turnicheta',
+                                    'Delete turnstile',
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w800,
@@ -894,7 +953,7 @@ class _GateCardState extends State<_GateCard> {
                                   ),
                                   SizedBox(height: 6),
                                   Text(
-                                    'Confirmarea este permanenta si va sterge contul turnichetei si datele asociate acesteia.',
+                                    'The confirmation is permanent and will delete the turnstile account and its associated data.',
                                     style: TextStyle(
                                       fontSize: 13,
                                       height: 1.4,
@@ -919,7 +978,7 @@ class _GateCardState extends State<_GateCard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Turnicheta selectata',
+                                'Selected turnstile',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -976,7 +1035,7 @@ class _GateCardState extends State<_GateCard> {
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
-                                child: const Text('Anuleaza'),
+                                child: const Text('Cancel'),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -994,7 +1053,7 @@ class _GateCardState extends State<_GateCard> {
                                 ),
                                 onPressed: () =>
                                     Navigator.of(confirmContext).pop(true),
-                                child: const Text('Sterge turnicheta'),
+                                child: const Text('Delete turnstile'),
                               ),
                             ),
                           ],
@@ -1024,7 +1083,7 @@ class _GateCardState extends State<_GateCard> {
         nav.pop();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Turnicheta $username a fost ștearsă.')),
+          SnackBar(content: Text('Turnstile $username has been deleted.')),
         );
       } catch (e) {
         if (!mounted) return;
@@ -1050,12 +1109,12 @@ class _GateCardState extends State<_GateCard> {
 
       try {
         final excel = xls.Excel.createExcel();
-        final sheet = excel['Turnicheta'];
+        final sheet = excel['Turnstile'];
         sheet.appendRow([
-          xls.TextCellValue('Nume Complet'),
+          xls.TextCellValue('Full Name'),
           xls.TextCellValue('Username'),
           xls.TextCellValue('Email'),
-          xls.TextCellValue('Parolă Nouă'),
+          xls.TextCellValue('New Password'),
         ]);
         sheet.appendRow([
           xls.TextCellValue(currentName),
@@ -1067,7 +1126,7 @@ class _GateCardState extends State<_GateCard> {
         final bytes = excel.encode();
         if (bytes != null) {
           await FileSaver.instance.saveFile(
-            name: 'turnicheta_$username',
+            name: 'turnstile_$username',
             bytes: Uint8List.fromList(bytes),
             ext: 'xlsx',
             mimeType: MimeType.microsoftExcel,
@@ -1079,7 +1138,7 @@ class _GateCardState extends State<_GateCard> {
 
         setDialogState(() {
           busy = false;
-          msg = 'Date exportate și parola a fost resetată automat.';
+          msg = 'Data exported and the password has been reset automatically.';
           msgIsError = false;
         });
       } catch (e) {
@@ -1170,7 +1229,7 @@ class _GateCardState extends State<_GateCard> {
                       child: Row(
                         children: [
                           const Text(
-                            'Setări Utilizator',
+                            'User Settings',
                             style: TextStyle(
                               fontSize: 27,
                               fontWeight: FontWeight.w900,
@@ -1188,7 +1247,7 @@ class _GateCardState extends State<_GateCard> {
                               ),
                             ),
                             child: const Text(
-                              'Anulează',
+                              'Cancel',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -1221,7 +1280,7 @@ class _GateCardState extends State<_GateCard> {
                               ),
                             ),
                             child: const Text(
-                              'Salvează modificările',
+                              'Save changes',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -1312,7 +1371,7 @@ class _GateCardState extends State<_GateCard> {
                                           const SizedBox(height: 10),
                                         ],
                                         const Text(
-                                          'Detalii Turnichetă',
+                                          'Turnstile Details',
                                           style: TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.w800,
@@ -1321,7 +1380,7 @@ class _GateCardState extends State<_GateCard> {
                                         ),
                                         const SizedBox(height: 6),
                                         const Text(
-                                          'Poți actualiza numele afișat și poți gestiona rapid accesul contului din acțiunile de mai jos.',
+                                          'You can update the displayed name and quickly manage account access from the actions below.',
                                           style: TextStyle(
                                             fontSize: 13,
                                             height: 1.45,
@@ -1330,7 +1389,7 @@ class _GateCardState extends State<_GateCard> {
                                         ),
                                         const SizedBox(height: 10),
                                         const Text(
-                                          'NUME COMPLET',
+                                          'FULL NAME',
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w700,
@@ -1430,7 +1489,7 @@ class _GateCardState extends State<_GateCard> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   const Text(
-                                                    'TIP UTILIZATOR',
+                                                    'USER TYPE',
                                                     style: TextStyle(
                                                       fontSize: 11,
                                                       fontWeight:
@@ -1445,7 +1504,7 @@ class _GateCardState extends State<_GateCard> {
                                                     controller:
                                                         TextEditingController(
                                                           text:
-                                                              'Turnichetă de acces',
+                                                              'Access turnstile',
                                                         ),
                                                     decoration: fieldDeco(''),
                                                     style: const TextStyle(
@@ -1525,7 +1584,7 @@ class _GateCardState extends State<_GateCard> {
                                           size: 18,
                                         ),
                                   label: const Text(
-                                    'Extrage Date / Resetează Parola',
+                                    'Export Data / Reset Password',
                                     style: TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 17,
@@ -1569,7 +1628,7 @@ class _GateCardState extends State<_GateCard> {
                                           Icons.delete_outline,
                                           size: 22,
                                         ),
-                                  label: const Text('Șterge Utilizator'),
+                                  label: const Text('Delete User'),
                                   style: ButtonStyle(
                                     foregroundColor:
                                         WidgetStateProperty.resolveWith((
@@ -1762,7 +1821,7 @@ class _GateCardState extends State<_GateCard> {
                     const SizedBox(width: 6),
                     IconButton(
                       onPressed: _actionBusy ? null : _showSettingsDialog,
-                      tooltip: 'Setări turnichetă',
+                      tooltip: 'Turnstile settings',
                       style: IconButton.styleFrom(
                         backgroundColor: const Color(0xFFF2F4F8),
                         foregroundColor: const Color(0xFF7A7E9A),
@@ -1798,7 +1857,7 @@ class _GateCardState extends State<_GateCard> {
               ),
             ),
 
-            // Ultimele 3 scanari
+            // Last 3 scans
             if (_isExpanded && gateScans.isNotEmpty)
               _LastScansSection(docs: gateScans),
           ],
@@ -1808,9 +1867,9 @@ class _GateCardState extends State<_GateCard> {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  _LastScansSection
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 
 class _LastScansSection extends StatelessWidget {
   final List<QueryDocumentSnapshot> docs;
@@ -1826,7 +1885,7 @@ class _LastScansSection extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.fromLTRB(16, 10, 16, 6),
           child: Text(
-            'ULTIMELE 3 SCANĂRI',
+            'LAST 3 SCANS',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
@@ -1886,7 +1945,7 @@ class _LastScansSection extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    fullName.isEmpty ? 'Etichetă ID necunoscută' : fullName,
+                    fullName.isEmpty ? 'Unknown ID label' : fullName,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -1900,7 +1959,7 @@ class _LastScansSection extends StatelessWidget {
                 ),
                 if (isDenied)
                   const Text(
-                    'RESPINS',
+                    'DENIED',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -1924,9 +1983,9 @@ class _LastScansSection extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  _LiveTrafficPanel
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 
 class _LiveTrafficPanel extends StatelessWidget {
   final List<QueryDocumentSnapshot> events;
@@ -1967,7 +2026,7 @@ class _LiveTrafficPanel extends StatelessWidget {
             child: Row(
               children: [
                 const Text(
-                  'Trafic în timp real',
+                  'Real-time traffic',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -1993,7 +2052,7 @@ class _LiveTrafficPanel extends StatelessWidget {
             child: events.isEmpty
                 ? const Center(
                     child: Text(
-                      'Nu există activitate recentă.',
+                      'No recent activity.',
                       style: TextStyle(color: Color(0xFF7A7E9A), fontSize: 15),
                     ),
                   )
@@ -2003,7 +2062,7 @@ class _LiveTrafficPanel extends StatelessWidget {
                     itemBuilder: (_, i) {
                       final d = events[i].data() as Map<String, dynamic>;
                       final gateUid = (d['gateUid'] ?? '').toString();
-                      final gateName = gateMap[gateUid] ?? 'Poartă necunoscută';
+                      final gateName = gateMap[gateUid] ?? 'Unknown gate';
                       final userId = (d['userId'] ?? '').toString();
                       final fullName = (d['fullName'] ?? '').toString();
                       final fallbackName = studentNameMap[userId] ?? '';
@@ -2016,7 +2075,7 @@ class _LiveTrafficPanel extends StatelessWidget {
                         gateName: gateName,
                         personName: fullName.isEmpty
                             ? (fallbackName.isEmpty
-                                  ? 'Mediu neînregistrat detectat'
+                                  ? 'Unregistered subject detected'
                                   : fallbackName)
                             : fullName,
                         actionLabel: _eventActionLabel(d),
@@ -2033,7 +2092,7 @@ class _LiveTrafficPanel extends StatelessWidget {
                   ),
           ),
 
-          // Buton pentru toate jurnalele
+          // Button for all logs
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: OutlinedButton(
@@ -2053,7 +2112,7 @@ class _LiveTrafficPanel extends StatelessWidget {
                 studentNameMap,
               ),
               child: const Text(
-                'Vezi toate jurnalele',
+                'See all logs',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
@@ -2064,9 +2123,9 @@ class _LiveTrafficPanel extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  _TrafficEntry
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 
 class _TrafficEntry extends StatelessWidget {
   final String gateName;
@@ -2175,7 +2234,7 @@ class _TrafficEntry extends StatelessWidget {
                           ),
                           children: [
                             const TextSpan(
-                              text: 'Utilizator: ',
+                              text: 'User: ',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF5987AF),
@@ -2256,9 +2315,68 @@ class _TrafficEntry extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  _DailyScansCard
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
+
+class _SmallStatCard extends StatelessWidget {
+  final String label;
+  final int value;
+  final Color color;
+  final IconData icon;
+
+  const _SmallStatCard({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF7A7E9A),
+                    letterSpacing: 0.4,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$value',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _DailyScansCard extends StatelessWidget {
   final int todayCount;
@@ -2290,11 +2408,11 @@ class _DailyScansCard extends StatelessWidget {
 
     String trendText;
     if (pct < 0.5) {
-      trendText = 'Fără schimbare față de ieri';
+      trendText = 'No change from yesterday';
     } else if (isUp) {
-      trendText = 'Creștere cu $pctStr față de ieri';
+      trendText = 'Increase of $pctStr from yesterday';
     } else {
-      trendText = 'Scădere cu $pctStr față de ieri';
+      trendText = 'Decrease of $pctStr from yesterday';
     }
 
     return Container(
@@ -2307,7 +2425,7 @@ class _DailyScansCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'TOTAL SCANĂRI ZILNICE',
+            'TOTAL DAILY SCANS',
             style: TextStyle(
               color: Color(0xFFC0C4D8),
               fontSize: 11,
@@ -2364,9 +2482,9 @@ class _DailyScansCard extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-//  Dialog Toate Jurnalele
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
+//  Dialog All Logs
+// -----------------------------------------------------------------------
 
 void _showAllLogsDialog(
   BuildContext context,
@@ -2395,7 +2513,7 @@ void _showAllLogsDialog(
               child: Row(
                 children: [
                   const Text(
-                    'Toate jurnalele',
+                    'All logs',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -2436,7 +2554,7 @@ void _showAllLogsDialog(
                   if (docs.isEmpty) {
                     return const Center(
                       child: Text(
-                        'Nu există înregistrări.',
+                        'No records.',
                         style: TextStyle(
                           color: Color(0xFF7A7E9A),
                           fontSize: 14,
@@ -2453,7 +2571,7 @@ void _showAllLogsDialog(
                     itemBuilder: (_, i) {
                       final d = docs[i].data() as Map<String, dynamic>;
                       final gateUid = (d['gateUid'] ?? '').toString();
-                      final gateName = gateMap[gateUid] ?? 'Poartă necunoscută';
+                      final gateName = gateMap[gateUid] ?? 'Unknown gate';
                       final userId = (d['userId'] ?? '').toString();
                       final fullName = (d['fullName'] ?? '').toString();
                       final fallbackName = studentNameMap[userId] ?? '';
@@ -2466,7 +2584,7 @@ void _showAllLogsDialog(
                         gateName: gateName,
                         personName: fullName.isEmpty
                             ? (fallbackName.isEmpty
-                                  ? 'Mediu neînregistrat detectat'
+                                  ? 'Unregistered subject detected'
                                   : fallbackName)
                             : fullName,
                         actionLabel: _eventActionLabel(d),
@@ -2526,9 +2644,9 @@ class _PaginationButton extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  _TurnstilesSidebar
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 
 class _TurnstilesSidebar extends StatelessWidget {
   final String selected;
@@ -2574,7 +2692,7 @@ class _TurnstilesSidebar extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
             child: Text(
-              'Secretariat',
+              'Office',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 26,
@@ -2583,43 +2701,43 @@ class _TurnstilesSidebar extends StatelessWidget {
             ),
           ),
           _SidebarTile(
-            label: 'Meniu',
+            label: 'Menu',
             icon: Icons.grid_view_rounded,
             selected: selected == 'menu',
             onTap: onMenuTap,
           ),
           _SidebarTile(
-            label: 'Elevi',
+            label: 'Students',
             icon: Icons.school_rounded,
             selected: selected == 'students',
             onTap: onStudentsTap,
           ),
           _SidebarTile(
-            label: 'Personal',
+            label: 'Staff',
             icon: Icons.badge_rounded,
             selected: selected == 'personal',
             onTap: onPersonalTap,
           ),
           _SidebarTile(
-            label: 'Parinti',
+            label: 'Parents',
             icon: Icons.family_restroom_rounded,
             selected: selected == 'parents',
             onTap: onParintiTap,
           ),
           _SidebarTile(
-            label: 'Clase',
+            label: 'Classes',
             icon: Icons.table_chart_rounded,
             selected: selected == 'classes',
             onTap: onClaseTap,
           ),
           _SidebarTile(
-            label: 'Vacante',
+            label: 'Holidays',
             icon: Icons.event_available_rounded,
             selected: selected == 'vacante',
             onTap: onVacanteTap,
           ),
           _SidebarTile(
-            label: 'Turnicheti',
+            label: 'Guardians',
             icon: Icons.door_front_door_rounded,
             selected: selected == 'turnstiles',
             onTap: onTurnichetiTap,
@@ -2637,7 +2755,7 @@ class _TurnstilesSidebar extends StatelessWidget {
                 ),
                 onPressed: onLogoutTap,
                 icon: const Icon(Icons.logout_rounded),
-                label: const Text('Delogheaza-te'),
+                label: const Text('Log out'),
               ),
             ),
           ),
@@ -2686,7 +2804,7 @@ class _TurnstilesSidebar extends StatelessWidget {
                         ),
                       ),
                       const Text(
-                        'Liceul Central',
+                        'Central High School',
                         style: TextStyle(
                           color: Color(0xFFE8EAF2),
                           fontSize: 11,
@@ -2704,9 +2822,9 @@ class _TurnstilesSidebar extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  _SidebarTile
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 
 class _SidebarTile extends StatelessWidget {
   final String label;
@@ -2759,9 +2877,9 @@ class _SidebarTile extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 //  _TurnstilesTopBar
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------
 
 class _TurnstilesTopBar extends StatelessWidget {
   final String displayName;
@@ -2789,7 +2907,7 @@ class _TurnstilesTopBar extends StatelessWidget {
       child: Row(
         children: [
           const Text(
-            'Turnicheti',
+            'Guardians',
             style: TextStyle(
               fontSize: 30,
               fontWeight: FontWeight.w800,
@@ -2828,7 +2946,7 @@ class _TurnstilesTopBar extends StatelessWidget {
                           decoration: const InputDecoration(
                             border: InputBorder.none,
                             isCollapsed: true,
-                            hintText: 'Cauta dupa nume...',
+                            hintText: 'Search by name...',
                             hintStyle: TextStyle(
                               color: Color(0xFFC0C4D8),
                               fontSize: 14,
