@@ -184,6 +184,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                         children: [
                           Expanded(flex: 5, child: _colHeader('STUDENT')),
                           Expanded(flex: 2, child: _colHeader('CLASS')),
+                          Expanded(flex: 3, child: Center(child: _colHeader('MAIN PARENT'))),
                           Expanded(flex: 4, child: Center(child: _colHeader('EMAIL'))),
                           const SizedBox(width: 30),
                         ],
@@ -447,6 +448,29 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                       ),
                                                     )
                                                   : const Text('-'),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 3,
+                                            child: FutureBuilder<String>(
+                                              future: parentUsernames.isNotEmpty
+                                                  ? FirebaseFirestore.instance
+                                                        .collection('users')
+                                                        .doc(parentUsernames.first)
+                                                        .get()
+                                                        .then((s) => s.exists
+                                                            ? (s.data()?['fullName'] ?? '-').toString()
+                                                            : '-')
+                                                  : Future.value('-'),
+                                              builder: (_, snap) => Text(
+                                                snap.data ?? (parentUsernames.isNotEmpty ? '…' : '-'),
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Color(0xFF111111),
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
                                           ),
                                           Expanded(

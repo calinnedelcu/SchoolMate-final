@@ -347,13 +347,6 @@ class _TurnstileBody extends StatelessWidget {
                   .limit(200)
                   .snapshots(),
               builder: (context, eventSnap) {
-                return StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('leaveRequests')
-                      .where('status', isEqualTo: 'pending')
-                      .snapshots(),
-                  builder: (context, leaveSnap) {
-                final pendingLeaveCount = leaveSnap.data?.docs.length ?? 0;
                 final gates = List<QueryDocumentSnapshot>.from(
                   gateSnap.data?.docs ?? [],
                 );
@@ -434,34 +427,63 @@ class _TurnstileBody extends StatelessWidget {
 
                 final liveEvents = allEvents.take(30).toList();
 
+                final loaded = gateSnap.hasData && studentSnap.hasData && eventSnap.hasData;
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // --- Header --------------------------------------
+                    // --- Stats row -----------------------------------
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      child: Row(
                         children: [
-                          const Text(
-                            'Control Guardians',
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF4A82B3),
+                          Expanded(
+                            child: _statCard(
+                              icon: Icons.door_front_door_rounded,
+                              iconBg: const Color(0xFFEEF1FB),
+                              iconColor: const Color(0xFF2848B0),
+                              label: 'TURNSTILE GATES',
+                              value: loaded ? '${gates.length}' : '—',
+                              subtitle: 'Active access points',
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Manage access points and live security logs.',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: const Color(0xFF7A7E9A),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _statCard(
+                              icon: Icons.qr_code_scanner_rounded,
+                              iconBg: const Color(0xFFEDF7F0),
+                              iconColor: const Color(0xFF2E8B57),
+                              label: "TODAY'S SCANS",
+                              value: loaded ? '$todayCount' : '—',
+                              subtitle: 'Total scan events',
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _statCard(
+                              icon: Icons.logout_rounded,
+                              iconBg: const Color(0xFFF3EDFB),
+                              iconColor: const Color(0xFF7B4FCC),
+                              label: 'EXITS TODAY',
+                              value: loaded ? '$exitsTodayCount' : '—',
+                              subtitle: 'Students exited',
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _statCard(
+                              icon: Icons.block_rounded,
+                              iconBg: const Color(0xFFFFF8E8),
+                              iconColor: const Color(0xFFF5A623),
+                              label: 'DENIED TODAY',
+                              value: loaded ? '$deniedTodayCount' : '—',
+                              subtitle: deniedTodayCount == 0 ? 'All clear' : 'Access denied',
                             ),
                           ),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
 
                     // --- Two-column content --------------------------
                     Expanded(
@@ -498,37 +520,6 @@ class _TurnstileBody extends StatelessWidget {
                                     todayCount: todayCount,
                                     yesterdayCount: yesterdayCount,
                                   ),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: _SmallStatCard(
-                                          label: 'Exits today',
-                                          value: exitsTodayCount,
-                                          color: const Color(0xFF2848B0),
-                                          icon: Icons.logout_rounded,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _SmallStatCard(
-                                          label: 'Denied today',
-                                          value: deniedTodayCount,
-                                          color: const Color(0xFFB03040),
-                                          icon: Icons.block_rounded,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _SmallStatCard(
-                                          label: 'Pending leaves',
-                                          value: pendingLeaveCount,
-                                          color: const Color(0xFFB07D2A),
-                                          icon: Icons.schedule_rounded,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ],
                               ),
                             ),
@@ -538,13 +529,85 @@ class _TurnstileBody extends StatelessWidget {
                     ),
                   ],
                 );
-                  },
-                );
               },
             );
           },
         );
       },
+    );
+  }
+
+  Widget _statCard({
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+    required String label,
+    required String value,
+    required String subtitle,
+  }) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2848B0).withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF9BA3B8),
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF111111),
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF9BA3B8),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -2418,8 +2481,19 @@ class _DailyScansCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
       decoration: BoxDecoration(
-        color: const Color(0xFF198AEB),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2848B0), Color(0xFF4A7FD4)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2848B0).withValues(alpha: 0.35),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2427,7 +2501,7 @@ class _DailyScansCard extends StatelessWidget {
           const Text(
             'TOTAL DAILY SCANS',
             style: TextStyle(
-              color: Color(0xFFC0C4D8),
+              color: Color(0xFFAEC6F0),
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.8,
@@ -2453,10 +2527,10 @@ class _DailyScansCard extends StatelessWidget {
                           ? Icons.trending_up_rounded
                           : Icons.trending_down_rounded),
                 color: pct < 0.5
-                    ? const Color(0xFFC0C4D8)
+                    ? const Color(0xFFAEC6F0)
                     : (isUp
-                          ? const Color(0xFF7BB3E8)
-                          : const Color(0xFFFF8080)),
+                          ? const Color(0xFF7EEAAA)
+                          : const Color(0xFFFF9090)),
                 size: 16,
               ),
               const SizedBox(width: 4),
@@ -2465,10 +2539,10 @@ class _DailyScansCard extends StatelessWidget {
                   trendText,
                   style: TextStyle(
                     color: pct < 0.5
-                        ? const Color(0xFFC0C4D8)
+                        ? const Color(0xFFAEC6F0)
                         : (isUp
-                              ? const Color(0xFF7BB3E8)
-                              : const Color(0xFFFF8080)),
+                              ? const Color(0xFF7EEAAA)
+                              : const Color(0xFFFF9090)),
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),

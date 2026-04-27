@@ -10,7 +10,6 @@ const _primary = Color(0xFF2848B0);
 const _textDark = Color(0xFF1A2050);
 const _textMid = Color(0xFF3A4A80);
 const _textMuted = Color(0xFF7A7E9A);
-const _iconBg = Color(0xFFEBF1F8);
 const _pinColor = Color(0xFFB07A00);
 
 // ─── Category colors ──────────────────────────────────────────────────────────
@@ -100,7 +99,7 @@ class AdminPostsAnnouncementsPage extends StatelessWidget {
     final body = Container(
       color: _bg,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -167,25 +166,33 @@ class _StatsRow extends StatelessWidget {
           final isNarrow = constraints.maxWidth < 600;
           final cards = [
             _StatCard(
-              icon: Icons.mail_outline_rounded,
+              icon: Icons.campaign_rounded,
+              iconBg: const Color(0xFFEEF1FB),
+              iconColor: _primary,
               label: 'PUBLISHED',
               value: snap.hasData ? '$publishedCount' : '—',
               sub: 'This school year',
             ),
             _StatCard(
               icon: Icons.drafts_outlined,
+              iconBg: const Color(0xFFEDF7F0),
+              iconColor: const Color(0xFF2E8B57),
               label: 'DRAFTS',
               value: '0',
               sub: 'Unpublished',
             ),
             _StatCard(
-              icon: Icons.person_outline_rounded,
+              icon: Icons.bar_chart_rounded,
+              iconBg: const Color(0xFFF3EDFB),
+              iconColor: const Color(0xFF7B4FCC),
               label: 'AVG READ RATE',
               value: '—',
               sub: 'Not tracked',
             ),
             _StatCard(
-              icon: Icons.mail_outline_rounded,
+              icon: Icons.access_time_rounded,
+              iconBg: const Color(0xFFFFF8E8),
+              iconColor: const Color(0xFFF5A623),
               label: 'THIS WEEK',
               value: snap.hasData ? '$recentCount' : '—',
               sub: 'New posts',
@@ -224,11 +231,15 @@ class _StatsRow extends StatelessWidget {
 
 class _StatCard extends StatelessWidget {
   final IconData icon;
+  final Color iconBg;
+  final Color iconColor;
   final String label;
   final String value;
   final String sub;
   const _StatCard({
     required this.icon,
+    required this.iconBg,
+    required this.iconColor,
     required this.label,
     required this.value,
     required this.sub,
@@ -237,27 +248,31 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
         color: _cardBg,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(color: Color(0x08000000), blurRadius: 10, offset: Offset(0, 3)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
+        boxShadow: [
+          BoxShadow(
+            color: _primary.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: _iconBg,
+              color: iconBg,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 20, color: _textMid),
+            child: Icon(icon, size: 20, color: iconColor),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,18 +280,18 @@ class _StatCard extends StatelessWidget {
                 Text(
                   label,
                   style: const TextStyle(
-                    color: _textMuted,
+                    color: Color(0xFF9BA3B8),
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 0.6,
+                    letterSpacing: 0.8,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
                   style: const TextStyle(
-                    color: _textDark,
-                    fontSize: 28,
+                    color: Color(0xFF111111),
+                    fontSize: 22,
                     fontWeight: FontWeight.w800,
                     height: 1.1,
                   ),
@@ -285,8 +300,9 @@ class _StatCard extends StatelessWidget {
                 Text(
                   sub,
                   style: const TextStyle(
-                    color: _textMuted,
+                    color: Color(0xFF9BA3B8),
                     fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -300,9 +316,27 @@ class _StatCard extends StatelessWidget {
 
 // ─── Posts List ───────────────────────────────────────────────────────────────
 
-class _PostsList extends StatelessWidget {
+const _kFilterAll = 'all';
+
+class _PostsList extends StatefulWidget {
   final VoidCallback onNewPost;
   const _PostsList({required this.onNewPost});
+
+  @override
+  State<_PostsList> createState() => _PostsListState();
+}
+
+class _PostsListState extends State<_PostsList> {
+  String _filter = _kFilterAll;
+
+  static const _filters = [
+    (_kFilterAll, 'All', Icons.apps_rounded),
+    ('announcement', 'Announcements', Icons.campaign_rounded),
+    ('competition', 'Competition', Icons.emoji_events_rounded),
+    ('camp', 'Camp', Icons.forest_rounded),
+    ('volunteer', 'Volunteer', Icons.volunteer_activism_rounded),
+    ('vacation', 'Vacation', Icons.beach_access_rounded),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -312,8 +346,13 @@ class _PostsList extends StatelessWidget {
       decoration: BoxDecoration(
         color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 3)),
+        border: Border.all(color: const Color(0xFFE8EAF2)),
+        boxShadow: [
+          BoxShadow(
+            color: _primary.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
@@ -321,40 +360,69 @@ class _PostsList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Column(
+            const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'Published posts',
                   style: TextStyle(
                     color: _textDark,
-                    fontSize: 17,
+                    fontSize: 22,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                SizedBox(height: 1),
+                SizedBox(height: 2),
                 Text(
-                  'Last 30 days',
-                  style: TextStyle(color: _textMuted, fontSize: 12),
+                  'Manage announcements and opportunities.',
+                  style: TextStyle(color: _textMuted, fontSize: 13, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
             const Spacer(),
-            GestureDetector(
-              onTap: onNewPost,
+            TextButton(
+              onPressed: widget.onNewPost,
+              style: TextButton.styleFrom(
+                foregroundColor: _primary,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                overlayColor: _primary.withValues(alpha: 0.10),
+              ).copyWith(
+                mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+              ),
               child: const Text(
                 '+ New post',
-                style: TextStyle(
-                  color: _primary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
+        const Divider(height: 1, color: Color(0xFFE8EAF2)),
+        const SizedBox(height: 14),
+        // ── Filter chips ─────────────────────────────────────────────
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: _filters.map((f) {
+              final (key, label, icon) = f;
+              final selected = _filter == key;
+              final chipColor = key == _kFilterAll ? _primary : _categoryColor(key);
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _FilterChipWidget(
+                  label: label,
+                  icon: icon,
+                  selected: selected,
+                  chipColor: chipColor,
+                  onTap: () => setState(() => _filter = key),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 14),
         StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collection('secretariatMessages')
@@ -449,7 +517,20 @@ class _PostsList extends StatelessWidget {
                   .compareTo(a.createdAt ?? DateTime(0));
             });
 
-            if (items.isEmpty) {
+            // Apply filter
+            final filtered = _filter == _kFilterAll
+                ? items
+                : items.where((i) {
+                    if (_filter == 'announcement') {
+                      return i.category != 'competition' &&
+                          i.category != 'camp' &&
+                          i.category != 'volunteer' &&
+                          i.category != 'vacation';
+                    }
+                    return i.category == _filter;
+                  }).toList();
+
+            if (filtered.isEmpty) {
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(32),
@@ -457,16 +538,18 @@ class _PostsList extends StatelessWidget {
                   color: _cardBg,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Text(
-                  'No posts in the last 30 days.',
+                child: Text(
+                  _filter == _kFilterAll
+                      ? 'No posts in the last 30 days.'
+                      : 'No posts for this category.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: _textMuted, fontSize: 13),
+                  style: const TextStyle(color: _textMuted, fontSize: 13),
                 ),
               );
             }
 
             return Column(
-              children: items
+              children: filtered
                   .map((item) => Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: _PostCard(item: item),
@@ -723,7 +806,7 @@ class _PostCard extends StatelessWidget {
   }
 }
 
-class _ActionBtn extends StatelessWidget {
+class _ActionBtn extends StatefulWidget {
   final IconData icon;
   final Color color;
   final String tooltip;
@@ -737,15 +820,112 @@ class _ActionBtn extends StatelessWidget {
   });
 
   @override
+  State<_ActionBtn> createState() => _ActionBtnState();
+}
+
+class _ActionBtnState extends State<_ActionBtn> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
     return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: Padding(
-          padding: const EdgeInsets.all(6),
-          child: Icon(icon, size: 18, color: color),
+      message: widget.tooltip,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: _hovered
+                  ? widget.color.withValues(alpha: 0.12)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(widget.icon, size: 18, color: widget.color),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterChipWidget extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final Color chipColor;
+  final VoidCallback onTap;
+
+  const _FilterChipWidget({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.chipColor,
+    required this.onTap,
+  });
+
+  @override
+  State<_FilterChipWidget> createState() => _FilterChipWidgetState();
+}
+
+class _FilterChipWidgetState extends State<_FilterChipWidget> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: widget.selected
+                ? widget.chipColor
+                : _hovered
+                    ? widget.chipColor.withValues(alpha: 0.10)
+                    : const Color(0xFFF2F4F8),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: widget.selected || _hovered
+                  ? widget.chipColor
+                  : const Color(0xFFE8EAF2),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                widget.icon,
+                size: 13,
+                color: widget.selected
+                    ? Colors.white
+                    : _hovered
+                        ? widget.chipColor
+                        : _textMuted,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                widget.label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: widget.selected
+                      ? Colors.white
+                      : _hovered
+                          ? widget.chipColor
+                          : _textMuted,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -921,6 +1101,8 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
                     InkWell(
                       onTap: () => Navigator.pop(context),
                       borderRadius: BorderRadius.circular(8),
+                      mouseCursor: SystemMouseCursors.click,
+                      hoverColor: _textMuted.withValues(alpha: 0.10),
                       child: const Padding(
                         padding: EdgeInsets.all(8),
                         child: Icon(Icons.close_rounded, size: 20, color: _textMuted),
@@ -1168,7 +1350,7 @@ class _TwoCol extends StatelessWidget {
   }
 }
 
-class _IconChip extends StatelessWidget {
+class _IconChip extends StatefulWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -1181,30 +1363,42 @@ class _IconChip extends StatelessWidget {
   });
 
   @override
+  State<_IconChip> createState() => _IconChipState();
+}
+
+class _IconChipState extends State<_IconChip> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: widget.color.withValues(alpha: _hovered ? 0.16 : 0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(widget.icon, size: 14, color: widget.color),
+              const SizedBox(width: 5),
+              Text(
+                widget.label,
+                style: TextStyle(
+                  color: widget.color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
