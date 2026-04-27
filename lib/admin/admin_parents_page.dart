@@ -169,7 +169,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                               ),
                             ),
                             child: const Text(
-                              '+ Invite parent',
+                              '+ Add parent',
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 15,
@@ -202,7 +202,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                         builder: (context, snap) {
                           if (snap.hasError) {
                             return Center(
-                              child: SelectableText("Eroare:\n${snap.error}"),
+                              child: SelectableText("Error:\n${snap.error}"),
                             );
                           }
                           if (!snap.hasData) {
@@ -249,8 +249,8 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                             return Center(
                               child: Text(
                                 _searchQuery.isEmpty
-                                    ? 'Nu există părinți'
-                                    : 'Niciun rezultat pentru "$_searchQuery"',
+                                    ? 'No parents found'
+                                    : 'No results for "$_searchQuery"',
                                 style: const TextStyle(
                                   color: Color(0xFF7A7E9A),
                                   fontSize: 14,
@@ -825,7 +825,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                         child: Row(
                           children: [
                             const Text(
-                              'Setări Utilizator',
+                              'User Settings',
                               style: TextStyle(
                                 fontSize: 27,
                                 fontWeight: FontWeight.w900,
@@ -843,7 +843,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                 ),
                               ),
                               child: const Text(
-                                'Anulează',
+                                'Cancel',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -876,7 +876,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                             currentFullName = newName;
                                             renameC.clear();
                                             msg =
-                                                'Numele a fost schimbat în "$newName".';
+                                                'Name changed to "$newName".';
                                             msgIsError = false;
                                           });
                                           return; // stay open to show success message
@@ -907,7 +907,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                 ),
                               ),
                               child: const Text(
-                                'Salvează modificările',
+                                'Save changes',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -1008,7 +1008,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                           Row(
                                             children: [
                                               const Text(
-                                                'Detalii Părinte',
+                                                'Parent Details',
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w800,
@@ -1045,8 +1045,8 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                   children: [
                                                     Text(
                                                       onboardingComplete
-                                                          ? 'CONT CONFIGURAT'
-                                                          : 'CONT NECONFIGURAT',
+                                                          ? 'ACCOUNT CONFIGURED'
+                                                          : 'ACCOUNT NOT CONFIGURED',
                                                       style: TextStyle(
                                                         fontSize: 13,
                                                         fontWeight:
@@ -1087,9 +1087,9 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                             ],
                                           ),
                                           const SizedBox(height: 20),
-                                          // NUME COMPLET
+                                          // FULL NAME
                                           const Text(
-                                            'NUME COMPLET',
+                                            'FULL NAME',
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
@@ -1162,7 +1162,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                     currentFullName = newName;
                                                     renameC.clear();
                                                     msg =
-                                                        'Numele a fost schimbat în "$newName".';
+                                                        'Name changed to "$newName".';
                                                     msgIsError = false;
                                                   });
                                                 } catch (e) {
@@ -1284,9 +1284,9 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                             ],
                                           ),
                                           const SizedBox(height: 16),
-                                          // COPII ÎNREGISTRAȚI
+                                          // REGISTERED CHILDREN
                                           const Text(
-                                            'COPII ÎNREGISTRAȚI',
+                                            'REGISTERED CHILDREN',
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
@@ -1318,6 +1318,11 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                               String,
                                                               dynamic
                                                             >;
+                                                    final parentsList =
+                                                        List<String>.from(
+                                                          data['parents'] ??
+                                                              const [],
+                                                        );
                                                     return {
                                                       'uid': d.id,
                                                       'fullName':
@@ -1328,6 +1333,9 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                       'username':
                                                           (data['username'] ??
                                                                   d.id)
+                                                              .toString(),
+                                                      'parentsCount':
+                                                          parentsList.length
                                                               .toString(),
                                                     };
                                                   }).toList()..sort(
@@ -1359,7 +1367,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                 )) {
                                                   setS(() {
                                                     msg =
-                                                        'Copilul este deja atribuit acestui părinte.';
+                                                        'This child is already assigned to this parent.';
                                                     msgIsError = true;
                                                   });
                                                   return;
@@ -1369,6 +1377,39 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                   msg = null;
                                                 });
                                                 try {
+                                                  final childRef =
+                                                      FirebaseFirestore.instance
+                                                          .collection('users')
+                                                          .doc(childUid);
+                                                  final childSnap =
+                                                      await childRef.get();
+                                                  if (!childSnap.exists) {
+                                                    setS(() {
+                                                      busy = false;
+                                                      msg =
+                                                          'The selected student no longer exists.';
+                                                      msgIsError = true;
+                                                    });
+                                                    return;
+                                                  }
+                                                  final existingParents =
+                                                      List<String>.from(
+                                                        childSnap.data()?[
+                                                                'parents'] ??
+                                                            const [],
+                                                      );
+                                                  if (!existingParents
+                                                          .contains(uid) &&
+                                                      existingParents.length >=
+                                                          2) {
+                                                    setS(() {
+                                                      busy = false;
+                                                      msg =
+                                                          'A student cannot have more than 2 assigned parents.';
+                                                      msgIsError = true;
+                                                    });
+                                                    return;
+                                                  }
                                                   await FirebaseFirestore
                                                       .instance
                                                       .collection('users')
@@ -1379,23 +1420,19 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                               [childUid],
                                                             ),
                                                       });
-                                                  await FirebaseFirestore
-                                                      .instance
-                                                      .collection('users')
-                                                      .doc(childUid)
-                                                      .update({
-                                                        'parents':
-                                                            FieldValue.arrayUnion(
-                                                              [uid],
-                                                            ),
-                                                      });
+                                                  await childRef.update({
+                                                    'parents':
+                                                        FieldValue.arrayUnion(
+                                                          [uid],
+                                                        ),
+                                                  });
                                                   setS(() {
                                                     assignedChildren.add(
                                                       childUid,
                                                     );
                                                     busy = false;
                                                     msg =
-                                                        'Copilul a fost adăugat la părinte.';
+                                                        'Child added to parent.';
                                                     msgIsError = false;
                                                   });
                                                 } catch (e) {
@@ -1446,7 +1483,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                     );
                                                     busy = false;
                                                     msg =
-                                                        'Copilul a fost eliminat din listă.';
+                                                        'Child removed from the list.';
                                                     msgIsError = false;
                                                   });
                                                 } catch (e) {
@@ -1495,7 +1532,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                   // chips
                                                   if (assignedChildren.isEmpty)
                                                     const Text(
-                                                      'Niciun copil atribuit',
+                                                      'No assigned children',
                                                       style: TextStyle(
                                                         fontSize: 14,
                                                         color: Color(
@@ -1605,7 +1642,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                 setS(() {}),
                                                             decoration: const InputDecoration(
                                                               hintText:
-                                                                  'Adaugă un elev nou...',
+                                                                  'Add a new student...',
                                                               hintStyle: TextStyle(
                                                                 fontSize: 15,
                                                                 fontWeight:
@@ -1712,17 +1749,57 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                     vertical:
                                                                         10,
                                                                   ),
-                                                              child: Text(
-                                                                '${student['fullName']} (${student['username']})',
-                                                                style: const TextStyle(
-                                                                  fontSize: 14,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  color: Color(
-                                                                    0xFF2848B0,
+                                                              child: Row(
+                                                                children: [
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      '${student['fullName']} (${student['username']})',
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            14,
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w600,
+                                                                        color: Color(
+                                                                          0xFF2848B0,
+                                                                        ),
+                                                                      ),
+                                                                    ),
                                                                   ),
-                                                                ),
+                                                                  Container(
+                                                                    padding: const EdgeInsets
+                                                                        .symmetric(
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          2,
+                                                                    ),
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color: const Color(
+                                                                        0xFFE8EAF2,
+                                                                      ),
+                                                                      borderRadius:
+                                                                          BorderRadius
+                                                                              .circular(
+                                                                        10,
+                                                                      ),
+                                                                    ),
+                                                                    child: Text(
+                                                                      '${student['parentsCount'] ?? '0'}/2 parents',
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            11,
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w700,
+                                                                        color: Color(
+                                                                          0xFF7A7E9A,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
                                                               ),
                                                             ),
                                                           );
@@ -1781,7 +1858,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                             size: 18,
                                           ),
                                     label: const Text(
-                                      'Extrage Date / Reseteaza Parola',
+                                      'Export Data / Reset Password',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         fontSize: 17,
@@ -1810,18 +1887,18 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                             try {
                                               final excel =
                                                   xls.Excel.createExcel();
-                                              final sheet = excel['Parinte'];
+                                              final sheet = excel['Parent'];
                                               sheet.appendRow([
                                                 xls.TextCellValue(
-                                                  'Nume Complet',
+                                                  'Full Name',
                                                 ),
                                                 xls.TextCellValue('Username'),
                                                 xls.TextCellValue('Email'),
                                                 xls.TextCellValue(
-                                                  'Copii Atribuiti',
+                                                  'Assigned Children',
                                                 ),
                                                 xls.TextCellValue(
-                                                  'Parola Noua',
+                                                  'New Password',
                                                 ),
                                               ]);
                                               sheet.appendRow([
@@ -1839,7 +1916,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                               if (bytes != null) {
                                                 await FileSaver.instance
                                                     .saveFile(
-                                                      name: 'parinte_$username',
+                                                      name: 'parent_$username',
                                                       bytes: Uint8List.fromList(
                                                         bytes,
                                                       ),
@@ -1855,7 +1932,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                               setS(() {
                                                 busy = false;
                                                 msg =
-                                                    'Date exportate si parola a fost resetata automat.';
+                                                    'Data exported and password reset automatically.';
                                                 msgIsError = false;
                                               });
                                             } catch (e) {
@@ -1896,7 +1973,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                             Icons.delete_outline,
                                             size: 22,
                                           ),
-                                    label: const Text('Sterge Utilizator'),
+                                    label: const Text('Delete User'),
                                     style: ButtonStyle(
                                       foregroundColor:
                                           WidgetStateProperty.resolveWith((
@@ -1969,7 +2046,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                               context: ctx,
                                               barrierDismissible: true,
                                               barrierLabel:
-                                                  'Confirmare stergere parinte',
+                                                  'Confirm parent deletion',
                                               barrierColor: Colors.transparent,
                                               transitionDuration:
                                                   const Duration(
@@ -2113,7 +2190,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                                 CrossAxisAlignment.start,
                                                                             children: [
                                                                               Text(
-                                                                                'Sterge parinte',
+                                                                                'Delete parent',
                                                                                 style: TextStyle(
                                                                                   fontSize: 24,
                                                                                   fontWeight: FontWeight.w800,
@@ -2126,7 +2203,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                                 height: 6,
                                                                               ),
                                                                               Text(
-                                                                                'Confirmarea este permanenta si va sterge contul parintelui si datele asociate acestuia.',
+                                                                                'Confirmation is permanent and will delete the parent account along with its associated data.',
                                                                                 style: TextStyle(
                                                                                   fontSize: 13,
                                                                                   height: 1.4,
@@ -2170,7 +2247,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                             CrossAxisAlignment.start,
                                                                         children: [
                                                                           const Text(
-                                                                            'Parinte selectat',
+                                                                            'Selected parent',
                                                                             style: TextStyle(
                                                                               fontSize: 11,
                                                                               fontWeight: FontWeight.w700,
@@ -2255,7 +2332,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                               ),
                                                                             ),
                                                                             child: const Text(
-                                                                              'Anuleaza',
+                                                                              'Cancel',
                                                                             ),
                                                                           ),
                                                                         ),
@@ -2286,7 +2363,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                                   true,
                                                                                 ),
                                                                             child: const Text(
-                                                                              'Sterge parinte',
+                                                                              'Delete parent',
                                                                             ),
                                                                           ),
                                                                         ),

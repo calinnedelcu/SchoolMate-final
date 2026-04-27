@@ -637,7 +637,7 @@ exports.adminCreateUser = onCall(async (request) => {
         throw new HttpsError("invalid-argument", "Rol invalid");
     }
 
-    if (role === "student" || role === "teacher") {
+    if (role === "student") {
         if (!classId) {
             throw new HttpsError("invalid-argument", `Pentru ${role} trebuie selectata o clasa`);
         }
@@ -649,17 +649,26 @@ exports.adminCreateUser = onCall(async (request) => {
         if (!classSnap.exists) {
             throw new HttpsError("not-found", `Clasa ${classId} nu exista`);
         }
+    }
 
-        if (role === "teacher") {
-            const existingTeacher = String(classSnap.data()?.teacherUsername || "")
-                .trim()
-                .toLowerCase();
-            if (existingTeacher) {
-                throw new HttpsError(
-                    "failed-precondition",
-                    `Clasa ${classId} are deja diriginte: ${existingTeacher}`
-                );
-            }
+    if (role === "teacher" && classId) {
+        if (!CLASS_ID_RE.test(classId)) {
+            throw new HttpsError("invalid-argument", "Format clasa invalid (ex: 9A, 10B)");
+        }
+
+        const classSnap = await admin.firestore().collection("classes").doc(classId).get();
+        if (!classSnap.exists) {
+            throw new HttpsError("not-found", `Clasa ${classId} nu exista`);
+        }
+
+        const existingTeacher = String(classSnap.data()?.teacherUsername || "")
+            .trim()
+            .toLowerCase();
+        if (existingTeacher) {
+            throw new HttpsError(
+                "failed-precondition",
+                `Clasa ${classId} are deja diriginte: ${existingTeacher}`
+            );
         }
     }
 
@@ -1508,151 +1517,149 @@ exports.redeemQrToken = onCall(async (request) => {
     const result = await db.runTransaction(async (tx) => {
         let result = null;
 
-        scan : {
-        const snap = await tx.get(tokenRef);
+        scan: {
+            const snap = await tx.get(tokenRef);
 
-        if (!snap.exists) {
-            result = { ok: false, reason: "NOT_FOUND", type: "deny"};
-            accessEventToLog = {
-                gateUid: callerUid,
-                type: "deny",
-                timestamp: scanTimestamp,
-                tokenId,
-                scanResult: "denied",
-                reason: result.reason || null,
-            };
-            break scan;
-        }
+            if (!snap.exists) {
+                result = { ok: false, reason: "NOT_FOUND", type: "deny" };
+                accessEventToLog = {
+                    gateUid: callerUid,
+                    type: "deny",
+                    timestamp: scanTimestamp,
+                    tokenId,
+                    scanResult: "denied",
+                    reason: result.reason || null,
+                };
+                break scan;
+            }
 
-        const data = snap.data() || {};
-        const used = data.used === true;
-        const userId = String(data.userId || "");
-        const expiresAt = data.expiresAt;
+            const data = snap.data() || {};
+            const used = data.used === true;
+            const userId = String(data.userId || "");
+            const expiresAt = data.expiresAt;
 
-        if (used) {
-            result = { ok: false, reason: "ALREADY_USED", userId, type: "deny" };
-            accessEventToLog = {
-                gateUid: callerUid,
-                userId,
-                type: "deny",
-                timestamp: scanTimestamp,
-                tokenId,
-                scanResult: "denied",
-                reason: result.reason || null,
-            };
-            break scan;
-        }
+            if (used) {
+                result = { ok: false, reason: "ALREADY_USED", userId, type: "deny" };
+                accessEventToLog = {
+                    gateUid: callerUid,
+                    userId,
+                    type: "deny",
+                    timestamp: scanTimestamp,
+                    tokenId,
+                    scanResult: "denied",
+                    reason: result.reason || null,
+                };
+                break scan;
+            }
 
-        if (!expiresAt || typeof expiresAt.toDate !== "function") {
-            result = { ok: false, reason: "BAD_EXPIRES", userId, type: "deny" };
-            accessEventToLog = {
-                gateUid: callerUid,
-                userId,
-                type: "deny",
-                timestamp: scanTimestamp,
-                tokenId,
-                scanResult: "denied",
-                reason: result.reason || null,
-            };
-            break scan;
-        }
+            if (!expiresAt || typeof expiresAt.toDate !== "function") {
+                result = { ok: false, reason: "BAD_EXPIRES", userId, type: "deny" };
+                accessEventToLog = {
+                    gateUid: callerUid,
+                    userId,
+                    type: "deny",
+                    timestamp: scanTimestamp,
+                    tokenId,
+                    scanResult: "denied",
+                    reason: result.reason || null,
+                };
+                break scan;
+            }
 
-        const nowMs = Date.now();
-        const expMs = expiresAt.toDate().getTime();
+            const nowMs = Date.now();
+            const expMs = expiresAt.toDate().getTime();
 
-        if (expMs <= nowMs) {
-            result = { ok: false, reason: "EXPIRED", userId, type: "deny" };
-            accessEventToLog = {
-                gateUid: callerUid,
-                userId,
-                type: "deny",
-                timestamp: scanTimestamp,
-                tokenId,
-                scanResult: "denied",
-                reason: result.reason || null,
-            };
-            break scan;
-        }
+            if (expMs <= nowMs) {
+                result = { ok: false, reason: "EXPIRED", userId, type: "deny" };
+                accessEventToLog = {
+                    gateUid: callerUid,
+                    userId,
+                    type: "deny",
+                    timestamp: scanTimestamp,
+                    tokenId,
+                    scanResult: "denied",
+                    reason: result.reason || null,
+                };
+                break scan;
+            }
 
-        const userRef = db.collection("users").doc(userId);
-        const userSnap = await tx.get(userRef);
+            const userRef = db.collection("users").doc(userId);
+            const userSnap = await tx.get(userRef);
 
-        if (!userSnap.exists) {
-            result = { ok: false, reason: "USER_NOT_FOUND", userId, type: "deny" };
-            accessEventToLog = {
-                gateUid: callerUid,
-                userId,
-                type: "deny",
-                timestamp: scanTimestamp,
-                tokenId,
-                scanResult: "denied",
-                reason: result.reason || null,
-            };
-            break scan;
-        }
+            if (!userSnap.exists) {
+                result = { ok: false, reason: "USER_NOT_FOUND", userId, type: "deny" };
+                accessEventToLog = {
+                    gateUid: callerUid,
+                    userId,
+                    type: "deny",
+                    timestamp: scanTimestamp,
+                    tokenId,
+                    scanResult: "denied",
+                    reason: result.reason || null,
+                };
+                break scan;
+            }
 
-        const userData = userSnap.data() || {};
-        const inSchool = userData.inSchool === true;
-        const status = String(userData.status || "active");
-        const fullName = String(userData.fullName || userData.username || userId);
-        const classId = String(userData.classId || "");
-        const canExitForHoliday = inSchool && activeHolidayExit;
+            const userData = userSnap.data() || {};
+            const inSchool = userData.inSchool === true;
+            const status = String(userData.status || "active");
+            const fullName = String(userData.fullName || userData.username || userId);
+            const classId = String(userData.classId || "");
+            const canExitForHoliday = inSchool && activeHolidayExit;
 
-        if (status === "disabled") {
-            result = {ok: false, reason: "USER_DISABLED", userId, fullName, classId, type: "deny"};
-            accessEventToLog = {
-                gateUid: callerUid,
-                userId,
-                fullName,
-                classId,
-                type: "deny",
-                timestamp: scanTimestamp,
-                tokenId,
-                scanResult: "denied",
-                reason: result.reason || null,
-            };
-            break scan;
-        }
+            if (status === "disabled") {
+                result = { ok: false, reason: "USER_DISABLED", userId, fullName, classId, type: "deny" };
+                accessEventToLog = {
+                    gateUid: callerUid,
+                    userId,
+                    fullName,
+                    classId,
+                    type: "deny",
+                    timestamp: scanTimestamp,
+                    tokenId,
+                    scanResult: "denied",
+                    reason: result.reason || null,
+                };
+                break scan;
+            }
 
-        // --- Class timetable check added here ---
-        if (!classId) {
-            result = {ok: false, reason: "NO_CLASS_ASSIGNED", userId, fullName, classId, type: "deny"};
-            accessEventToLog = {
-                gateUid: callerUid,
-                userId,
-                fullName,
-                classId,
-                type: "deny",
-                timestamp: scanTimestamp,
-                tokenId,
-                scanResult: "denied",
-                reason: result.reason || null,
-            };
-            break scan;
-        }
+            // --- Class timetable check added here ---
+            if (!classId) {
+                result = { ok: false, reason: "NO_CLASS_ASSIGNED", userId, fullName, classId, type: "deny" };
+                accessEventToLog = {
+                    gateUid: callerUid,
+                    userId,
+                    fullName,
+                    classId,
+                    type: "deny",
+                    timestamp: scanTimestamp,
+                    tokenId,
+                    scanResult: "denied",
+                    reason: result.reason || null,
+                };
+                break scan;
+            }
 
-        const classRef = db.collection("classes").doc(classId);
-        const classSnap = await tx.get(classRef);
-        const classData = classSnap.exists ? classSnap.data() || {} : {};
-        const schedule = classData.schedule || {};
+            const classRef = db.collection("classes").doc(classId);
+            const classSnap = await tx.get(classRef);
+            const classData = classSnap.exists ? classSnap.data() || {} : {};
+            const schedule = classData.schedule || {};
 
-        // Use local school timezone (e.g. Europe/Bucharest) for timetable checks,
-        // because Cloud Functions uses UTC by default and can be 2-3h behind local time.
-        const localNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Bucharest" }));
-        const dayIdx = localNow.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-        const isWeekend = dayIdx === 0 || dayIdx === 6;
+            // Use local school timezone (e.g. Europe/Bucharest) for timetable checks,
+            // because Cloud Functions uses UTC by default and can be 2-3h behind local time.
+            const localNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Bucharest" }));
+            const dayIdx = localNow.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+            const isWeekend = dayIdx === 0 || dayIdx === 6;
 
-        const now = localNow;
+            const now = localNow;
 
-        let isAfterSchedule = false;
-        let isBeforeSchedule = false;
-
-        
+            let isAfterSchedule = false;
+            let isBeforeSchedule = false;
 
             const dayKey = String(dayIdx);
             const daySchedule = schedule[dayKey];
             if (!daySchedule || !daySchedule.start || !daySchedule.end) {
-                result = {ok: false, reason: "NO_SCHEDULE", userId, fullName, classId, type: "deny"};
+                result = { ok: false, reason: "NO_SCHEDULE", userId, fullName, classId, type: "deny" };
                 accessEventToLog = {
                     gateUid: callerUid,
                     userId,
@@ -1679,7 +1686,7 @@ exports.redeemQrToken = onCall(async (request) => {
             const endMinutes = parseTime(daySchedule.end);
 
             if (startMinutes == null || endMinutes == null || endMinutes < startMinutes) {
-                result = {ok: false, reason: "BAD_SCHEDULE", userId, fullName, classId, type: "deny"};
+                result = { ok: false, reason: "BAD_SCHEDULE", userId, fullName, classId, type: "deny" };
                 accessEventToLog = {
                     gateUid: callerUid,
                     userId,
@@ -1697,88 +1704,85 @@ exports.redeemQrToken = onCall(async (request) => {
             const nowMinutes = now.getHours() * 60 + now.getMinutes();
             isAfterSchedule = nowMinutes > endMinutes;
             isBeforeSchedule = nowMinutes < startMinutes;
-        
 
-        // approvedLeaveExit was determined before the transaction via a plain query.
-        // (tx.get(query) is unreliable with multi-field filters in firebase-admin v13)
+            // approvedLeaveExit was determined before the transaction via a plain query.
+            // (tx.get(query) is unreliable with multi-field filters in firebase-admin v13)
 
-        const nowTs = scanTimestamp;
+            const nowTs = scanTimestamp;
 
-        tx.update(tokenRef, {
-            used: true,
-            usedAt: nowTs,
-            redeemedBy: callerUid,
-        });
-
-        let eventType = "entry";
-        result = {
-            ok: true,
-            userId,
-            fullName,
-            classId,
-            type: "entry"
-        };
-
-        if (!inSchool) {
-            // student entering school
-            tx.update(userRef, {
-                inSchool: true,
-                lastInAt: nowTs,
-                // keep lastOutAt as is, do not clear it
+            tx.update(tokenRef, {
+                used: true,
+                usedAt: nowTs,
+                redeemedBy: callerUid,
             });
-        } else if (canExitForHoliday || isWeekend || isAfterSchedule || isBeforeSchedule) {
-            // on weekends or outside class hours: allow free exit
-            eventType = "exit";
-            tx.update(userRef, {
-                inSchool: false,
-                // keep lastInAt as is, do not clear it
-                lastOutAt: nowTs,
-            });
-            result.type = "exit";
-        } else if (approvedLeaveExit) {
-            // student has an approved leave request for right now — allow early exit
-            eventType = "exit";
-            tx.update(userRef, {
-                inSchool: false,
-                lastOutAt: nowTs,
-            });
+
+            let eventType = "entry";
             result = {
                 ok: true,
                 userId,
                 fullName,
                 classId,
-                type: "exit"
+                type: "entry",
             };
-        } else {
-            // student already in school during class hours, no approved leave
-            eventType = "deny";
-            result = {
-                ok: false,
-                reason: "ALREADY_IN_SCHOOL",
+
+            if (!inSchool) {
+                // student entering school
+                tx.update(userRef, {
+                    inSchool: true,
+                    lastInAt: nowTs,
+                    // keep lastOutAt as is, do not clear it
+                });
+            } else if (canExitForHoliday || isWeekend || isAfterSchedule || isBeforeSchedule) {
+                // on weekends or outside class hours: allow free exit
+                eventType = "exit";
+                tx.update(userRef, {
+                    inSchool: false,
+                    // keep lastInAt as is, do not clear it
+                    lastOutAt: nowTs,
+                });
+                result.type = "exit";
+            } else if (approvedLeaveExit) {
+                // student has an approved leave request for right now — allow early exit
+                eventType = "exit";
+                tx.update(userRef, {
+                    inSchool: false,
+                    lastOutAt: nowTs,
+                });
+                result = {
+                    ok: true,
+                    userId,
+                    fullName,
+                    classId,
+                    type: "exit",
+                };
+            } else {
+                // student already in school during class hours, no approved leave
+                eventType = "deny";
+                result = {
+                    ok: false,
+                    reason: "ALREADY_IN_SCHOOL",
+                    userId,
+                    fullName,
+                    classId,
+                    type: "deny",
+                };
+            }
+
+            // Capture access event data — will be logged after the transaction commits
+            accessEventToLog = {
+                gateUid: callerUid,
                 userId,
                 fullName,
                 classId,
-                type: "deny"
+                type: eventType,
+                timestamp: nowTs,
+                tokenId,
+                scanResult: result.ok === true ? "allowed" : "denied",
+                reason: result.reason || null,
             };
         }
 
-    
-        // Capture access event data — will be logged after the transaction commits
-        accessEventToLog = {
-            gateUid: callerUid,
-            userId,
-            fullName,
-            classId,
-            type: eventType,
-            timestamp: nowTs,
-            tokenId,
-            scanResult: result.ok === true ? "allowed" : "denied",
-            reason: result.reason || null,
-        };
-    }
-    
-
-    return result;
+        return result;
     });
 
     // Log access event AFTER the transaction commits, properly awaited

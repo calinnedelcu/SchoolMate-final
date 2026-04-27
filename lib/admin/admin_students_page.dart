@@ -199,7 +199,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                         builder: (context, snap) {
                           if (snap.hasError) {
                             return Center(
-                              child: SelectableText("Eroare:\n${snap.error}"),
+                              child: SelectableText("Error:\n${snap.error}"),
                             );
                           }
                           if (!snap.hasData) {
@@ -264,8 +264,8 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                             return Center(
                               child: Text(
                                 _searchQuery.isEmpty
-                                    ? 'Nu există elevi'
-                                    : 'Niciun rezultat pentru "$_searchQuery"',
+                                    ? 'No students'
+                                    : 'No results for "$_searchQuery"',
                                 style: const TextStyle(
                                   color: Color(0xFF8FABC1),
                                   fontSize: 14,
@@ -620,7 +620,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
 
   String _formatClassName(String classId) {
     if (classId.isEmpty) return '-';
-    if (classId.toLowerCase().startsWith('clasa')) return classId;
+    if (classId.toLowerCase().startsWith('grade')) return classId;
 
     final original = classId.trim();
     // Match something like "9A", "10 C", "11B", "12"
@@ -642,12 +642,12 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
       }
 
       if (letter.isNotEmpty) {
-        return 'Clasa a $roman-a $letter';
+        return 'Grade $roman $letter';
       }
-      return 'Clasa a $roman-a';
+      return 'Grade $roman';
     }
 
-    return 'Clasa $original';
+    return 'Grade $original';
   }
 
   String _initials(String name) {
@@ -962,7 +962,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                         child: Row(
                           children: [
                             const Text(
-                              'Setări Utilizator',
+                              'User Settings',
                               style: TextStyle(
                                 fontSize: 27,
                                 fontWeight: FontWeight.w900,
@@ -980,7 +980,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                 ),
                               ),
                               child: const Text(
-                                'Anulează',
+                                'Cancel',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -1013,7 +1013,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                             currentFullName = newName;
                                             renameC.clear();
                                             msg =
-                                                'Numele a fost schimbat în "$newName".';
+                                                'The name has been changed to "$newName".';
                                             msgIsError = false;
                                           });
                                           return; // stay open to show success message
@@ -1044,7 +1044,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                 ),
                               ),
                               child: const Text(
-                                'Salvează modificările',
+                                'Save changes',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -1145,7 +1145,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                           Row(
                                             children: [
                                               const Text(
-                                                'Detalii Elev',
+                                                'Student Details',
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w800,
@@ -1182,8 +1182,8 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                   children: [
                                                     Text(
                                                       onboardingComplete
-                                                          ? 'CONT CONFIGURAT'
-                                                          : 'CONT NECONFIGURAT',
+                                                          ? 'ACCOUNT CONFIGURED'
+                                                          : 'ACCOUNT NOT CONFIGURED',
                                                       style: TextStyle(
                                                         fontSize: 13,
                                                         fontWeight:
@@ -1224,9 +1224,9 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                             ],
                                           ),
                                           const SizedBox(height: 20),
-                                          // NUME COMPLET
+                                          // FULL NAME
                                           const Text(
-                                            'NUME COMPLET',
+                                            'FULL NAME',
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
@@ -1299,7 +1299,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                     currentFullName = newName;
                                                     renameC.clear();
                                                     msg =
-                                                        'Numele a fost schimbat în "$newName".';
+                                                        'The name has been changed to "$newName".';
                                                     msgIsError = false;
                                                   });
                                                 } catch (e) {
@@ -1421,12 +1421,12 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                             ],
                                           ),
                                           const SizedBox(height: 16),
-                                          // PĂRINȚI + DIRIGINTE
+                                          // PARENTS + HOMEROOM TEACHER
                                           Row(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              // PĂRINȚI
+                                              // PARENTS
                                               Expanded(
                                                 child: FutureBuilder<QuerySnapshot>(
                                                   future: allParentsLoaded
@@ -1575,7 +1575,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                             parents.add(newUid);
                                                           }
                                                           msg =
-                                                              'Parentele a fost actualizat.';
+                                                              'Parent updated.';
                                                           msgIsError = false;
                                                         });
                                                       } catch (e) {
@@ -1648,7 +1648,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                           },
                                                                         )['fullName'] ??
                                                                         currentUid)
-                                                                  : 'Niciun părinte',
+                                                                  : 'No parent',
                                                               style: const TextStyle(
                                                                 fontSize: 16,
                                                                 fontWeight:
@@ -1674,7 +1674,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                 value:
                                                                     '__none__',
                                                                 child: Text(
-                                                                  'Niciun părinte',
+                                                                  'No parent',
                                                                   style: TextStyle(
                                                                     fontSize:
                                                                         16,
@@ -1735,7 +1735,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                               .start,
                                                       children: [
                                                         const Text(
-                                                          'PĂRINȚI',
+                                                          'PARENTS',
                                                           style: TextStyle(
                                                             fontSize: 11,
                                                             fontWeight:
@@ -1774,7 +1774,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                 ),
                                               ),
                                               const SizedBox(width: 14),
-                                              // DIRIGINTE
+                                              // HOMEROOM TEACHER
                                               Expanded(
                                                 child: FutureBuilder<String>(
                                                   future:
@@ -1831,7 +1831,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                             })
                                                       : Future.value('-'),
                                                   builder: (_, snap) {
-                                                    final diriginte =
+                                                    final homeroomTeacher =
                                                         snap.data ?? '…';
 
                                                     return Column(
@@ -1840,7 +1840,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                               .start,
                                                       children: [
                                                         const Text(
-                                                          'DIRIGINTE',
+                                                          'HOMEROOM TEACHER',
                                                           style: TextStyle(
                                                             fontSize: 11,
                                                             fontWeight:
@@ -1876,7 +1876,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                             children: [
                                                               Expanded(
                                                                 child: Text(
-                                                                  diriginte,
+                                                                  homeroomTeacher,
                                                                   style: const TextStyle(
                                                                     fontSize:
                                                                         16,
@@ -1901,7 +1901,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                           height: 4,
                                                         ),
                                                         const Text(
-                                                          '* Se actualizează automat în funcție de clasă',
+                                                          '* Updates automatically based on class',
                                                           style: TextStyle(
                                                             fontSize: 11,
                                                             fontStyle: FontStyle
@@ -1919,9 +1919,9 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                             ],
                                           ),
                                           const SizedBox(height: 16),
-                                          // CLASĂ
+                                          // CLASS
                                           const Text(
-                                            'CLASĂ',
+                                            'CLASS',
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
@@ -1977,7 +1977,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                           ? _formatClassName(
                                                               currentClassId,
                                                             )
-                                                          : 'Selectează clasă...',
+                                                          : 'Select class...',
                                                       style: const TextStyle(
                                                         fontSize: 16,
                                                         fontWeight:
@@ -2039,7 +2039,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                 currentClassId =
                                                                     val;
                                                                 msg =
-                                                                    'Elevul a fost mutat în clasa $val.';
+                                                                    'Student moved to class $val.';
                                                                 msgIsError =
                                                                     false;
                                                               });
@@ -2129,7 +2129,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                             size: 18,
                                           ),
                                     label: const Text(
-                                      'Extrage Date / Resetează Parola',
+                                      'Export Data / Reset Password',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         fontSize: 17,
@@ -2160,16 +2160,16 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                               // 1. Export Excel
                                               final excel =
                                                   xls.Excel.createExcel();
-                                              final sheet = excel['Elev'];
+                                              final sheet = excel['Student'];
                                               sheet.appendRow([
                                                 xls.TextCellValue(
-                                                  'Nume Complet',
+                                                  'Full Name',
                                                 ),
                                                 xls.TextCellValue('Username'),
                                                 xls.TextCellValue('Email'),
-                                                xls.TextCellValue('Clasă'),
+                                                xls.TextCellValue('Class'),
                                                 xls.TextCellValue(
-                                                  'Parolă Nouă',
+                                                  'New Password',
                                                 ),
                                               ]);
                                               sheet.appendRow([
@@ -2189,7 +2189,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                               if (bytes != null) {
                                                 await FileSaver.instance
                                                     .saveFile(
-                                                      name: 'elev_$username',
+                                                      name: 'student_$username',
                                                       bytes: Uint8List.fromList(
                                                         bytes,
                                                       ),
@@ -2208,7 +2208,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                               setS(() {
                                                 busy = false;
                                                 msg =
-                                                    'Date exportate și parola a fost resetată automat.';
+                                                    'Data exported and password has been reset automatically.';
                                                 msgIsError = false;
                                               });
                                             } catch (e) {
@@ -2249,7 +2249,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                             Icons.delete_outline,
                                             size: 22,
                                           ),
-                                    label: const Text('Șterge Utilizator'),
+                                    label: const Text('Delete User'),
                                     style: ButtonStyle(
                                       foregroundColor:
                                           WidgetStateProperty.resolveWith((
@@ -2323,7 +2323,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                               context: ctx,
                                               barrierDismissible: true,
                                               barrierLabel:
-                                                  'Confirmare stergere elev',
+                                                  'Confirm student deletion',
                                               barrierColor: Colors.transparent,
                                               transitionDuration:
                                                   const Duration(
@@ -2454,7 +2454,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                             CrossAxisAlignment.start,
                                                                         children: [
                                                                           Text(
-                                                                            'Sterge elev',
+                                                                            'Delete student',
                                                                             style: TextStyle(
                                                                               fontSize: 24,
                                                                               fontWeight: FontWeight.w800,
@@ -2468,7 +2468,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                                 6,
                                                                           ),
                                                                           Text(
-                                                                            'Confirmarea este permanenta si va sterge contul elevului si datele asociate acestuia.',
+                                                                            'This confirmation is permanent and will delete the student account and the data associated with it.',
                                                                             style: TextStyle(
                                                                               fontSize: 13,
                                                                               height: 1.4,
@@ -2512,7 +2512,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                             .start,
                                                                     children: [
                                                                       const Text(
-                                                                        'Elev selectat',
+                                                                        'Selected student',
                                                                         style: TextStyle(
                                                                           fontSize:
                                                                               11,
@@ -2603,7 +2603,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                           ),
                                                                         ),
                                                                         child: const Text(
-                                                                          'Anuleaza',
+                                                                          'Cancel',
                                                                         ),
                                                                       ),
                                                                     ),
@@ -2632,7 +2632,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                           dialogCtx,
                                                                         ).pop(true),
                                                                         child: const Text(
-                                                                          'Sterge elev',
+                                                                          'Delete student',
                                                                         ),
                                                                       ),
                                                                     ),
