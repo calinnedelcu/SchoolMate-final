@@ -16,7 +16,8 @@ class TimetableSlot {
 class TimetableLesson {
   final String subject;
   final String teacher;
-  const TimetableLesson(this.subject, this.teacher);
+  final String? shortLabel;
+  const TimetableLesson(this.subject, this.teacher, {this.shortLabel});
 }
 
 const kTimetableSlots = <TimetableSlot>[
@@ -86,20 +87,26 @@ const List<List<TimetableLesson?>> kDemoSchedule = [
 
 class TimetableGrid extends StatelessWidget {
   final List<List<TimetableLesson?>> schedule;
+  final List<TimetableSlot>? slots;
 
-  const TimetableGrid({super.key, this.schedule = kDemoSchedule});
+  const TimetableGrid({
+    super.key,
+    this.schedule = kDemoSchedule,
+    this.slots,
+  });
 
   @override
   Widget build(BuildContext context) {
     const dayColumnWidth = 34.0;
     const gap = 4.0;
+    final effectiveSlots = slots ?? kTimetableSlots;
 
     return Column(
       children: [
         Row(
           children: [
             const SizedBox(width: dayColumnWidth + gap),
-            for (final slot in kTimetableSlots)
+            for (final slot in effectiveSlots)
               Expanded(
                 child: Column(
                   children: [
@@ -234,7 +241,7 @@ class _LessonCell extends StatelessWidget {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  lesson!.subject,
+                  lesson!.shortLabel ?? lesson!.subject,
                   style: const TextStyle(
                     color: _primary,
                     fontSize: 11,
