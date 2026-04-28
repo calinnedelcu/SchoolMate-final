@@ -1,10 +1,8 @@
-import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../services/admin_api.dart';
 
@@ -20,8 +18,6 @@ Future<void> showAdminCreateUserDialog(
   bool busy = false;
   String? resultMsg;
   bool resultIsError = false;
-  String? createdUsername;
-  String? createdPassword;
 
   String randPassword(int len) {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#';
@@ -44,21 +40,50 @@ Future<void> showAdminCreateUserDialog(
     return List.generate(len, (_) => digits[rng.nextInt(digits.length)]).join();
   }
 
+  String roleLabel(String r) {
+    switch (r) {
+      case 'student': return 'Student';
+      case 'teacher': return 'Homeroom Teacher';
+      case 'parent': return 'Parent';
+      case 'admin': return 'Admin';
+      case 'gate': return 'Gate';
+      default: return r;
+    }
+  }
+
+  String dialogTitle() {
+    if (lockedRole != null) return 'Add ${roleLabel(lockedRole)}';
+    return 'Create New Account';
+  }
+
   await showGeneralDialog<void>(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Create user',
-    barrierColor: Colors.black.withValues(alpha: 0.35),
-    transitionDuration: const Duration(milliseconds: 200),
+    barrierColor: Colors.transparent,
+    transitionDuration: const Duration(milliseconds: 220),
     transitionBuilder: (_, animation, _, child) {
-      return FadeTransition(
-        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-        child: child,
+      return BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: 10 * animation.value,
+          sigmaY: 10 * animation.value,
+        ),
+        child: Container(
+          color: Colors.black.withValues(alpha: 0.45 * animation.value),
+          child: FadeTransition(
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.96, end: 1.0).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              ),
+              child: child,
+            ),
+          ),
+        ),
       );
     },
     pageBuilder: (_, _, _) {
-      return BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      return SafeArea(
         child: Center(
           child: StatefulBuilder(
             builder: (ctx, setS) {
@@ -67,18 +92,35 @@ Future<void> showAdminCreateUserDialog(
 
               InputDecoration fieldDeco(String hint) => InputDecoration(
                 hintText: hint,
-                hintStyle: const TextStyle(color: Color(0xFF7A7E9A), fontSize: 14),
+                hintStyle: const TextStyle(color: Color(0xFFB0B8C8), fontSize: 14),
                 filled: true,
-                fillColor: const Color(0xFFF2F4F8),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE8EAF2))),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE8EAF2))),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF2848B0), width: 2)),
+                fillColor: const Color(0xFFF6F8FB),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE4E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE4E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF2848B0), width: 2),
+                ),
               );
 
               Widget fieldLabel(String text) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF6F92B0), letterSpacing: 0.8)),
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF8FA3BA),
+                    letterSpacing: 0.9,
+                  ),
+                ),
               );
 
               Widget dropdownBox({
@@ -88,204 +130,339 @@ Future<void> showAdminCreateUserDialog(
                 String hint = '',
               }) => Container(
                 width: double.infinity,
-                height: 46,
-                decoration: BoxDecoration(color: const Color(0xFFF2F4F8), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFE8EAF2))),
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF6F8FB),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE4E8F0)),
+                ),
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: value,
                     isExpanded: true,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF7A7E9A)),
-                    hint: Text(hint, style: const TextStyle(color: Color(0xFF7A7E9A), fontSize: 14)),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF1A1A2E),
+                    ),
+                    hint: Text(
+                      hint,
+                      style: const TextStyle(color: Color(0xFFB0B8C8), fontSize: 14),
+                    ),
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFFB0B8C8)),
                     items: items,
                     onChanged: onChanged,
                   ),
                 ),
               );
 
-              return Dialog(
-                insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              return Material(
+                color: Colors.transparent,
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 680, maxHeight: MediaQuery.of(ctx).size.height * 0.85),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: _buildCard(
-                        title: 'Create New User',
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (resultMsg != null) ...[
+                  constraints: BoxConstraints(
+                    maxWidth: 560,
+                    maxHeight: MediaQuery.of(ctx).size.height * 0.9,
+                  ),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.14),
+                          blurRadius: 48,
+                          offset: const Offset(0, 18),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // ── HEADER ─────────────────────────────────────────
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(28, 24, 20, 24),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF6F8FB),
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                            border: Border(
+                              bottom: BorderSide(color: Colors.grey.shade200),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                width: 40,
+                                height: 40,
                                 decoration: BoxDecoration(
-                                  color: resultIsError ? const Color(0xFFFFF0F0) : const Color(0xFFF0F6FF),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: resultIsError ? const Color(0xFFE57373) : const Color(0xFF2848B0)),
+                                  color: const Color(0xFFEEF1FB),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Row(
+                                child: const Icon(
+                                  Icons.person_add_rounded,
+                                  size: 20,
+                                  color: Color(0xFF2848B0),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(resultIsError ? Icons.error_outline : Icons.check_circle_outline, size: 16, color: resultIsError ? const Color(0xFFD32F2F) : const Color(0xFF2848B0)),
-                                    const SizedBox(width: 8),
-                                    Expanded(child: SelectableText(resultMsg!, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: resultIsError ? const Color(0xFFB71C1C) : const Color(0xFF2848B0)))),
+                                    Text(
+                                      dialogTitle(),
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF1A1A2E),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Fill in the details to create the account.',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade500,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                            ],
-                            if (createdUsername != null) ...[
-                              _credentialCopyRow('Username', createdUsername!),
-                              const SizedBox(height: 8),
-                              _credentialCopyRow('Password', createdPassword!),
-                              const SizedBox(height: 20),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('Close', style: TextStyle(fontWeight: FontWeight.w700)),
+                              GestureDetector(
+                                onTap: busy ? null : () => Navigator.pop(ctx),
+                                child: Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFECEFF4),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.close_rounded,
+                                    size: 18,
+                                    color: Color(0xFF6B7A99),
+                                  ),
                                 ),
                               ),
-                            ] else ...[
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        fieldLabel('FULL NAME'),
-                                        TextField(controller: fullNameC, decoration: fieldDeco('Enter name...')),
-                                      ],
+                            ],
+                          ),
+                        ),
+
+                        // ── BODY ────────────────────────────────────────────
+                        Flexible(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Feedback banner
+                                if (resultMsg != null) ...[
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: resultIsError
+                                          ? const Color(0xFFFFF0F0)
+                                          : const Color(0xFFEDF7F0),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: resultIsError
+                                            ? const Color(0xFFE57373)
+                                            : const Color(0xFF5BAD7F),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    child: Row(
                                       children: [
-                                        fieldLabel('USER ROLE'),
-                                        dropdownBox(
-                                          value: role,
-                                          items: [
-                                            const DropdownMenuItem(value: 'student', child: Text('Student')),
-                                            const DropdownMenuItem(value: 'teacher', child: Text('Homeroom Teacher')),
-                                            const DropdownMenuItem(value: 'parent', child: Text('Parent')),
-                                            const DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                                            const DropdownMenuItem(value: 'gate', child: Text('Gate')),
-                                          ],
-                                          onChanged: lockedRole != null
-                                              ? (_) {}
-                                              : (v) => setS(() {
-                                                  role = v ?? 'student';
-                                                  if (role != 'student' && role != 'teacher') selectedClassId = '';
-                                                }),
+                                        Icon(
+                                          resultIsError
+                                              ? Icons.error_outline_rounded
+                                              : Icons.check_circle_outline_rounded,
+                                          size: 16,
+                                          color: resultIsError
+                                              ? const Color(0xFFD32F2F)
+                                              : const Color(0xFF2E8B57),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: SelectableText(
+                                            resultMsg!,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: resultIsError
+                                                  ? const Color(0xFFB71C1C)
+                                                  : const Color(0xFF1E6840),
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  if (showsClassPicker) ...[
-                                    const SizedBox(width: 16),
+                                  const SizedBox(height: 20),
+                                ],
+
+                                // Full Name
+                                fieldLabel('FULL NAME'),
+                                TextField(
+                                  controller: fullNameC,
+                                  textCapitalization: TextCapitalization.words,
+                                  decoration: fieldDeco('e.g. Maria Ionescu'),
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                ),
+                                const SizedBox(height: 18),
+
+                                // Role (only if not locked) + Class in same row
+                                if (lockedRole == null) ...[
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            fieldLabel('ROLE'),
+                                            dropdownBox(
+                                              value: role,
+                                              hint: 'Select role...',
+                                              items: const [
+                                                DropdownMenuItem(value: 'student', child: Text('Student')),
+                                                DropdownMenuItem(value: 'teacher', child: Text('Homeroom Teacher')),
+                                                DropdownMenuItem(value: 'parent', child: Text('Parent')),
+                                                DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                                                DropdownMenuItem(value: 'gate', child: Text('Gate')),
+                                              ],
+                                              onChanged: (v) => setS(() {
+                                                role = v ?? 'student';
+                                                if (role != 'student' && role != 'teacher') selectedClassId = '';
+                                              }),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (showsClassPicker) ...[
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: _ClassDropdown(
+                                            selectedClassId: selectedClassId,
+                                            needsClass: needsClass,
+                                            filterNoTeacher: role == 'teacher',
+                                            onChanged: (v) => setS(() => selectedClassId = v ?? ''),
+                                            fieldLabel: fieldLabel,
+                                            dropdownBox: dropdownBox,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 18),
+                                ] else if (showsClassPicker) ...[
+                                  _ClassDropdown(
+                                    selectedClassId: selectedClassId,
+                                    needsClass: needsClass,
+                                    filterNoTeacher: role == 'teacher',
+                                    onChanged: (v) => setS(() => selectedClassId = v ?? ''),
+                                    fieldLabel: fieldLabel,
+                                    dropdownBox: dropdownBox,
+                                  ),
+                                  const SizedBox(height: 18),
+                                ],
+
+                                // Action row
+                                Row(
+                                  children: [
                                     Expanded(
-                                      child: StreamBuilder<QuerySnapshot>(
-                                        stream: FirebaseFirestore.instance.collection('classes').orderBy('name').snapshots(),
-                                        builder: (_, snap) {
-                                          final options = snap.hasData
-                                              ? snap.data!.docs.map((d) {
-                                                  final data = d.data() as Map<String, dynamic>;
-                                                  return {'id': d.id, 'name': (data['name'] ?? d.id).toString()};
-                                                }).toList()
-                                              : <Map<String, String>>[];
-                                          final hasSelected = options.any((o) => o['id'] == selectedClassId);
-                                          if (!hasSelected && selectedClassId.isNotEmpty) {
-                                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                                              setS(() => selectedClassId = '');
-                                            });
-                                          }
-                                          return Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              fieldLabel(needsClass ? 'CLASS' : 'CLASS (optional)'),
-                                              dropdownBox(
-                                                value: hasSelected ? selectedClassId : null,
-                                                hint: needsClass ? 'Select...' : 'No class',
-                                                items: options.map((o) => DropdownMenuItem<String>(value: o['id'], child: Text(o['name']!))).toList(),
-                                                onChanged: (v) => setS(() => selectedClassId = v ?? ''),
+                                      child: OutlinedButton(
+                                        onPressed: busy ? null : () => Navigator.pop(ctx),
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 14),
+                                          side: const BorderSide(color: Color(0xFFD8DFF0)),
+                                          foregroundColor: const Color(0xFF6B7A99),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Cancel',
+                                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      flex: 2,
+                                      child: ElevatedButton(
+                                        onPressed: busy
+                                            ? null
+                                            : () async {
+                                                final full = fullNameC.text.trim();
+                                                if (full.isEmpty) {
+                                                  setS(() {
+                                                    resultMsg = 'Please enter the full name.';
+                                                    resultIsError = true;
+                                                  });
+                                                  return;
+                                                }
+                                                if (needsClass && selectedClassId.trim().isEmpty) {
+                                                  setS(() {
+                                                    resultMsg = 'Please select a class for the student.';
+                                                    resultIsError = true;
+                                                  });
+                                                  return;
+                                                }
+                                                final uname = '${baseFromFullName(full)}${randDigits(3)}';
+                                                final pass = randPassword(10);
+                                                setS(() { busy = true; resultMsg = null; });
+                                                try {
+                                                  await AdminApi().createUser(
+                                                    username: uname.toLowerCase(),
+                                                    password: pass,
+                                                    role: role,
+                                                    fullName: full,
+                                                    classId: showsClassPicker && selectedClassId.trim().isNotEmpty
+                                                        ? selectedClassId
+                                                        : null,
+                                                  );
+                                                  if (ctx.mounted) Navigator.pop(ctx);
+                                                } catch (e) {
+                                                  setS(() {
+                                                    busy = false;
+                                                    resultMsg = e.toString().replaceFirst('Exception: ', '');
+                                                    resultIsError = true;
+                                                  });
+                                                }
+                                              },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF2848B0),
+                                          foregroundColor: Colors.white,
+                                          disabledBackgroundColor: const Color(0xFF2848B0).withValues(alpha: 0.45),
+                                          elevation: 0,
+                                          padding: const EdgeInsets.symmetric(vertical: 14),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        child: busy
+                                            ? const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                              )
+                                            : const Text(
+                                                'Create Account',
+                                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                                               ),
-                                            ],
-                                          );
-                                        },
                                       ),
                                     ),
                                   ],
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              Row(
-                                children: [
-                                  const Spacer(),
-                                  ElevatedButton.icon(
-                                    onPressed: busy
-                                        ? null
-                                        : () async {
-                                            final full = fullNameC.text.trim();
-                                            if (full.isEmpty) {
-                                              setS(() { resultMsg = 'Fill in the full name.'; resultIsError = true; });
-                                              return;
-                                            }
-                                            if (needsClass && selectedClassId.trim().isEmpty) {
-                                              setS(() { resultMsg = 'Select a class for the student.'; resultIsError = true; });
-                                              return;
-                                            }
-                                            final uname = '${baseFromFullName(full)}${randDigits(3)}';
-                                            final pass = randPassword(10);
-                                            setS(() { busy = true; resultMsg = null; });
-                                            try {
-                                              await AdminApi().createUser(
-                                                username: uname.toLowerCase(),
-                                                password: pass,
-                                                role: role,
-                                                fullName: full,
-                                                classId: showsClassPicker && selectedClassId.trim().isNotEmpty
-                                                    ? selectedClassId
-                                                    : null,
-                                              );
-                                              setS(() {
-                                                busy = false;
-                                                createdUsername = uname.toLowerCase();
-                                                createdPassword = pass;
-                                                resultMsg = 'Account was created successfully!';
-                                                resultIsError = false;
-                                                fullNameC.clear();
-                                                selectedClassId = '';
-                                              });
-                                            } catch (e) {
-                                              setS(() {
-                                                busy = false;
-                                                resultMsg = e.toString().replaceFirst('Exception: ', '');
-                                                resultIsError = true;
-                                              });
-                                            }
-                                          },
-                                    icon: busy
-                                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                        : const Icon(Icons.person_add_rounded, size: 18),
-                                    label: Text(busy ? 'Creating...' : 'Create User Account', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF2848B0),
-                                      foregroundColor: Colors.white,
-                                      disabledBackgroundColor: const Color(0xFF2848B0).withValues(alpha: 0.45),
-                                      elevation: 0,
-                                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ],
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
@@ -300,127 +477,74 @@ Future<void> showAdminCreateUserDialog(
   fullNameC.dispose();
 }
 
-Widget _credentialCopyRow(String label, String value) {
-  return Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF0F6FF),
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: const Color(0xFF2848B0).withValues(alpha: 0.4)),
-    ),
-    child: Row(
-      children: [
-        Text('$label: ', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF2848B0))),
-        Expanded(child: SelectableText(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF111111)))),
-        const SizedBox(width: 8),
-        _CopyButton(value: value),
-      ],
-    ),
-  );
-}
+class _ClassDropdown extends StatelessWidget {
+  final String selectedClassId;
+  final bool needsClass;
+  final bool filterNoTeacher;
+  final ValueChanged<String?> onChanged;
+  final Widget Function(String) fieldLabel;
+  final Widget Function({
+    required List<DropdownMenuItem<String>> items,
+    required String? value,
+    required ValueChanged<String?> onChanged,
+    String hint,
+  }) dropdownBox;
 
-class _CopyButton extends StatefulWidget {
-  final String value;
-  const _CopyButton({required this.value});
-
-  @override
-  State<_CopyButton> createState() => _CopyButtonState();
-}
-
-class _CopyButtonState extends State<_CopyButton> {
-  bool _copied = false;
-  Timer? _timer;
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _copy() async {
-    await Clipboard.setData(ClipboardData(text: widget.value));
-    if (!mounted) return;
-    setState(() => _copied = true);
-    _timer?.cancel();
-    _timer = Timer(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      setState(() => _copied = false);
-    });
-  }
+  const _ClassDropdown({
+    required this.selectedClassId,
+    required this.needsClass,
+    this.filterNoTeacher = false,
+    required this.onChanged,
+    required this.fieldLabel,
+    required this.dropdownBox,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: _copy,
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: _copied
-              ? const Color(0xFF2E7D32).withValues(alpha: 0.12)
-              : const Color(0xFF2848B0).withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('classes').orderBy('name').snapshots(),
+      builder: (_, snap) {
+        var options = snap.hasData
+            ? snap.data!.docs.map((d) {
+                final data = d.data() as Map<String, dynamic>;
+                return {
+                  'id': d.id,
+                  'name': (data['name'] ?? d.id).toString(),
+                  'teacherUsername': (data['teacherUsername'] ?? '').toString(),
+                };
+              }).toList()
+            : <Map<String, String>>[];
+
+        if (filterNoTeacher) {
+          options = options.where((o) => o['teacherUsername']!.isEmpty).toList();
+        }
+
+        final hasSelected = options.any((o) => o['id'] == selectedClassId);
+
+        final noneItem = DropdownMenuItem<String>(
+          value: '__none__',
+          child: Text(
+            'None',
+            style: TextStyle(color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+          ),
+        );
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              _copied ? Icons.check_rounded : Icons.copy_rounded,
-              size: 14,
-              color: _copied
-                  ? const Color(0xFF2E7D32)
-                  : const Color(0xFF2848B0),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              _copied ? 'Copied!' : 'Copy',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: _copied
-                    ? const Color(0xFF2E7D32)
-                    : const Color(0xFF2848B0),
-              ),
+            fieldLabel(needsClass ? 'CLASS' : 'CLASS (optional)'),
+            dropdownBox(
+              value: hasSelected ? selectedClassId : (filterNoTeacher ? '__none__' : null),
+              hint: needsClass ? 'Select class...' : 'No class',
+              items: [
+                if (filterNoTeacher) noneItem,
+                ...options.map((o) => DropdownMenuItem<String>(value: o['id'], child: Text(o['name']!))),
+              ],
+              onChanged: (v) => onChanged(v == '__none__' ? '' : v),
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
-}
-
-Widget _buildCard({required String title, required Widget child}) {
-  return Container(
-    width: double.infinity,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: const Color(0xFFE8EAF2)),
-      boxShadow: [BoxShadow(color: const Color(0xFF2848B0).withValues(alpha: 0.06), blurRadius: 26, offset: const Offset(0, 14))],
-    ),
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ColoredBox(
-            color: const Color(0xFFF2F5F8),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(22, 22, 22, 14),
-              child: Row(
-                children: [
-                  Container(width: 4, height: 22, decoration: BoxDecoration(color: const Color(0xFF2848B0), borderRadius: BorderRadius.circular(999))),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF111111)))),
-                ],
-              ),
-            ),
-          ),
-          const Divider(color: Color(0xFFE8EAF2), height: 1),
-          Padding(padding: const EdgeInsets.fromLTRB(22, 18, 22, 22), child: child),
-        ],
-      ),
-    ),
-  );
 }

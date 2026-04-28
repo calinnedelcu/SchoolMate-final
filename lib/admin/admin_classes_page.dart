@@ -2217,8 +2217,6 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
         bool msgIsError = false;
         String currentFullName = fullName;
         String currentClassId = classId;
-        List<Map<String, String>> allClassesList = [];
-        bool allClassesLoaded = false;
 
         return StatefulBuilder(
           builder: (ctx, setS) => PopScope(
@@ -2640,63 +2638,26 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         ),
                                       ),
                                       const SizedBox(height: 6),
-                                      FutureBuilder<QuerySnapshot>(
-                                        future: allClassesLoaded
-                                            ? null
-                                            : FirebaseFirestore.instance
-                                                  .collection('classes')
-                                                  .get(),
+                                      StreamBuilder<QuerySnapshot>(
+                                        stream: FirebaseFirestore.instance
+                                            .collection('classes')
+                                            .snapshots(),
                                         builder: (_, snap) {
-                                          if (!allClassesLoaded &&
-                                              snap.connectionState ==
-                                                  ConnectionState.done &&
-                                              snap.hasData) {
-                                            allClassesLoaded = true;
-                                            allClassesList =
-                                                snap.data!.docs.map((d) {
-                                                  final data =
-                                                      d.data()
-                                                          as Map<
-                                                            String,
-                                                            dynamic
-                                                          >;
-                                                  return {
-                                                    'id': d.id,
-                                                    'teacherUsername':
-                                                        (data['teacherUsername'] ??
-                                                                '')
-                                                            .toString()
-                                                            .trim()
-                                                            .toLowerCase(),
-                                                  };
-                                                }).toList()..sort(
-                                                  (a, b) => a['id']!.compareTo(
-                                                    b['id']!,
-                                                  ),
-                                                );
+                                          final availableIds = <String>[];
+                                          if (snap.hasData) {
+                                            for (final d in snap.data!.docs) {
+                                              final t = ((d.data() as Map<String, dynamic>)['teacherUsername'] ?? '')
+                                                  .toString().trim().toLowerCase();
+                                              if (t.isEmpty || d.id == currentClassId || t == username.trim().toLowerCase()) {
+                                                availableIds.add(d.id);
+                                              }
+                                            }
+                                            availableIds.sort();
                                           }
 
-                                          final availableClassIds =
-                                              allClassesList
-                                                  .where((c) {
-                                                    final classTeacher =
-                                                        (c['teacherUsername'] ??
-                                                                '')
-                                                            .trim()
-                                                            .toLowerCase();
-                                                    final classDocId =
-                                                        c['id'] ?? '';
-                                                    return classTeacher
-                                                            .isEmpty ||
-                                                        classDocId ==
-                                                            currentClassId ||
-                                                        classTeacher ==
-                                                            username
-                                                                .trim()
-                                                                .toLowerCase();
-                                                  })
-                                                  .map((c) => c['id']!)
-                                                  .toList();
+                                          final dropdownValue = currentClassId.isEmpty
+                                              ? '__NONE__'
+                                              : (availableIds.contains(currentClassId) ? currentClassId : '__NONE__');
 
                                           return Container(
                                             width: double.infinity,
@@ -2707,91 +2668,106 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFFE8EAF2),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
+                                              borderRadius: BorderRadius.circular(10),
                                             ),
                                             child: DropdownButtonHideUnderline(
                                               child: DropdownButton<String>(
-                                                value:
-                                                    availableClassIds.contains(
-                                                      currentClassId,
-                                                    )
-                                                    ? currentClassId
-                                                    : null,
+                                                value: dropdownValue,
                                                 isExpanded: true,
-                                                hint: Text(
-                                                  currentClassId.isNotEmpty
-                                                      ? _formatClassName(
-                                                          currentClassId,
-                                                        )
-                                                      : 'Select class...',
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Color(0xFF000000),
-                                                  ),
-                                                ),
                                                 icon: const Icon(
-                                                  Icons
-                                                      .keyboard_arrow_down_rounded,
+                                                  Icons.keyboard_arrow_down_rounded,
                                                   size: 20,
                                                   color: Color(0xFF7A7E9A),
                                                 ),
-                                                items: availableClassIds
-                                                    .map(
-                                                      (c) => DropdownMenuItem(
-                                                        value: c,
-                                                        child: Text(
-                                                          _formatClassName(c),
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 16,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                color: Color(
-                                                                  0xFF000000,
-                                                                ),
-                                                              ),
+                                                items: <DropdownMenuItem<String>>[
+                                                  const DropdownMenuItem(
+                                                    value: '__NONE__',
+                                                    child: Text(
+                                                      'None',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: Color(0xFF7A7E9A),
+                                                        fontStyle: FontStyle.italic,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  ...availableIds.map(
+                                                    (c) => DropdownMenuItem(
+                                                      value: c,
+                                                      child: Text(
+                                                        _formatClassName(c),
+                                                        style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Color(0xFF000000),
                                                         ),
                                                       ),
-                                                    )
-                                                    .toList(),
+                                                    ),
+                                                  ),
+                                                ],
                                                 onChanged: busy
                                                     ? null
                                                     : (val) async {
-                                                        if (val == null ||
-                                                            val ==
-                                                                currentClassId) {
-                                                          return;
-                                                        }
-                                                        setS(() {
-                                                          busy = true;
-                                                          msg = null;
-                                                        });
+                                                        if (val == null || val == dropdownValue) return;
+                                                        final newClassId = val == '__NONE__' ? '' : val;
+                                                        setS(() { busy = true; msg = null; });
                                                         try {
-                                                          await store
-                                                              .moveStudent(
-                                                                username,
-                                                                val,
+                                                          final db = FirebaseFirestore.instance;
+                                                          final batch = db.batch();
+                                                          final teacherRef = db.collection('users').doc(uid);
+
+                                                          if (newClassId.isEmpty) {
+                                                            batch.set(
+                                                              db.collection('classes').doc(currentClassId),
+                                                              {
+                                                                'teacherUsername': FieldValue.delete(),
+                                                                'updatedAt': FieldValue.serverTimestamp(),
+                                                              },
+                                                              SetOptions(merge: true),
+                                                            );
+                                                            batch.update(teacherRef, {
+                                                              'classId': FieldValue.delete(),
+                                                              'updatedAt': FieldValue.serverTimestamp(),
+                                                            });
+                                                          } else {
+                                                            if (currentClassId.isNotEmpty) {
+                                                              batch.set(
+                                                                db.collection('classes').doc(currentClassId),
+                                                                {
+                                                                  'teacherUsername': FieldValue.delete(),
+                                                                  'updatedAt': FieldValue.serverTimestamp(),
+                                                                },
+                                                                SetOptions(merge: true),
                                                               );
+                                                            }
+                                                            batch.set(
+                                                              db.collection('classes').doc(newClassId),
+                                                              {
+                                                                'teacherUsername': username,
+                                                                'updatedAt': FieldValue.serverTimestamp(),
+                                                              },
+                                                              SetOptions(merge: true),
+                                                            );
+                                                            batch.update(teacherRef, {
+                                                              'classId': newClassId,
+                                                              'updatedAt': FieldValue.serverTimestamp(),
+                                                            });
+                                                          }
+
+                                                          await batch.commit();
                                                           setS(() {
                                                             busy = false;
-                                                            currentClassId =
-                                                                val;
-                                                            msg =
-                                                                'The homeroom teacher was moved to class $val.';
+                                                            currentClassId = newClassId;
+                                                            msg = newClassId.isEmpty
+                                                                ? 'Class assignment removed.'
+                                                                : 'Teacher assigned to ${_formatClassName(newClassId)}.';
                                                             msgIsError = false;
                                                           });
                                                         } catch (e) {
                                                           setS(() {
                                                             busy = false;
-                                                            msg = e
-                                                                .toString()
-                                                                .replaceFirst(
-                                                                  'Exception: ',
-                                                                  '',
-                                                                );
+                                                            msg = e.toString().replaceFirst('Exception: ', '');
                                                             msgIsError = true;
                                                           });
                                                         }
@@ -3616,115 +3592,99 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 10),
-                                FutureBuilder<Map<String, dynamic>?>(
-                                  future: teacherUsername.isNotEmpty
-                                      ? FirebaseFirestore.instance
-                                            .collection('users')
-                                            .where(
-                                              'username',
-                                              isEqualTo: teacherUsername,
-                                            )
-                                            .limit(1)
-                                            .get()
-                                            .then(
-                                              (s) => s.docs.isEmpty
-                                                  ? null
-                                                  : {
-                                                      'uid': s.docs.first.id,
-                                                      ...s.docs.first.data(),
-                                                    },
-                                            )
-                                      : Future.value(null),
-                                  builder: (_, snap) {
-                                    final td = snap.data;
-                                    final teacherName = td != null
-                                        ? (td['fullName'] ?? teacherUsername)
-                                              .toString()
-                                        : (snap.connectionState ==
-                                                  ConnectionState.done
-                                              ? '—'
-                                              : '…');
-                                    return Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                StreamBuilder<DocumentSnapshot>(
+                                  stream: FirebaseFirestore.instance
+                                      .collection('classes')
+                                      .doc(classId)
+                                      .snapshots(),
+                                  builder: (_, classSnap) {
+                                    final liveData = classSnap.hasData
+                                        ? (classSnap.data!.data() as Map<String, dynamic>? ?? {})
+                                        : <String, dynamic>{};
+                                    final liveTeacherUsername = (liveData['teacherUsername'] ?? '').toString();
+
+                                    return FutureBuilder<Map<String, dynamic>?>(
+                                      key: ValueKey(liveTeacherUsername),
+                                      future: liveTeacherUsername.isNotEmpty
+                                          ? FirebaseFirestore.instance
+                                                .collection('users')
+                                                .where('username', isEqualTo: liveTeacherUsername)
+                                                .limit(1)
+                                                .get()
+                                                .then(
+                                                  (s) => s.docs.isEmpty
+                                                      ? null
+                                                      : {'uid': s.docs.first.id, ...s.docs.first.data()},
+                                                )
+                                          : Future.value(null),
+                                      builder: (_, snap) {
+                                        final td = snap.data;
+                                        final teacherName = td != null
+                                            ? (td['fullName'] ?? liveTeacherUsername).toString()
+                                            : (liveTeacherUsername.isNotEmpty &&
+                                                      snap.connectionState != ConnectionState.done
+                                                  ? '…'
+                                                  : '—');
+                                        return Row(
                                           mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
-                                            const Text(
-                                              'HOMEROOM TEACHER',
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w700,
-                                                color: Color(0xFF7A7E9A),
-                                                letterSpacing: 1,
-                                              ),
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Text(
+                                                  'HOMEROOM TEACHER',
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Color(0xFF7A7E9A),
+                                                    letterSpacing: 1,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  teacherName,
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Color(0xFF1A2050),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                            Text(
-                                              teacherName,
-                                              style: const TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w700,
-                                                color: Color(0xFF1A2050),
+                                            if (td != null) ...[
+                                              const SizedBox(width: 8),
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.settings_outlined,
+                                                  color: Color(0xFF1A2050),
+                                                  size: 18,
+                                                ),
+                                                style: IconButton.styleFrom(
+                                                  backgroundColor: const Color(0xFFF2F4F8),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  padding: const EdgeInsets.all(6),
+                                                  minimumSize: Size.zero,
+                                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                ),
+                                                onPressed: () => _openTeacherDialog(
+                                                  ctx,
+                                                  uid: td['uid'].toString(),
+                                                  username: (td['username'] ?? liveTeacherUsername).toString(),
+                                                  fullName: teacherName,
+                                                  classId: (td['classId'] ?? classId).toString(),
+                                                  status: (td['status'] ?? 'active').toString(),
+                                                  onboardingComplete: td['onboardingComplete'] as bool? ?? false,
+                                                  email: (td['personalEmail'] ?? td['email'])?.toString(),
+                                                  photoUrl: (td['photoUrl'] ?? td['avatarUrl'] ?? '').toString(),
+                                                ),
                                               ),
-                                            ),
+                                            ],
                                           ],
-                                        ),
-                                        if (td != null) ...[
-                                          const SizedBox(width: 8),
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.settings_outlined,
-                                              color: Color(0xFF1A2050),
-                                              size: 18,
-                                            ),
-                                            style: IconButton.styleFrom(
-                                              backgroundColor: const Color(
-                                                0xFFF2F4F8,
-                                              ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              padding: const EdgeInsets.all(6),
-                                              minimumSize: Size.zero,
-                                              tapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                            ),
-                                            onPressed: () => _openTeacherDialog(
-                                              ctx,
-                                              uid: td['uid'].toString(),
-                                              username:
-                                                  (td['username'] ??
-                                                          teacherUsername)
-                                                      .toString(),
-                                              fullName: teacherName,
-                                              classId:
-                                                  (td['classId'] ?? classId)
-                                                      .toString(),
-                                              status: (td['status'] ?? 'active')
-                                                  .toString(),
-                                              onboardingComplete:
-                                                  td['onboardingComplete']
-                                                      as bool? ??
-                                                  false,
-                                              email:
-                                                  (td['personalEmail'] ??
-                                                          td['email'])
-                                                      ?.toString(),
-                                              photoUrl:
-                                                  (td['photoUrl'] ??
-                                                          td['avatarUrl'] ??
-                                                          '')
-                                                      .toString(),
-                                            ),
-                                          ),
-                                        ],
-                                      ],
+                                        );
+                                      },
                                     );
                                   },
                                 ),
