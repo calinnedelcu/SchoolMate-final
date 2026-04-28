@@ -423,27 +423,26 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
   @override
   Widget build(BuildContext context) {
     if (widget.formOnly) {
-      final accent = _kind.accentColor;
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(22, 18, 12, 18),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: _kind.headerGradient,
+                colors: [Color(0xFF1E3CA0), Color(0xFF2848B0), Color(0xFF3060D0)],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
             ),
             child: Row(
               children: [
-                Icon(_kind.icon, color: Colors.white, size: 20),
+                const Icon(Icons.campaign_rounded, color: Colors.white, size: 20),
                 const SizedBox(width: 10),
-                Expanded(
+                const Expanded(
                   child: Text(
-                    '${_t('New post', 'New post')} · ${_kindLabel(_kind)}',
-                    style: const TextStyle(
+                    'New post',
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
@@ -470,9 +469,9 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildKindChips(accent: accent),
+                    _buildKindChips(),
                     const SizedBox(height: 14),
-                    _buildComposerCard(accent: accent),
+                    _buildComposerCard(),
                     const SizedBox(height: 8),
                   ],
                 ),
@@ -623,7 +622,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     return PostKind.values;
   }
 
-  Widget _buildKindChips({Color? accent}) {
+  Widget _buildKindChips() {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -666,8 +665,8 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     );
   }
 
-  Widget _buildComposerCard({Color? accent}) {
-    final color = accent ?? _kind.accentColor;
+  Widget _buildComposerCard() {
+    final color = _primary;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

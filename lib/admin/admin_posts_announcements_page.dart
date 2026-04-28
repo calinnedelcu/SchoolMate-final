@@ -88,10 +88,15 @@ class _PostItem {
 
 class AdminPostsAnnouncementsPage extends StatelessWidget {
   final bool embedded;
-  const AdminPostsAnnouncementsPage({super.key, this.embedded = false});
+  final PostComposerMode mode;
+  const AdminPostsAnnouncementsPage({
+    super.key,
+    this.embedded = false,
+    this.mode = PostComposerMode.secretariat,
+  });
 
   void _openComposer(BuildContext context) {
-    showPostComposerDialog(context, mode: PostComposerMode.secretariat);
+    showPostComposerDialog(context, mode: mode);
   }
 
   @override
@@ -966,6 +971,11 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
   late final TextEditingController _messageCtrl;
   late final TextEditingController _locationCtrl;
   late final TextEditingController _linkCtrl;
+  late final TextEditingController _hoursCtrl;
+  late final TextEditingController _maxCtrl;
+
+  DateTime? _eventDate;
+  DateTime? _eventEndDate;
 
   @override
   void initState() {
@@ -974,6 +984,8 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
     _messageCtrl = TextEditingController();
     _locationCtrl = TextEditingController();
     _linkCtrl = TextEditingController();
+    _hoursCtrl = TextEditingController();
+    _maxCtrl = TextEditingController();
     _loadDoc();
   }
 
@@ -983,6 +995,8 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
     _messageCtrl.dispose();
     _locationCtrl.dispose();
     _linkCtrl.dispose();
+    _hoursCtrl.dispose();
+    _maxCtrl.dispose();
     super.dispose();
   }
 
@@ -999,21 +1013,57 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
         (isVol ? data['description'] : data['message'] ?? '').toString();
     _locationCtrl.text = (data['location'] ?? '').toString();
     _linkCtrl.text = (data['link'] ?? '').toString();
+    _hoursCtrl.text = (data['hoursWorth'] ?? '').toString();
+    _maxCtrl.text = (data['maxParticipants'] ?? '').toString();
+    final eventKey = isVol ? 'date' : 'eventDate';
+    final eventTs = data[eventKey] as Timestamp?;
+    final endTs = data['eventEndDate'] as Timestamp?;
     setState(() {
       _fullDoc = data;
       _loading = false;
+      _eventDate = eventTs?.toDate();
+      _eventEndDate = endTs?.toDate();
+    });
+  }
+
+  Future<void> _pickDate({required bool isEnd}) async {
+    final initial = isEnd
+        ? (_eventEndDate ?? _eventDate ?? DateTime.now().add(const Duration(days: 1)))
+        : (_eventDate ?? DateTime.now().add(const Duration(days: 1)));
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
+    );
+    if (picked == null) return;
+    setState(() {
+      if (isEnd) {
+        _eventEndDate = picked;
+      } else {
+        _eventDate = picked;
+      }
     });
   }
 
   Future<void> _save() async {
     setState(() => _saving = true);
     final isVol = widget.item.collection == 'volunteerOpportunities';
+    final cat = widget.item.category;
+    final hasEndDate = cat == 'camp' || cat == 'vacation';
+    final eventKey = isVol ? 'date' : 'eventDate';
+
     final updates = <String, dynamic>{
       'title': _titleCtrl.text.trim(),
       if (isVol) 'description': _messageCtrl.text.trim()
       else 'message': _messageCtrl.text.trim(),
       'location': _locationCtrl.text.trim(),
       'link': _linkCtrl.text.trim(),
+      if (_eventDate != null) eventKey: Timestamp.fromDate(_eventDate!),
+      if (hasEndDate && _eventEndDate != null)
+        'eventEndDate': Timestamp.fromDate(_eventEndDate!),
+      if (isVol) 'hoursWorth': _hoursCtrl.text.trim(),
+      if (isVol) 'maxParticipants': _maxCtrl.text.trim(),
     };
     await FirebaseFirestore.instance
         .collection(widget.item.collection)
@@ -1037,76 +1087,137 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final color = _categoryColor(widget.item.category);
-    final icon = _categoryIcon(widget.item.category);
+    final catColor = _categoryColor(widget.item.category);
+    final catIcon = _categoryIcon(widget.item.category);
     final isVol = widget.item.collection == 'volunteerOpportunities';
+    final title = _fullDoc?['title']?.toString() ?? widget.item.title;
+    final doc = _fullDoc;
+    final senderName = doc == null
+        ? widget.item.senderName
+        : ((isVol ? doc['createdByName'] : doc['senderName'])?.toString() ?? widget.item.senderName);
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 560),
+      constraints: const BoxConstraints(maxWidth: 580),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(22),
         child: Container(
-          color: const Color(0xFFFAFBFF),
+          color: const Color(0xFFF2F4F8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Accent bar ───────────────────────────────────────────
-              Container(height: 4, color: color),
-
-              // ── Top bar: category badge + close ──────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(22, 16, 14, 0),
+              // ── Blue gradient header ──────────────────────────────────
+              Container(
+                padding: const EdgeInsets.fromLTRB(22, 20, 16, 20),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF1E3CA0), Color(0xFF2848B0), Color(0xFF3060D0)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Category icon circle
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      child: Icon(catIcon, size: 22, color: Colors.white),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(icon, size: 13, color: color),
-                          const SizedBox(width: 6),
-                          Text(
-                            _categoryLabel(widget.item.category),
-                            style: TextStyle(
-                              color: color,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.4,
+                          // Category badge pill
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: catColor.withValues(alpha: 0.28),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.30),
+                              ),
+                            ),
+                            child: Text(
+                              _categoryLabel(widget.item.category),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.6,
+                              ),
                             ),
                           ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _loading
+                                ? 'Loading…'
+                                : (title.isEmpty ? '(no title)' : title),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              height: 1.25,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          if (senderName.isNotEmpty && !_loading) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(Icons.person_outline_rounded,
+                                    size: 12, color: Colors.white70),
+                                const SizedBox(width: 4),
+                                Text(
+                                  senderName,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),
-                    const Spacer(),
-                    if (!_loading && !_editing)
-                      _IconChip(
-                        icon: Icons.edit_rounded,
-                        label: 'Edit',
-                        color: _textMid,
-                        onTap: () => setState(() => _editing = true),
-                      ),
-                    if (!_loading && _editing)
-                      _IconChip(
-                        icon: Icons.undo_rounded,
-                        label: 'Cancel',
-                        color: _textMuted,
-                        onTap: () { _loadDoc(); setState(() => _editing = false); },
-                      ),
-                    const SizedBox(width: 4),
-                    InkWell(
-                      onTap: () => Navigator.pop(context),
-                      borderRadius: BorderRadius.circular(8),
-                      mouseCursor: SystemMouseCursors.click,
-                      hoverColor: _textMuted.withValues(alpha: 0.10),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8),
-                        child: Icon(Icons.close_rounded, size: 20, color: _textMuted),
-                      ),
+                    const SizedBox(width: 8),
+                    // Header action buttons
+                    Column(
+                      children: [
+                        _HeaderBtn(
+                          icon: Icons.close_rounded,
+                          onTap: () => Navigator.pop(context),
+                        ),
+                        if (!_loading) ...[
+                          const SizedBox(height: 6),
+                          _HeaderBtn(
+                            icon: _editing
+                                ? Icons.undo_rounded
+                                : Icons.edit_rounded,
+                            onTap: () {
+                              if (_editing) {
+                                _loadDoc();
+                                setState(() => _editing = false);
+                              } else {
+                                setState(() => _editing = true);
+                              }
+                            },
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
@@ -1115,142 +1226,60 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
               // ── Scrollable body ───────────────────────────────────────
               Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
                   child: _loading
-                      ? const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(40),
-                            child: CircularProgressIndicator(),
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 48),
+                          child: Center(
+                            child: CircularProgressIndicator(color: _primary),
                           ),
                         )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Title
-                            if (_editing)
-                              _Field(label: 'Title', controller: _titleCtrl)
-                            else ...[
-                              Text(
-                                _fullDoc!['title']?.toString().isEmpty ?? true
-                                    ? '(no title)'
-                                    : _fullDoc!['title'].toString(),
-                                style: const TextStyle(
-                                  color: _textDark,
-                                  fontSize: 21,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1.25,
-                                  letterSpacing: -0.3,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                widget.item.audienceLabel,
-                                style: const TextStyle(
-                                  color: _textMuted,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-
-                            const SizedBox(height: 20),
-                            _divider(),
-                            const SizedBox(height: 18),
-
-                            // Message / Description
-                            if (_editing)
-                              _Field(
-                                label: isVol ? 'Description' : 'Message',
-                                controller: _messageCtrl,
-                                maxLines: 6,
-                              )
-                            else
-                              _DetailRow(
-                                label: isVol ? 'Description' : 'Message',
-                                value: (isVol
-                                        ? _fullDoc!['description']
-                                        : _fullDoc!['message'])
-                                    ?.toString() ?? '',
-                              ),
-
-                            const SizedBox(height: 18),
-
-                            // Two-column metadata row
-                            if (_editing) ...[
-                              _Field(label: 'Location', controller: _locationCtrl),
-                              const SizedBox(height: 12),
-                              _Field(label: 'Link', controller: _linkCtrl),
-                            ] else ...[
-                              _TwoCol(
-                                left: _DetailRow(
-                                  label: 'Location',
-                                  value: _fullDoc!['location']?.toString() ?? '',
-                                ),
-                                right: isVol
-                                    ? _DetailRow(
-                                        label: 'Event date',
-                                        value: _formatDate(_fullDoc!['date'] as Timestamp?),
-                                      )
-                                    : _DetailRow(
-                                        label: 'Event date',
-                                        value: _formatDate(_fullDoc!['eventDate'] as Timestamp?),
-                                      ),
-                              ),
-                              const SizedBox(height: 16),
-                              _TwoCol(
-                                left: _DetailRow(
-                                  label: 'Link',
-                                  value: _fullDoc!['link']?.toString() ?? '',
-                                ),
-                                right: isVol
-                                    ? _DetailRow(
-                                        label: 'Hours / Max',
-                                        value:
-                                            '${_fullDoc!['hoursWorth'] ?? '—'} h  ·  max ${_fullDoc!['maxParticipants'] ?? '—'}',
-                                      )
-                                    : const SizedBox.shrink(),
-                              ),
-                              const SizedBox(height: 18),
-                              _divider(),
-                              const SizedBox(height: 16),
-                              _TwoCol(
-                                left: _DetailRow(
-                                  label: 'Published by',
-                                  value: (isVol
-                                          ? _fullDoc!['createdByName']
-                                          : _fullDoc!['senderName'])
-                                      ?.toString() ?? '',
-                                ),
-                                right: _DetailRow(
-                                  label: 'Published on',
-                                  value: _formatDate(_fullDoc!['createdAt'] as Timestamp?),
-                                ),
-                              ),
-                            ],
-
-                            const SizedBox(height: 8),
-                          ],
-                        ),
+                      : _editing
+                          ? _buildEditBody(isVol)
+                          : _buildViewBody(isVol, catColor),
                 ),
               ),
 
-              // ── Footer (edit mode) ────────────────────────────────────
+              // ── Footer ────────────────────────────────────────────────
               if (_editing)
                 Container(
-                  padding: const EdgeInsets.fromLTRB(22, 12, 22, 22),
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                   decoration: const BoxDecoration(
-                    border: Border(
-                      top: BorderSide(color: Color(0xFFE4E8F4)),
-                    ),
+                    color: Color(0xFFFFFFFF),
+                    border: Border(top: BorderSide(color: Color(0xFFE4E8F4))),
                   ),
                   child: Row(
                     children: [
                       Expanded(
+                        child: OutlinedButton(
+                          onPressed: _saving
+                              ? null
+                              : () {
+                                  _loadDoc();
+                                  setState(() => _editing = false);
+                                },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _textMuted,
+                            side: const BorderSide(color: Color(0xFFD2D8F0)),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(11),
+                            ),
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
                         child: FilledButton(
                           onPressed: _saving ? null : _save,
                           style: FilledButton.styleFrom(
                             backgroundColor: _primary,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(11),
                             ),
@@ -1267,7 +1296,6 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.1,
                                   ),
                                 ),
                         ),
@@ -1279,6 +1307,385 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildViewBody(bool isVol, Color catColor) {
+    final message = (isVol
+            ? _fullDoc!['description']
+            : _fullDoc!['message'])
+        ?.toString() ?? '';
+    final location = _fullDoc!['location']?.toString() ?? '';
+    final link = _fullDoc!['link']?.toString() ?? '';
+    final eventDateTs = isVol
+        ? _fullDoc!['date'] as Timestamp?
+        : _fullDoc!['eventDate'] as Timestamp?;
+    final eventEndDateTs = _fullDoc!['eventEndDate'] as Timestamp?;
+    final publishedTs = _fullDoc!['createdAt'] as Timestamp?;
+    final hoursWorth = _fullDoc!['hoursWorth']?.toString() ?? '';
+    final maxPart = _fullDoc!['maxParticipants']?.toString() ?? '';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Meta chips row ────────────────────────────────────────
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            _MetaChip(
+              icon: Icons.groups_rounded,
+              label: widget.item.audienceLabel.isEmpty
+                  ? 'All students'
+                  : widget.item.audienceLabel,
+              color: _primary,
+            ),
+            if (publishedTs != null)
+              _MetaChip(
+                icon: Icons.calendar_today_rounded,
+                label: _formatDate(publishedTs),
+                color: _textMid,
+              ),
+            if (widget.item.pinned)
+              _MetaChip(
+                icon: Icons.push_pin_rounded,
+                label: 'Pinned',
+                color: _pinColor,
+              ),
+          ],
+        ),
+
+        const SizedBox(height: 18),
+
+        // ── Message / description ─────────────────────────────────
+        if (message.isNotEmpty) ...[
+          _SectionLabel('Message'),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE8EAF2)),
+            ),
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: _textDark,
+                fontSize: 14,
+                height: 1.6,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // ── Info rows ─────────────────────────────────────────────
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE8EAF2)),
+          ),
+          child: Column(
+            children: [
+              if (location.isNotEmpty)
+                _InfoRow(
+                  icon: Icons.location_on_rounded,
+                  label: 'Location',
+                  value: location,
+                  iconColor: const Color(0xFF2E7D32),
+                  isFirst: true,
+                ),
+              if (eventDateTs != null)
+                _InfoRow(
+                  icon: Icons.event_rounded,
+                  label: eventEndDateTs != null ? 'Start date' : 'Event date',
+                  value: _formatDate(eventDateTs),
+                  iconColor: const Color(0xFF0277BD),
+                  isFirst: location.isEmpty,
+                ),
+              if (eventEndDateTs != null)
+                _InfoRow(
+                  icon: Icons.event_available_rounded,
+                  label: 'End date',
+                  value: _formatDate(eventEndDateTs),
+                  iconColor: const Color(0xFF0277BD),
+                  isFirst: location.isEmpty && eventDateTs == null,
+                ),
+              if (isVol && hoursWorth.isNotEmpty)
+                _InfoRow(
+                  icon: Icons.schedule_rounded,
+                  label: 'Hours / Max participants',
+                  value: '$hoursWorth h  ·  max $maxPart',
+                  iconColor: const Color(0xFF7B1FA2),
+                  isFirst: location.isEmpty && eventDateTs == null,
+                ),
+              if (link.isNotEmpty)
+                _InfoRow(
+                  icon: Icons.link_rounded,
+                  label: 'Link',
+                  value: link,
+                  iconColor: _primary,
+                  isFirst: location.isEmpty &&
+                      eventDateTs == null &&
+                      !(isVol && hoursWorth.isNotEmpty),
+                ),
+              if (location.isEmpty &&
+                  eventDateTs == null &&
+                  link.isEmpty &&
+                  !(isVol && hoursWorth.isNotEmpty))
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  child: Text(
+                    'No additional details.',
+                    style: TextStyle(color: _textMuted, fontSize: 13),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEditBody(bool isVol) {
+    final cat = widget.item.category;
+    final hasEventDate = cat == 'competition' || cat == 'camp' ||
+        cat == 'volunteer' || cat == 'vacation';
+    final hasEndDate = cat == 'camp' || cat == 'vacation';
+    final startLabel = cat == 'vacation' ? 'Start date *' : 'Event date';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionLabel('Title'),
+        const SizedBox(height: 6),
+        _Field(label: '', controller: _titleCtrl),
+        if (cat != 'vacation') ...[
+          const SizedBox(height: 14),
+          _SectionLabel(isVol ? 'Description' : 'Message'),
+          const SizedBox(height: 6),
+          _Field(label: '', controller: _messageCtrl, maxLines: 5),
+        ],
+        if (cat != 'announcement' && cat != 'vacation') ...[
+          const SizedBox(height: 14),
+          _SectionLabel('Location'),
+          const SizedBox(height: 6),
+          _Field(label: '', controller: _locationCtrl),
+        ],
+        if (hasEventDate) ...[
+          const SizedBox(height: 14),
+          _SectionLabel(hasEndDate ? 'Dates' : startLabel),
+          const SizedBox(height: 6),
+          if (hasEndDate)
+            Row(
+              children: [
+                Expanded(child: _EditDateField(label: 'Start', date: _eventDate, onTap: () => _pickDate(isEnd: false))),
+                const SizedBox(width: 10),
+                Expanded(child: _EditDateField(label: 'End', date: _eventEndDate, onTap: () => _pickDate(isEnd: true))),
+              ],
+            )
+          else
+            _EditDateField(label: startLabel, date: _eventDate, onTap: () => _pickDate(isEnd: false)),
+        ],
+        if (isVol) ...[
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SectionLabel('Hours'),
+                    const SizedBox(height: 6),
+                    _Field(label: '', controller: _hoursCtrl, keyboardType: TextInputType.number),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SectionLabel('Max participants'),
+                    const SizedBox(height: 6),
+                    _Field(label: '', controller: _maxCtrl, keyboardType: TextInputType.number),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 14),
+        _SectionLabel('Link'),
+        const SizedBox(height: 6),
+        _Field(label: '', controller: _linkCtrl),
+        const SizedBox(height: 4),
+      ],
+    );
+  }
+}
+
+// ─── Detail helper widgets ─────────────────────────────────────────────────────
+
+class _HeaderBtn extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _HeaderBtn({required this.icon, required this.onTap});
+
+  @override
+  State<_HeaderBtn> createState() => _HeaderBtnState();
+}
+
+class _HeaderBtnState extends State<_HeaderBtn> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: _hovered
+                ? Colors.white.withValues(alpha: 0.20)
+                : Colors.white.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.20)),
+          ),
+          child: Icon(widget.icon, size: 17, color: Colors.white),
+        ),
+      ),
+    );
+  }
+}
+
+class _MetaChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  const _MetaChip({required this.icon, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text.toUpperCase(),
+      style: const TextStyle(
+        color: _textMuted,
+        fontSize: 10,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.8,
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color iconColor;
+  final bool isFirst;
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.iconColor,
+    this.isFirst = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        if (!isFirst)
+          const Divider(height: 1, color: Color(0xFFEEF0F8), indent: 14, endIndent: 14),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 16, color: iconColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: _textMuted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        color: _textDark,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1298,57 +1705,6 @@ String _categoryLabel(String cat) {
   }
 }
 
-class _DetailRow extends StatelessWidget {
-  final String label;
-  final String value;
-  const _DetailRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: const TextStyle(
-            color: _textMuted,
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.6,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value.isEmpty ? '—' : value,
-          style: const TextStyle(
-            color: _textDark,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            height: 1.5,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _TwoCol extends StatelessWidget {
-  final Widget left;
-  final Widget right;
-  const _TwoCol({required this.left, required this.right});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: left),
-        const SizedBox(width: 20),
-        Expanded(child: right),
-      ],
-    );
-  }
-}
 
 class _IconChip extends StatefulWidget {
   final IconData icon;
@@ -1405,8 +1761,6 @@ class _IconChipState extends State<_IconChip> {
   }
 }
 
-Widget _divider() => const Divider(color: Color(0xFFE4E8F4), height: 1);
-
 // (vacation posts are created via the post composer as PostKind.vacation)
 
 
@@ -1414,26 +1768,35 @@ class _Field extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final int maxLines;
-  const _Field({required this.label, required this.controller, this.maxLines = 1});
+  final TextInputType? keyboardType;
+  const _Field({
+    required this.label,
+    required this.controller,
+    this.maxLines = 1,
+    this.keyboardType,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label.toUpperCase(),
-          style: const TextStyle(
-            color: _textMuted,
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.6,
+        if (label.isNotEmpty) ...[
+          Text(
+            label.toUpperCase(),
+            style: const TextStyle(
+              color: _textMuted,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
+            ),
           ),
-        ),
-        const SizedBox(height: 6),
+          const SizedBox(height: 6),
+        ],
         TextField(
           controller: controller,
           maxLines: maxLines,
+          keyboardType: keyboardType,
           style: const TextStyle(color: _textDark, fontSize: 14),
           decoration: InputDecoration(
             filled: true,
@@ -1447,6 +1810,72 @@ class _Field extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _EditDateField extends StatefulWidget {
+  final String label;
+  final DateTime? date;
+  final VoidCallback onTap;
+  const _EditDateField({required this.label, required this.date, required this.onTap});
+
+  @override
+  State<_EditDateField> createState() => _EditDateFieldState();
+}
+
+class _EditDateFieldState extends State<_EditDateField> {
+  bool _hovered = false;
+
+  String _fmt(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDate = widget.date != null;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+          decoration: BoxDecoration(
+            color: _hovered
+                ? const Color(0xFFDDE0EE)
+                : const Color(0xFFE8EAF2),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: hasDate
+                  ? _primary.withValues(alpha: 0.35)
+                  : Colors.transparent,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.calendar_month_rounded,
+                size: 16,
+                color: hasDate ? _primary : _textMuted,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  hasDate ? _fmt(widget.date!) : widget.label,
+                  style: TextStyle(
+                    color: hasDate ? _textDark : _textMuted,
+                    fontSize: 13,
+                    fontWeight: hasDate ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+              ),
+              Icon(Icons.edit_calendar_rounded, size: 14, color: _textMuted.withValues(alpha: 0.6)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

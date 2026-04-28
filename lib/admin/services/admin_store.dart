@@ -269,6 +269,34 @@ class AdminStore {
       await batch.commit();
     }
 
+    Future<void> clearTeacherFromTimetables() async {
+      final timetablesSnap = await _db.collection('timetables').get();
+      final batch = _db.batch();
+      bool hasUpdates = false;
+      for (final doc in timetablesSnap.docs) {
+        final days = (doc.data()['days'] as Map<String, dynamic>?);
+        if (days == null) continue;
+        final updates = <String, dynamic>{};
+        for (final dayEntry in days.entries) {
+          final lessons = dayEntry.value as Map<String, dynamic>?;
+          if (lessons == null) continue;
+          for (final lessonEntry in lessons.entries) {
+            final lesson = lessonEntry.value as Map<String, dynamic>?;
+            if (lesson?['teacherUsername'] == username) {
+              updates['days.${dayEntry.key}.${lessonEntry.key}'] =
+                  FieldValue.delete();
+            }
+          }
+        }
+        if (updates.isNotEmpty) {
+          updates['updatedAt'] = FieldValue.serverTimestamp();
+          batch.update(doc.reference, updates);
+          hasUpdates = true;
+        }
+      }
+      if (hasUpdates) await batch.commit();
+    }
+
     // Preferred path: backend function deletes both Firebase Auth account
     // and Firestore user data.
     try {
@@ -278,6 +306,7 @@ class AdminStore {
       await callable.call(<String, dynamic>{'username': username});
       // Defensive cleanup for legacy/inconsistent records.
       await clearTeacherFromClasses();
+      await clearTeacherFromTimetables();
       return;
     } catch (_) {
       // Fallback to local cleanup to avoid blocking admin workflows.
@@ -300,6 +329,7 @@ class AdminStore {
 
     if (role == "teacher") {
       await clearTeacherFromClasses();
+      await clearTeacherFromTimetables();
       if (classId.isNotEmpty) {
         await _db.collection('classes').doc(classId).set({
           "teacherUsername": FieldValue.delete(),

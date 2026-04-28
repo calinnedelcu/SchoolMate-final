@@ -892,9 +892,6 @@ class _MessageCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        border: Border(
-          left: BorderSide(color: scheme.accent, width: 4),
-        ),
         boxShadow: const [
           BoxShadow(
             color: Color(0x10000000),
@@ -905,6 +902,13 @@ class _MessageCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 4,
+            child: ColoredBox(color: scheme.accent),
+          ),
           const Positioned.fill(
             child: CustomPaint(
               painter: WhiteCardSparklesPainter(

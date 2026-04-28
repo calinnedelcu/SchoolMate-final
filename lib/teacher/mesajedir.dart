@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../admin/admin_post_composer_page.dart';
+import '../admin/admin_posts_announcements_page.dart';
 import '../common/unified_messages_page.dart';
 import '../student/widgets/no_anim_route.dart';
 
@@ -14,7 +15,9 @@ class MesajeDirPage extends StatelessWidget {
       onCreatePost: () => Navigator.push(
         context,
         noAnimRoute(
-          (_) => const AdminPostComposerPage(mode: PostComposerMode.teacher),
+          (_) => const AdminPostsAnnouncementsPage(
+            mode: PostComposerMode.teacher,
+          ),
         ),
       ),
     );
