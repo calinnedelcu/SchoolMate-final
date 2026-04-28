@@ -3054,6 +3054,688 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     renameC.dispose();
   }
 
+  Future<void> _showChangeTeacherDialog(
+    BuildContext context, {
+    required String classId,
+    required String currentTeacherUsername,
+  }) async {
+    final searchC = TextEditingController();
+
+    await _showBlurDialog<void>(
+      context: context,
+      builder: (ctx) {
+        String searchQuery = '';
+        bool busy = false;
+        String? msg;
+        bool msgIsError = false;
+
+        return StatefulBuilder(
+          builder: (ctx, setS) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 80,
+              vertical: 40,
+            ),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 560, maxHeight: 580),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.14),
+                    blurRadius: 32,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Change Homeroom Teacher',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF2848B0),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Tooltip(
+                          message:
+                              'Selecting a teacher will assign them as the homeroom teacher of this class.\n'
+                              'The current homeroom teacher will be unassigned from this class.\n'
+                              'If the selected teacher already has a class, that class will be left without a homeroom teacher.',
+                          preferBelow: true,
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                            height: 1.5,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          child: const Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: Color(0xFF7A7E9A),
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: busy ? null : () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close_rounded),
+                          color: const Color(0xFF7A7E9A),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: TextField(
+                      controller: searchC,
+                      onChanged: (v) =>
+                          setS(() => searchQuery = v.toLowerCase().trim()),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search),
+                        hintText: 'Search teacher by name…',
+                        filled: true,
+                        fillColor: const Color(0xFFF2F4F8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (msg != null) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _buildDialogStatusBanner(msg!, msgIsError),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .where('role', isEqualTo: 'teacher')
+                          .snapshots(),
+                      builder: (_, snap) {
+                        if (!snap.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        final db = FirebaseFirestore.instance;
+                        final allTeachers = snap.data!.docs.where((d) {
+                          final data = d.data() as Map<String, dynamic>;
+                          final fn =
+                              (data['fullName'] ?? '').toString().toLowerCase();
+                          final un =
+                              (data['username'] ?? '').toString().toLowerCase();
+                          return searchQuery.isEmpty ||
+                              fn.contains(searchQuery) ||
+                              un.contains(searchQuery);
+                        }).toList()
+                          ..sort((a, b) {
+                            final ad = a.data() as Map;
+                            final bd = b.data() as Map;
+                            return (ad['fullName'] ?? '')
+                                .toString()
+                                .toLowerCase()
+                                .compareTo(
+                                  (bd['fullName'] ?? '').toString().toLowerCase(),
+                                );
+                          });
+
+                        return ListView(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          children: [
+                            if (searchQuery.isEmpty &&
+                                currentTeacherUsername.isNotEmpty)
+                              ListTile(
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF2F4F8),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.person_off_outlined,
+                                    color: Color(0xFF7A7E9A),
+                                    size: 20,
+                                  ),
+                                ),
+                                title: const Text(
+                                  'No teacher',
+                                  style: TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    color: Color(0xFF7A7E9A),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: const Text(
+                                  'Remove homeroom teacher from this class',
+                                  style: TextStyle(fontSize: 11),
+                                ),
+                                trailing: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                      color: Color(0xFFB03040),
+                                    ),
+                                    foregroundColor: const Color(0xFFB03040),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  onPressed: busy
+                                      ? null
+                                      : () async {
+                                          setS(() {
+                                            busy = true;
+                                            msg = null;
+                                          });
+                                          try {
+                                            final batch = db.batch();
+                                            final oldSnap = await db
+                                                .collection('users')
+                                                .where(
+                                                  'username',
+                                                  isEqualTo:
+                                                      currentTeacherUsername,
+                                                )
+                                                .limit(1)
+                                                .get();
+                                            batch.set(
+                                              db.collection('classes').doc(
+                                                classId,
+                                              ),
+                                              {
+                                                'teacherUsername':
+                                                    FieldValue.delete(),
+                                                'updatedAt':
+                                                    FieldValue.serverTimestamp(),
+                                              },
+                                              SetOptions(merge: true),
+                                            );
+                                            if (oldSnap.docs.isNotEmpty) {
+                                              batch.update(
+                                                db
+                                                    .collection('users')
+                                                    .doc(oldSnap.docs.first.id),
+                                                {
+                                                  'classId': FieldValue.delete(),
+                                                  'updatedAt':
+                                                      FieldValue.serverTimestamp(),
+                                                },
+                                              );
+                                            }
+                                            await batch.commit();
+                                            setS(() {
+                                              busy = false;
+                                              msg = 'Homeroom teacher removed.';
+                                              msgIsError = false;
+                                            });
+                                          } catch (e) {
+                                            setS(() {
+                                              busy = false;
+                                              msg = e
+                                                  .toString()
+                                                  .replaceFirst('Exception: ', '');
+                                              msgIsError = true;
+                                            });
+                                          }
+                                        },
+                                  child: const Text('Remove'),
+                                ),
+                              ),
+                            ...allTeachers.map((d) {
+                              final data = d.data() as Map<String, dynamic>;
+                              final username =
+                                  (data['username'] ?? d.id).toString();
+                              final fullName =
+                                  (data['fullName'] ?? username).toString();
+                              final teacherClassId =
+                                  (data['classId'] ?? '').toString();
+                              final isCurrentTeacher =
+                                  username.toLowerCase() ==
+                                  currentTeacherUsername.toLowerCase();
+                              final hasOtherClass = teacherClassId.isNotEmpty &&
+                                  teacherClassId != classId;
+
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: _avatarColor(fullName),
+                                  child: Text(
+                                    _initials(fullName),
+                                    style: const TextStyle(
+                                      color: Color(0xFF1A2050),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                                title: Text(
+                                  fullName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  isCurrentTeacher
+                                      ? 'Current homeroom teacher'
+                                      : teacherClassId.isEmpty
+                                      ? 'No class assigned'
+                                      : 'Homeroom of ${_formatClassName(teacherClassId)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isCurrentTeacher
+                                        ? const Color(0xFF4CAF50)
+                                        : const Color(0xFF7A7E9A),
+                                  ),
+                                ),
+                                trailing: isCurrentTeacher
+                                    ? const Text(
+                                        'Current',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF4CAF50),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      )
+                                    : FilledButton(
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xFF2848B0),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 8,
+                                          ),
+                                          textStyle: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        onPressed: busy
+                                            ? null
+                                            : () async {
+                                                setS(() {
+                                                  busy = true;
+                                                  msg = null;
+                                                });
+                                                try {
+                                                  final batch = db.batch();
+                                                  if (currentTeacherUsername
+                                                      .isNotEmpty) {
+                                                    final oldSnap = await db
+                                                        .collection('users')
+                                                        .where(
+                                                          'username',
+                                                          isEqualTo:
+                                                              currentTeacherUsername,
+                                                        )
+                                                        .limit(1)
+                                                        .get();
+                                                    if (oldSnap
+                                                        .docs.isNotEmpty) {
+                                                      batch.update(
+                                                        db
+                                                            .collection('users')
+                                                            .doc(
+                                                              oldSnap
+                                                                  .docs.first.id,
+                                                            ),
+                                                        {
+                                                          'classId':
+                                                              FieldValue.delete(),
+                                                          'updatedAt': FieldValue
+                                                              .serverTimestamp(),
+                                                        },
+                                                      );
+                                                    }
+                                                  }
+                                                  if (hasOtherClass) {
+                                                    batch.set(
+                                                      db
+                                                          .collection('classes')
+                                                          .doc(teacherClassId),
+                                                      {
+                                                        'teacherUsername':
+                                                            FieldValue.delete(),
+                                                        'updatedAt': FieldValue
+                                                            .serverTimestamp(),
+                                                      },
+                                                      SetOptions(merge: true),
+                                                    );
+                                                  }
+                                                  batch.set(
+                                                    db
+                                                        .collection('classes')
+                                                        .doc(classId),
+                                                    {
+                                                      'teacherUsername': username,
+                                                      'updatedAt': FieldValue
+                                                          .serverTimestamp(),
+                                                    },
+                                                    SetOptions(merge: true),
+                                                  );
+                                                  batch.update(
+                                                    db
+                                                        .collection('users')
+                                                        .doc(d.id),
+                                                    {
+                                                      'classId': classId,
+                                                      'updatedAt': FieldValue
+                                                          .serverTimestamp(),
+                                                    },
+                                                  );
+                                                  await batch.commit();
+                                                  setS(() {
+                                                    busy = false;
+                                                    msg =
+                                                        '$fullName set as homeroom teacher.';
+                                                    msgIsError = false;
+                                                  });
+                                                } catch (e) {
+                                                  setS(() {
+                                                    busy = false;
+                                                    msg = e
+                                                        .toString()
+                                                        .replaceFirst(
+                                                          'Exception: ',
+                                                          '',
+                                                        );
+                                                    msgIsError = true;
+                                                  });
+                                                }
+                                              },
+                                        child: const Text('Assign'),
+                                      ),
+                              );
+                            }),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    searchC.dispose();
+  }
+
+  Future<void> _showAddStudentDialog(
+    BuildContext context, {
+    required String classId,
+    required String className,
+  }) async {
+    final searchC = TextEditingController();
+
+    await _showBlurDialog<void>(
+      context: context,
+      builder: (ctx) {
+        String searchQuery = '';
+        bool busy = false;
+        String? msg;
+        bool msgIsError = false;
+
+        return StatefulBuilder(
+          builder: (ctx, setS) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 80,
+              vertical: 40,
+            ),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 560, maxHeight: 580),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.14),
+                    blurRadius: 32,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Add Student to $className',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF2848B0),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close_rounded),
+                          color: const Color(0xFF7A7E9A),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: TextField(
+                      controller: searchC,
+                      onChanged: (v) =>
+                          setS(() => searchQuery = v.toLowerCase().trim()),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search),
+                        hintText: 'Search student by name…',
+                        filled: true,
+                        fillColor: const Color(0xFFF2F4F8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (msg != null) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _buildDialogStatusBanner(msg!, msgIsError),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .where('role', isEqualTo: 'student')
+                          .snapshots(),
+                      builder: (_, snap) {
+                        if (!snap.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        final allStudents = snap.data!.docs.where((d) {
+                          final data = d.data() as Map<String, dynamic>;
+                          final fn =
+                              (data['fullName'] ?? '').toString().toLowerCase();
+                          final un =
+                              (data['username'] ?? '').toString().toLowerCase();
+                          return searchQuery.isEmpty ||
+                              fn.contains(searchQuery) ||
+                              un.contains(searchQuery);
+                        }).toList()
+                          ..sort((a, b) {
+                            final ad = a.data() as Map;
+                            final bd = b.data() as Map;
+                            return (ad['fullName'] ?? '')
+                                .toString()
+                                .toLowerCase()
+                                .compareTo(
+                                  (bd['fullName'] ?? '').toString().toLowerCase(),
+                                );
+                          });
+
+                        if (allStudents.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              'No students found.',
+                              style: TextStyle(color: Color(0xFF7A7E9A)),
+                            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          itemCount: allStudents.length,
+                          itemBuilder: (_, i) {
+                            final d = allStudents[i];
+                            final data = d.data() as Map<String, dynamic>;
+                            final username =
+                                (data['username'] ?? d.id).toString();
+                            final fullName =
+                                (data['fullName'] ?? username).toString();
+                            final currentClassId =
+                                (data['classId'] ?? '').toString();
+                            final isAlreadyHere = currentClassId == classId;
+
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: _avatarColor(fullName),
+                                child: Text(
+                                  _initials(fullName),
+                                  style: const TextStyle(
+                                    color: Color(0xFF1A2050),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                fullName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              subtitle: Text(
+                                currentClassId.isEmpty
+                                    ? 'No class'
+                                    : _formatClassName(currentClassId),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isAlreadyHere
+                                      ? const Color(0xFF4CAF50)
+                                      : const Color(0xFF7A7E9A),
+                                ),
+                              ),
+                              trailing: isAlreadyHere
+                                  ? const Text(
+                                      'Already here',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF4CAF50),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    )
+                                  : FilledButton(
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFF2848B0),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                        textStyle: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      onPressed: busy
+                                          ? null
+                                          : () async {
+                                              setS(() {
+                                                busy = true;
+                                                msg = null;
+                                              });
+                                              try {
+                                                await api.moveStudentClass(
+                                                  username: username,
+                                                  newClassId: classId,
+                                                );
+                                                setS(() {
+                                                  busy = false;
+                                                  msg =
+                                                      '$fullName moved to $className.';
+                                                  msgIsError = false;
+                                                });
+                                              } catch (e) {
+                                                setS(() {
+                                                  busy = false;
+                                                  msg = e
+                                                      .toString()
+                                                      .replaceFirst(
+                                                        'Exception: ',
+                                                        '',
+                                                      );
+                                                  msgIsError = true;
+                                                });
+                                              }
+                                            },
+                                      child: const Text('Move to this class'),
+                                    ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    searchC.dispose();
+  }
+
   Future<void> _deleteSelectedClass({
     required String classId,
     required String className,
@@ -3652,8 +4334,31 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                 ),
                                               ],
                                             ),
+                                            const SizedBox(width: 8),
+                                            IconButton(
+                                              tooltip: 'Change homeroom teacher',
+                                              icon: const Icon(
+                                                Icons.edit_outlined,
+                                                color: Color(0xFF2848B0),
+                                                size: 18,
+                                              ),
+                                              style: IconButton.styleFrom(
+                                                backgroundColor: const Color(0xFFE8EAF2),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                padding: const EdgeInsets.all(6),
+                                                minimumSize: Size.zero,
+                                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              ),
+                                              onPressed: () => _showChangeTeacherDialog(
+                                                ctx,
+                                                classId: classId,
+                                                currentTeacherUsername: liveTeacherUsername,
+                                              ),
+                                            ),
                                             if (td != null) ...[
-                                              const SizedBox(width: 8),
+                                              const SizedBox(width: 4),
                                               IconButton(
                                                 icon: const Icon(
                                                   Icons.settings_outlined,
@@ -3772,6 +4477,26 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             ),
                             const SizedBox(width: 8),
                           ],
+                          IconButton(
+                            tooltip: 'Add existing student',
+                            icon: const Icon(
+                              Icons.group_add_outlined,
+                              size: 18,
+                              color: Color(0xFF2848B0),
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: const Color(0xFFE8EAF2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () => _showAddStudentDialog(
+                              ctx,
+                              classId: classId,
+                              className: className,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           IconButton(
                             tooltip: 'Export full class report',
                             icon: const Icon(
@@ -3932,7 +4657,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       ),
                                     ),
                                     const SizedBox(
-                                      width: 52,
+                                      width: 72,
                                       child: Center(
                                         child: Text(
                                           'SETTINGS',
@@ -4148,7 +4873,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                           ),
                                           SizedBox(
-                                            width: 52,
+                                            width: 72,
                                             child: Center(
                                               child: IconButton(
                                                 icon: const Icon(
