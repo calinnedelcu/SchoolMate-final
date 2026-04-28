@@ -15,7 +15,6 @@ import 'admin_students_page.dart';
 import 'admin_teachers_page.dart';
 import 'admin_parents_page.dart';
 import 'admin_turnstiles_page.dart';
-import 'admin_post_composer_page.dart';
 import 'admin_posts_announcements_page.dart';
 import 'admin_timetable_page.dart';
 // import 'secretariat_global_messages_page.dart'; // unused after menu cleanup
@@ -957,17 +956,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                       const SizedBox(width: 16),
                       // Right: New post button
                       FilledButton.icon(
-                        onPressed: () {
-                          _goTo('Posts');
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const AdminPostComposerPage(
-                                embedded: false,
-                                mode: PostComposerMode.secretariat,
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: () => _goTo('Posts'),
                         icon: const Icon(Icons.add_rounded, size: 18),
                         label: const Text(
                           '+ New post',

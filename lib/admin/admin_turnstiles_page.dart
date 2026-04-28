@@ -2085,24 +2085,21 @@ class _LiveTrafficPanel extends StatelessWidget {
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
             child: Row(
               children: [
+                const Icon(
+                  Icons.sensors_rounded,
+                  color: Color(0xFF2848B0),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
                 const Text(
                   'Real-time traffic',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF2848B0),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFB03040),
-                    shape: BoxShape.circle,
                   ),
                 ),
               ],
@@ -2571,39 +2568,125 @@ void _showAllLogsDialog(
     context: context,
     builder: (ctx) => Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 600, maxHeight: 620),
+        constraints: const BoxConstraints(maxWidth: 740, maxHeight: 840),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.16),
+              blurRadius: 48,
+              offset: const Offset(0, 16),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 12, 12),
+            Container(
+              padding: const EdgeInsets.fromLTRB(28, 24, 24, 20),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFFE8EAF2)),
+                ),
+              ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    'All logs',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF4A82B3),
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEEF1FB),
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: const Icon(
+                      Icons.sensors_rounded,
+                      color: Color(0xFF2848B0),
+                      size: 22,
                     ),
                   ),
+                  const SizedBox(width: 14),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Access logs',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1A2050),
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Last 100 events · updates in real time',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF9BA3B8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                   const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    icon: const Icon(Icons.close_rounded),
-                    color: const Color(0xFF7A7E9A),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEEF1FB),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: const Color(0xFFBFD1E1)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.sensors_rounded,
+                          size: 13,
+                          color: Color(0xFF2848B0),
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          'LIVE',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF2848B0),
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () => Navigator.of(ctx).pop(),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF2F4F8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: Color(0xFF7A7E9A),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1, color: Color(0xFFF2F4F8)),
 
             // Logs
             Expanded(
@@ -2626,22 +2709,48 @@ void _showAllLogsDialog(
                     );
                   }
                   if (docs.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'No records.',
-                        style: TextStyle(
-                          color: Color(0xFF7A7E9A),
-                          fontSize: 14,
-                        ),
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEEF1FB),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.history_rounded,
+                              size: 28,
+                              color: Color(0xFF2848B0),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          const Text(
+                            'No access events yet',
+                            style: TextStyle(
+                              color: Color(0xFF1A2050),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Events will appear here as they happen',
+                            style: TextStyle(
+                              color: Color(0xFF9BA3B8),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   }
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
+                  return ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                     itemCount: docs.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (_, i) {
                       final d = docs[i].data() as Map<String, dynamic>;
                       final gateUid = (d['gateUid'] ?? '').toString();
@@ -2653,22 +2762,167 @@ void _showAllLogsDialog(
                       final ts = d['timestamp'] as Timestamp?;
                       final isDenied =
                           (d['type'] ?? '') == 'deny' || fullName.isEmpty;
+                      final personName = fullName.isEmpty
+                          ? (fallbackName.isEmpty
+                                ? 'Unregistered subject detected'
+                                : fallbackName)
+                          : fullName;
+                      final actionLabel = _eventActionLabel(d);
+                      final reasonText = _eventReasonText(d);
+                      final metaText = _eventMetaText(
+                        d,
+                        fallbackClassId: fallbackClassId,
+                      );
+                      final timeStr = ts != null ? _timeAgo(ts) : '';
 
-                      return _TrafficEntry(
-                        gateName: gateName,
-                        personName: fullName.isEmpty
-                            ? (fallbackName.isEmpty
-                                  ? 'Unregistered subject detected'
-                                  : fallbackName)
-                            : fullName,
-                        actionLabel: _eventActionLabel(d),
-                        reasonText: _eventReasonText(d),
-                        metaText: _eventMetaText(
-                          d,
-                          fallbackClassId: fallbackClassId,
+                      return Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: isDenied
+                              ? const Color(0xFFFFF8F8)
+                              : const Color(0xFFF8FAFF),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isDenied
+                                ? const Color(0xFFEDD4D4)
+                                : const Color(0xFFD4E3F5),
+                          ),
                         ),
-                        timeAgo: ts != null ? _timeAgo(ts) : '',
-                        isDenied: isDenied,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: isDenied
+                                    ? const Color(0xFFF0D0D8)
+                                    : const Color(0xFFEEF1FB),
+                                borderRadius: BorderRadius.circular(11),
+                              ),
+                              child: Icon(
+                                isDenied
+                                    ? Icons.block_rounded
+                                    : Icons.check_circle_outline_rounded,
+                                size: 19,
+                                color: isDenied
+                                    ? const Color(0xFFB03040)
+                                    : const Color(0xFF2848B0),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          personName,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF111111),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isDenied
+                                              ? const Color(0xFFF0D0D8)
+                                              : const Color(0xFFD4E3F5),
+                                          borderRadius: BorderRadius.circular(
+                                            999,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          actionLabel,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            color: isDenied
+                                                ? const Color(0xFFB03040)
+                                                : const Color(0xFF2848B0),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (metaText.isNotEmpty) ...[
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      metaText,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF7A7E9A),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.door_front_door_rounded,
+                                        size: 12,
+                                        color: Color(0xFFB0B8C8),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        gateName,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFFB0B8C8),
+                                        ),
+                                      ),
+                                      if (reasonText.isNotEmpty) ...[
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          '·',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Color(0xFFB0B8C8),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            reasonText,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Color(0xFFB0B8C8),
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ] else
+                                        const Spacer(),
+                                      if (timeStr.isNotEmpty) ...[
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          timeStr,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Color(0xFFB0B8C8),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     },
                   );
