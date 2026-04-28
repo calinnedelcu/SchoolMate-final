@@ -110,9 +110,7 @@ String _eventMetaText(Map<String, dynamic> data, {String? fallbackClassId}) {
 
   if (effectiveClassId.isNotEmpty) parts.add('Class $effectiveClassId');
   if (scanResult.isNotEmpty) {
-    parts.add(
-      scanResult == 'allowed' ? 'Scan accepted' : 'Scan denied',
-    );
+    parts.add(scanResult == 'allowed' ? 'Scan accepted' : 'Scan denied');
   }
 
   return parts.join(' · ');
@@ -174,7 +172,11 @@ Future<T?> _showBlurDialog<T>({
 // -----------------------------------------------------------------------
 
 class AdminTurnstilesPage extends StatefulWidget {
-  const AdminTurnstilesPage({super.key, this.embedded = false, this.searchQuery});
+  const AdminTurnstilesPage({
+    super.key,
+    this.embedded = false,
+    this.searchQuery,
+  });
   final bool embedded;
   final String? searchQuery;
 
@@ -410,8 +412,9 @@ class _TurnstileBody extends StatelessWidget {
                   final ts = d['timestamp'] as Timestamp?;
                   if (ts == null) return false;
                   if (ts.toDate().isBefore(todayStart)) return false;
-                  final scanResult =
-                      (d['scanResult'] ?? '').toString().toLowerCase();
+                  final scanResult = (d['scanResult'] ?? '')
+                      .toString()
+                      .toLowerCase();
                   final type = (d['type'] ?? '').toString().toLowerCase();
                   return scanResult == 'denied' || type == 'deny';
                 }).length;
@@ -427,7 +430,10 @@ class _TurnstileBody extends StatelessWidget {
 
                 final liveEvents = allEvents.take(30).toList();
 
-                final loaded = gateSnap.hasData && studentSnap.hasData && eventSnap.hasData;
+                final loaded =
+                    gateSnap.hasData &&
+                    studentSnap.hasData &&
+                    eventSnap.hasData;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,7 +483,9 @@ class _TurnstileBody extends StatelessWidget {
                               iconColor: const Color(0xFFF5A623),
                               label: 'DENIED TODAY',
                               value: loaded ? '$deniedTodayCount' : '—',
-                              subtitle: deniedTodayCount == 0 ? 'All clear' : 'Access denied',
+                              subtitle: deniedTodayCount == 0
+                                  ? 'All clear'
+                                  : 'Access denied',
                             ),
                           ),
                         ],
@@ -762,25 +770,6 @@ class _ActiveHubsPanelState extends State<_ActiveHubsPanel> {
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF2848B0),
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2848B0),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    '${widget.gates.length} turnstiles',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
                   ),
                 ),
               ],
@@ -2591,9 +2580,7 @@ void _showAllLogsDialog(
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-                border: Border(
-                  bottom: BorderSide(color: Color(0xFFE8EAF2)),
-                ),
+                border: Border(bottom: BorderSide(color: Color(0xFFE8EAF2))),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
