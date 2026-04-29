@@ -148,7 +148,10 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                           ),
                           const SizedBox(width: 12),
                           TextButton(
-                            onPressed: () => showAdminCreateUserDialog(context, lockedRole: 'teacher'),
+                            onPressed: () => showAdminCreateUserDialog(
+                              context,
+                              lockedRole: 'teacher',
+                            ),
                             style: TextButton.styleFrom(
                               foregroundColor: const Color(0xFF2848B0),
                               padding: const EdgeInsets.symmetric(
@@ -170,7 +173,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                     const SizedBox(height: 18),
                     const Divider(height: 1, color: Color(0xFFE8EAF2)),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(40, 16, 40, 16),
+                      padding: const EdgeInsets.fromLTRB(32, 14, 32, 14),
                       child: Row(
                         children: [
                           Expanded(
@@ -275,15 +278,12 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                             children: [
                               Expanded(
                                 child: ListView.separated(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    40,
-                                    16,
-                                    40,
-                                    0,
-                                  ),
+                                  padding: EdgeInsets.zero,
                                   itemCount: visibleDocs.length,
-                                  separatorBuilder: (_, _) =>
-                                      const SizedBox(height: 12),
+                                  separatorBuilder: (_, __) => const Divider(
+                                    height: 1,
+                                    color: Color(0xFFE8EAF2),
+                                  ),
                                   itemBuilder: (_, i) {
                                     final d = visibleDocs[i];
                                     final data =
@@ -323,127 +323,136 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                       ),
                                       hoverColor: const Color(0xFFF7F8FA),
                                       child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            flex: 5,
-                                            child: Row(
-                                              children: [
-                                                CircleAvatar(
-                                                  radius: 20,
-                                                  backgroundColor: _avatarColor(
-                                                    fullName,
-                                                  ),
-                                                  child: Text(
-                                                    _initials(fullName),
-                                                    style: const TextStyle(
-                                                      color: Color(0xFF1A2050),
-                                                      fontWeight:
-                                                          FontWeight.w800,
-                                                      fontSize: 13,
+                                        padding: const EdgeInsets.fromLTRB(
+                                          32,
+                                          16,
+                                          32,
+                                          16,
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              flex: 5,
+                                              child: Row(
+                                                children: [
+                                                  CircleAvatar(
+                                                    radius: 20,
+                                                    backgroundColor:
+                                                        _avatarColor(fullName),
+                                                    child: Text(
+                                                      _initials(fullName),
+                                                      style: const TextStyle(
+                                                        color: Color(
+                                                          0xFF1A2050,
+                                                        ),
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                        fontSize: 13,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        fullName,
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          fontSize: 14,
-                                                          color: Color(
-                                                            0xFF111111,
-                                                          ),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          fullName,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                fontSize: 14,
+                                                                color: Color(
+                                                                  0xFF111111,
+                                                                ),
+                                                              ),
                                                         ),
-                                                      ),
-                                                      Text(
-                                                        'Username: $username',
-                                                        style: const TextStyle(
-                                                          fontSize: 12,
-                                                          color: Color(
-                                                            0xFF7A7E9A,
-                                                          ),
+                                                        Text(
+                                                          'Username: $username',
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 12,
+                                                                color: Color(
+                                                                  0xFF7A7E9A,
+                                                                ),
+                                                              ),
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 2,
-                                            child: Align(
-                                              alignment: Alignment.center,
-                                              child: classId.isNotEmpty
-                                                  ? Container(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 16,
-                                                            vertical: 7,
-                                                          ),
-                                                      decoration: BoxDecoration(
-                                                        color: const Color(
-                                                          0xFFE8EAF2,
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              20,
-                                                            ),
-                                                      ),
-                                                      child: Text(
-                                                        _formatClassName(
-                                                          classId,
-                                                        ),
-                                                        style: const TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          color: Color(
-                                                            0xFF2848B0,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    )
-                                                  : const Text('-'),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 4,
-                                            child: Text(
-                                              (email != null &&
-                                                      email.isNotEmpty)
-                                                  ? email
-                                                  : '-',
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                color: Color(0xFF2848B0),
+                                                ],
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(
-                                            width: 30,
-                                            child: Icon(
-                                              Icons.chevron_right_rounded,
-                                              color: Color(0xFFB0B8C8),
-                                              size: 22,
+                                            Expanded(
+                                              flex: 2,
+                                              child: Align(
+                                                alignment: Alignment.center,
+                                                child: classId.isNotEmpty
+                                                    ? Container(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 16,
+                                                              vertical: 7,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: const Color(
+                                                            0xFFE8EAF2,
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                20,
+                                                              ),
+                                                        ),
+                                                        child: Text(
+                                                          _formatClassName(
+                                                            classId,
+                                                          ),
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                color: Color(
+                                                                  0xFF2848B0,
+                                                                ),
+                                                              ),
+                                                        ),
+                                                      )
+                                                    : const Text('-'),
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                            Expanded(
+                                              flex: 4,
+                                              child: Text(
+                                                (email != null &&
+                                                        email.isNotEmpty)
+                                                    ? email
+                                                    : '-',
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Color(0xFF2848B0),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              width: 30,
+                                              child: Icon(
+                                                Icons.chevron_right_rounded,
+                                                color: Color(0xFFB0B8C8),
+                                                size: 22,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
                                     );
                                   },
                                 ),
@@ -514,12 +523,18 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
 
         final total = teachers.length;
         final configured = teachers
-            .where((d) =>
-                (d.data() as Map<String, dynamic>)['onboardingComplete'] == true)
+            .where(
+              (d) =>
+                  (d.data() as Map<String, dynamic>)['onboardingComplete'] ==
+                  true,
+            )
             .length;
         final withClass = teachers
-            .where((d) =>
-                ((d.data() as Map<String, dynamic>)['classId'] ?? '').toString().isNotEmpty)
+            .where(
+              (d) => ((d.data() as Map<String, dynamic>)['classId'] ?? '')
+                  .toString()
+                  .isNotEmpty,
+            )
             .length;
         final notConfigured = total - configured;
 
@@ -795,10 +810,6 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     return pages;
   }
 
-
-
-
-
   Future<void> _openTeacherDialog(
     BuildContext context, {
     required String uid,
@@ -932,8 +943,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                           busy = false;
                                           currentFullName = newName;
                                           renameC.clear();
-                                          msg =
-                                              'Name changed to "$newName".';
+                                          msg = 'Name changed to "$newName".';
                                           msgIsError = false;
                                         });
                                         return;
@@ -1318,20 +1328,36 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                           final availableIds = <String>[];
                                           if (snap.hasData) {
                                             for (final d in snap.data!.docs) {
-                                              final t = ((d.data() as Map<String, dynamic>)['teacherUsername'] ?? '')
-                                                  .toString().trim().toLowerCase();
-                                              if (t.isEmpty || d.id == currentClassId || t == username.trim().toLowerCase()) {
+                                              final t =
+                                                  ((d.data()
+                                                              as Map<
+                                                                String,
+                                                                dynamic
+                                                              >)['teacherUsername'] ??
+                                                          '')
+                                                      .toString()
+                                                      .trim()
+                                                      .toLowerCase();
+                                              if (t.isEmpty ||
+                                                  d.id == currentClassId ||
+                                                  t ==
+                                                      username
+                                                          .trim()
+                                                          .toLowerCase()) {
                                                 availableIds.add(d.id);
                                               }
                                             }
                                             availableIds.sort();
                                           }
 
-                                          final dropdownValue = currentClassId.isEmpty
+                                          final dropdownValue =
+                                              currentClassId.isEmpty
                                               ? '__NONE__'
-                                              : (availableIds.contains(currentClassId)
-                                                  ? currentClassId
-                                                  : '__NONE__');
+                                              : (availableIds.contains(
+                                                      currentClassId,
+                                                    )
+                                                    ? currentClassId
+                                                    : '__NONE__');
 
                                           return Container(
                                             width: double.infinity,
@@ -1342,101 +1368,174 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFFE8EAF2),
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
                                             child: DropdownButtonHideUnderline(
                                               child: DropdownButton<String>(
                                                 value: dropdownValue,
                                                 isExpanded: true,
                                                 icon: const Icon(
-                                                  Icons.keyboard_arrow_down_rounded,
+                                                  Icons
+                                                      .keyboard_arrow_down_rounded,
                                                   size: 20,
                                                   color: Color(0xFF7A7E9A),
                                                 ),
-                                                items: <DropdownMenuItem<String>>[
-                                                  const DropdownMenuItem(
-                                                    value: '__NONE__',
-                                                    child: Text(
-                                                      'None',
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: Color(0xFF7A7E9A),
-                                                        fontStyle: FontStyle.italic,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  ...availableIds.map(
-                                                    (c) => DropdownMenuItem(
-                                                      value: c,
-                                                      child: Text(
-                                                        _formatClassName(c),
-                                                        style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight: FontWeight.w600,
-                                                          color: Color(0xFF000000),
+                                                items:
+                                                    <DropdownMenuItem<String>>[
+                                                      const DropdownMenuItem(
+                                                        value: '__NONE__',
+                                                        child: Text(
+                                                          'None',
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Color(
+                                                              0xFF7A7E9A,
+                                                            ),
+                                                            fontStyle: FontStyle
+                                                                .italic,
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                  ),
-                                                ],
+                                                      ...availableIds.map(
+                                                        (c) => DropdownMenuItem(
+                                                          value: c,
+                                                          child: Text(
+                                                            _formatClassName(c),
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  color: Color(
+                                                                    0xFF000000,
+                                                                  ),
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                 onChanged: busy
                                                     ? null
                                                     : (val) async {
-                                                        if (val == null || val == dropdownValue) return;
-                                                        final newClassId = val == '__NONE__' ? '' : val;
-                                                        setS(() { busy = true; msg = null; });
+                                                        if (val == null ||
+                                                            val ==
+                                                                dropdownValue)
+                                                          return;
+                                                        final newClassId =
+                                                            val == '__NONE__'
+                                                            ? ''
+                                                            : val;
+                                                        setS(() {
+                                                          busy = true;
+                                                          msg = null;
+                                                        });
                                                         try {
-                                                          final db = FirebaseFirestore.instance;
-                                                          final batch = db.batch();
-                                                          final teacherRef = db.collection('users').doc(uid);
+                                                          final db =
+                                                              FirebaseFirestore
+                                                                  .instance;
+                                                          final batch = db
+                                                              .batch();
+                                                          final teacherRef = db
+                                                              .collection(
+                                                                'users',
+                                                              )
+                                                              .doc(uid);
 
-                                                          if (newClassId.isEmpty) {
+                                                          if (newClassId
+                                                              .isEmpty) {
                                                             // Unassign: remove teacher from old class, clear teacher's classId
                                                             batch.set(
-                                                              db.collection('classes').doc(currentClassId),
+                                                              db
+                                                                  .collection(
+                                                                    'classes',
+                                                                  )
+                                                                  .doc(
+                                                                    currentClassId,
+                                                                  ),
                                                               {
-                                                                'teacherUsername': FieldValue.delete(),
-                                                                'updatedAt': FieldValue.serverTimestamp(),
+                                                                'teacherUsername':
+                                                                    FieldValue.delete(),
+                                                                'updatedAt':
+                                                                    FieldValue.serverTimestamp(),
                                                               },
-                                                              SetOptions(merge: true),
+                                                              SetOptions(
+                                                                merge: true,
+                                                              ),
                                                             );
-                                                            batch.update(teacherRef, {
-                                                              'classId': FieldValue.delete(),
-                                                              'updatedAt': FieldValue.serverTimestamp(),
-                                                            });
+                                                            batch.update(
+                                                              teacherRef,
+                                                              {
+                                                                'classId':
+                                                                    FieldValue.delete(),
+                                                                'updatedAt':
+                                                                    FieldValue.serverTimestamp(),
+                                                              },
+                                                            );
                                                           } else {
                                                             // Assign to new class
-                                                            if (currentClassId.isNotEmpty) {
+                                                            if (currentClassId
+                                                                .isNotEmpty) {
                                                               // Remove from old class first
                                                               batch.set(
-                                                                db.collection('classes').doc(currentClassId),
+                                                                db
+                                                                    .collection(
+                                                                      'classes',
+                                                                    )
+                                                                    .doc(
+                                                                      currentClassId,
+                                                                    ),
                                                                 {
-                                                                  'teacherUsername': FieldValue.delete(),
-                                                                  'updatedAt': FieldValue.serverTimestamp(),
+                                                                  'teacherUsername':
+                                                                      FieldValue.delete(),
+                                                                  'updatedAt':
+                                                                      FieldValue.serverTimestamp(),
                                                                 },
-                                                                SetOptions(merge: true),
+                                                                SetOptions(
+                                                                  merge: true,
+                                                                ),
                                                               );
                                                             }
                                                             batch.set(
-                                                              db.collection('classes').doc(newClassId),
+                                                              db
+                                                                  .collection(
+                                                                    'classes',
+                                                                  )
+                                                                  .doc(
+                                                                    newClassId,
+                                                                  ),
                                                               {
-                                                                'teacherUsername': username,
-                                                                'updatedAt': FieldValue.serverTimestamp(),
+                                                                'teacherUsername':
+                                                                    username,
+                                                                'updatedAt':
+                                                                    FieldValue.serverTimestamp(),
                                                               },
-                                                              SetOptions(merge: true),
+                                                              SetOptions(
+                                                                merge: true,
+                                                              ),
                                                             );
-                                                            batch.update(teacherRef, {
-                                                              'classId': newClassId,
-                                                              'updatedAt': FieldValue.serverTimestamp(),
-                                                            });
+                                                            batch.update(
+                                                              teacherRef,
+                                                              {
+                                                                'classId':
+                                                                    newClassId,
+                                                                'updatedAt':
+                                                                    FieldValue.serverTimestamp(),
+                                                              },
+                                                            );
                                                           }
 
                                                           await batch.commit();
                                                           setS(() {
                                                             busy = false;
-                                                            currentClassId = newClassId;
-                                                            msg = newClassId.isEmpty
+                                                            currentClassId =
+                                                                newClassId;
+                                                            msg =
+                                                                newClassId
+                                                                    .isEmpty
                                                                 ? 'Class assignment removed.'
                                                                 : 'Teacher assigned to ${_formatClassName(newClassId)}.';
                                                             msgIsError = false;
@@ -1444,7 +1543,12 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                         } catch (e) {
                                                           setS(() {
                                                             busy = false;
-                                                            msg = e.toString().replaceFirst('Exception: ', '');
+                                                            msg = e
+                                                                .toString()
+                                                                .replaceFirst(
+                                                                  'Exception: ',
+                                                                  '',
+                                                                );
                                                             msgIsError = true;
                                                           });
                                                         }
