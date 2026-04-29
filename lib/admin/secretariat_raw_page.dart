@@ -1,5 +1,6 @@
 ﻿import 'dart:async';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,7 +29,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
   final api = AdminApi();
   final store = AdminStore();
   String activeSidebarLabel = "Menu";
-  String _globalSearchQuery = '';
+  final ValueNotifier<String> _searchQueryNotifier = ValueNotifier<String>('');
+  String get _globalSearchQuery => _searchQueryNotifier.value;
+  set _globalSearchQuery(String v) => _searchQueryNotifier.value = v;
 
   // create user
   final fullNameC = TextEditingController();
@@ -72,6 +75,10 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
 
   // top bar search
   final _topSearchController = TextEditingController();
+  final FocusNode _topSearchFocus = FocusNode();
+  final LayerLink _topSearchLink = LayerLink();
+  final OverlayPortalController _topSearchOverlay =
+      OverlayPortalController();
 
   void _log(String s) => setState(() => log = "$s\n$log");
 
@@ -463,6 +470,70 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
       },
     };
     _ensureRecentAdminActivityDoc();
+    _topSearchFocus.addListener(_handleTopSearchFocusChange);
+  }
+
+  void _handleTopSearchFocusChange() {
+    if (_topSearchFocus.hasFocus) {
+      if (_globalSearchQuery.isNotEmpty) _topSearchOverlay.show();
+    } else {
+      // delay so a tap on a result registers before the overlay closes
+      Future<void>.delayed(const Duration(milliseconds: 180), () {
+        if (!mounted) return;
+        if (!_topSearchFocus.hasFocus) _topSearchOverlay.hide();
+      });
+    }
+  }
+
+  Widget _buildTopSearchOverlay(BuildContext context) {
+    return Positioned(
+      width: 360,
+      child: CompositedTransformFollower(
+        link: _topSearchLink,
+        targetAnchor: Alignment.bottomRight,
+        followerAnchor: Alignment.topRight,
+        offset: const Offset(0, 6),
+        showWhenUnlinked: false,
+        child: TapRegion(
+          onTapOutside: (_) => _topSearchOverlay.hide(),
+          child: Material(
+            elevation: 8,
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 380),
+              child: _TopSearchResults(
+                queryListenable: _searchQueryNotifier,
+                onSelect: _handleTopSearchResultTap,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleTopSearchResultTap(_TopSearchHit hit) {
+    _topSearchOverlay.hide();
+    _topSearchFocus.unfocus();
+    final String label = switch (hit.kind) {
+      _TopSearchKind.student => 'Students',
+      _TopSearchKind.teacher => 'Teachers',
+      _TopSearchKind.parent => 'Parents',
+      _TopSearchKind.classRoom => 'Classes',
+    };
+    setState(() {
+      activeSidebarLabel = label;
+      // For users we pre-fill the per-page search by name. Classes have no
+      // searchQuery prop on AdminClassesPage today, so we just navigate there.
+      if (hit.kind == _TopSearchKind.classRoom) {
+        _globalSearchQuery = '';
+        _topSearchController.clear();
+      } else {
+        _globalSearchQuery = hit.searchTerm;
+        _topSearchController.text = hit.searchTerm;
+      }
+    });
   }
 
   @override
@@ -474,6 +545,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     targetUserFullNameC.dispose();
     targetUserNewPasswordC.dispose();
     _topSearchController.dispose();
+    _topSearchFocus.removeListener(_handleTopSearchFocusChange);
+    _topSearchFocus.dispose();
+    _searchQueryNotifier.dispose();
     super.dispose();
   }
 
@@ -721,56 +795,72 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                       ),
                       const Spacer(),
                       // Right side: search bar (fixed width, not full stretch)
-                      SizedBox(
-                        width: 300,
-                        height: 42,
-                        child: TextField(
-                            controller: _topSearchController,
-                            decoration: InputDecoration(
-                              hintText: 'Search students, teachers, classes...',
-                              hintStyle: const TextStyle(
-                                color: Color(0xFF7A7E9A),
+                      CompositedTransformTarget(
+                        link: _topSearchLink,
+                        child: OverlayPortal(
+                          controller: _topSearchOverlay,
+                          overlayChildBuilder: _buildTopSearchOverlay,
+                          child: SizedBox(
+                            width: 300,
+                            height: 42,
+                            child: TextField(
+                              controller: _topSearchController,
+                              focusNode: _topSearchFocus,
+                              decoration: InputDecoration(
+                                hintText:
+                                    'Search students, teachers, classes...',
+                                hintStyle: const TextStyle(
+                                  color: Color(0xFF7A7E9A),
+                                  fontSize: 13,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.search_rounded,
+                                  size: 18,
+                                  color: Color(0xFF7A7E9A),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 0,
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFFF2F4F8),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE8EAF2),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE8EAF2),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF2848B0),
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                              onChanged: (v) {
+                                final trimmed = v.trim();
+                                _searchQueryNotifier.value = trimmed;
+                                if (trimmed.isEmpty) {
+                                  _topSearchOverlay.hide();
+                                } else if (_topSearchFocus.hasFocus &&
+                                    !_topSearchOverlay.isShowing) {
+                                  _topSearchOverlay.show();
+                                }
+                              },
+                              style: const TextStyle(
                                 fontSize: 13,
+                                color: Color(0xFF1A2050),
                               ),
-                              prefixIcon: const Icon(
-                                Icons.search_rounded,
-                                size: 18,
-                                color: Color(0xFF7A7E9A),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 0,
-                              ),
-                              filled: true,
-                              fillColor: const Color(0xFFF2F4F8),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE8EAF2),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE8EAF2),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF2848B0),
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                            onChanged: (v) => setState(() {
-                              _globalSearchQuery = v.trim();
-                            }),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF1A2050),
                             ),
                           ),
                         ),
+                      ),
                       const SizedBox(width: 16),
                       // Right: New post button
                       FilledButton.icon(
@@ -942,18 +1032,28 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
       case 'Classes':
         return const AdminClassesPage(embedded: true);
       case 'Students':
-        return AdminStudentsPage(
-          key: const ValueKey('students-page-v2'),
-          searchQuery: _globalSearchQuery,
+        return ValueListenableBuilder<String>(
+          valueListenable: _searchQueryNotifier,
+          builder: (_, q, _) => AdminStudentsPage(
+            key: const ValueKey('students-page-v2'),
+            searchQuery: q,
+          ),
         );
       case 'Parents':
-        return AdminParentsPage(searchQuery: _globalSearchQuery);
+        return ValueListenableBuilder<String>(
+          valueListenable: _searchQueryNotifier,
+          builder: (_, q, _) => AdminParentsPage(searchQuery: q),
+        );
       case 'Teachers':
-        return AdminTeachersPage(searchQuery: _globalSearchQuery);
+        return ValueListenableBuilder<String>(
+          valueListenable: _searchQueryNotifier,
+          builder: (_, q, _) => AdminTeachersPage(searchQuery: q),
+        );
       case 'Guardians':
-        return AdminTurnstilesPage(
-          embedded: true,
-          searchQuery: _globalSearchQuery,
+        return ValueListenableBuilder<String>(
+          valueListenable: _searchQueryNotifier,
+          builder: (_, q, _) =>
+              AdminTurnstilesPage(embedded: true, searchQuery: q),
         );
       case 'Posts':
         return const AdminPostsAnnouncementsPage(embedded: true);
@@ -2383,4 +2483,256 @@ class _ClassTableRow {
     required this.teacherName,
     required this.studentCount,
   });
+}
+
+enum _TopSearchKind { student, teacher, parent, classRoom }
+
+class _TopSearchHit {
+  final _TopSearchKind kind;
+  final String title;
+  final String subtitle;
+  final String searchTerm;
+
+  const _TopSearchHit({
+    required this.kind,
+    required this.title,
+    required this.subtitle,
+    required this.searchTerm,
+  });
+}
+
+class _TopSearchResults extends StatelessWidget {
+  const _TopSearchResults({
+    required this.queryListenable,
+    required this.onSelect,
+  });
+
+  final ValueListenable<String> queryListenable;
+  final ValueChanged<_TopSearchHit> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<String>(
+      valueListenable: queryListenable,
+      builder: (context, query, _) => _buildBody(context, query),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, String query) {
+    final lower = query.trim().toLowerCase();
+    if (lower.isEmpty) {
+      return const _TopSearchEmpty(text: 'Type to search…');
+    }
+
+    final usersStream = FirebaseFirestore.instance
+        .collection('users')
+        .snapshots();
+    final classesStream = FirebaseFirestore.instance
+        .collection('classes')
+        .snapshots();
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: usersStream,
+      builder: (context, usersSnap) {
+        return StreamBuilder<QuerySnapshot>(
+          stream: classesStream,
+          builder: (context, classesSnap) {
+            if (usersSnap.connectionState == ConnectionState.waiting ||
+                classesSnap.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.all(20),
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              );
+            }
+
+            final hits = <_TopSearchHit>[];
+
+            for (final doc in usersSnap.data?.docs ?? const []) {
+              final data = doc.data() as Map<String, dynamic>;
+              final fullName = (data['fullName'] ?? '').toString();
+              final username = (data['username'] ?? doc.id).toString();
+              final classId = (data['classId'] ?? '').toString();
+              final role = (data['role'] ?? '').toString().toLowerCase();
+              final haystack =
+                  '$fullName $username $classId'.toLowerCase();
+              if (!haystack.contains(lower)) continue;
+
+              _TopSearchKind? kind;
+              switch (role) {
+                case 'student':
+                  kind = _TopSearchKind.student;
+                  break;
+                case 'teacher':
+                  kind = _TopSearchKind.teacher;
+                  break;
+                case 'parent':
+                  kind = _TopSearchKind.parent;
+                  break;
+              }
+              if (kind == null) continue;
+
+              final title = fullName.isNotEmpty ? fullName : username;
+              final subtitleParts = <String>[
+                if (role.isNotEmpty)
+                  role[0].toUpperCase() + role.substring(1),
+                if (classId.isNotEmpty) classId,
+                if (username.isNotEmpty && username != title) '@$username',
+              ];
+              hits.add(
+                _TopSearchHit(
+                  kind: kind,
+                  title: title,
+                  subtitle: subtitleParts.join(' · '),
+                  searchTerm: title,
+                ),
+              );
+            }
+
+            for (final doc in classesSnap.data?.docs ?? const []) {
+              final data = doc.data() as Map<String, dynamic>;
+              final name = (data['name'] ?? doc.id).toString();
+              final teacher = (data['teacherUsername'] ?? '').toString();
+              final haystack = '$name ${doc.id} $teacher'.toLowerCase();
+              if (!haystack.contains(lower)) continue;
+              hits.add(
+                _TopSearchHit(
+                  kind: _TopSearchKind.classRoom,
+                  title: name,
+                  subtitle: teacher.isEmpty
+                      ? 'Class'
+                      : 'Class · @$teacher',
+                  searchTerm: doc.id,
+                ),
+              );
+            }
+
+            if (hits.isEmpty) {
+              return _TopSearchEmpty(text: 'No results for "$query"');
+            }
+
+            // Show user hits before classes; cap to keep dropdown short.
+            const int maxResults = 12;
+            final shown = hits.take(maxResults).toList();
+
+            return ListView.separated(
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              itemCount: shown.length,
+              separatorBuilder: (_, _) => const Divider(
+                height: 1,
+                color: Color(0xFFEEF0F6),
+              ),
+              itemBuilder: (context, i) {
+                final hit = shown[i];
+                final IconData icon;
+                final Color iconBg;
+                final Color iconFg;
+                switch (hit.kind) {
+                  case _TopSearchKind.student:
+                    icon = Icons.school_rounded;
+                    iconBg = const Color(0xFFE7EDFF);
+                    iconFg = const Color(0xFF2848B0);
+                    break;
+                  case _TopSearchKind.teacher:
+                    icon = Icons.menu_book_rounded;
+                    iconBg = const Color(0xFFFFF3D6);
+                    iconFg = const Color(0xFF9A6B00);
+                    break;
+                  case _TopSearchKind.parent:
+                    icon = Icons.family_restroom_rounded;
+                    iconBg = const Color(0xFFE5F6EC);
+                    iconFg = const Color(0xFF1F7A45);
+                    break;
+                  case _TopSearchKind.classRoom:
+                    icon = Icons.class_rounded;
+                    iconBg = const Color(0xFFF1E8FF);
+                    iconFg = const Color(0xFF6A3DBE);
+                    break;
+                }
+                return InkWell(
+                  onTap: () => onSelect(hit),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: iconBg,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(icon, size: 18, color: iconFg),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                hit.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1A2050),
+                                ),
+                              ),
+                              if (hit.subtitle.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  hit.subtitle,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF7A7E9A),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          size: 18,
+                          color: Color(0xFF8F94AD),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _TopSearchEmpty extends StatelessWidget {
+  const _TopSearchEmpty({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 13, color: Color(0xFF7A7E9A)),
+      ),
+    );
+  }
 }

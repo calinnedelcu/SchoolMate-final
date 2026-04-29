@@ -1316,6 +1316,11 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
           );
         }
 
+        const double dayLabelWidth = 86;
+        const double slotWidth = 162;
+        const double rowHeight = 68;
+        const double headerHeight = 48;
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: SingleChildScrollView(
@@ -1323,77 +1328,79 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Day header row
+                // Time-slot header row
                 Row(
                   children: [
-                    const SizedBox(width: 72), // time col
-                    ...List.generate(5, (di) {
+                    const SizedBox(width: dayLabelWidth), // day col
+                    ...times.map((lt) {
+                      final (_, startT, endT) = lt;
                       return Container(
-                        width: 162,
-                        height: 38,
+                        width: slotWidth,
+                        height: headerHeight,
                         margin: const EdgeInsets.only(left: 8),
                         decoration: BoxDecoration(
                           color: _kPrimary.withValues(alpha: 0.07),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         alignment: Alignment.center,
-                        child: Text(
-                          _kDayHeaders[di],
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: _kPrimary,
-                            letterSpacing: 1.4,
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              startT,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1A2050),
+                              ),
+                            ),
+                            Text(
+                              endT,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFFBBBBBB),
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     }),
                   ],
                 ),
                 const SizedBox(height: 10),
-                // Lesson rows
-                ...times.map((lt) {
-                  final (lessonIdx, startT, endT) = lt;
+                // Day rows
+                ...List.generate(5, (di) {
+                  final dayNum = di + 1;
+                  final dayMap = days[dayNum.toString()] as Map?;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Time label
+                        // Day label
                         SizedBox(
-                          width: 72,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                startT,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1A2050),
-                                ),
+                          width: dayLabelWidth,
+                          height: rowHeight,
+                          child: Center(
+                            child: Text(
+                              _kDayHeaders[di],
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: _kPrimary,
+                                letterSpacing: 1.4,
                               ),
-                              Text(
-                                endT,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: Color(0xFFBBBBBB),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                        // Cells
-                        ...List.generate(5, (di) {
-                          final dayNum = di + 1;
-                          final dayMap =
-                              days[dayNum.toString()] as Map?;
-                          final assignment = dayMap?[
-                              lessonIdx.toString()] as Map?;
+                        // Cells (one per time slot)
+                        ...times.map((lt) {
+                          final (lessonIdx, startT, endT) = lt;
+                          final assignment =
+                              dayMap?[lessonIdx.toString()] as Map?;
                           return Container(
-                            width: 162,
-                            height: 68,
+                            width: slotWidth,
+                            height: rowHeight,
                             margin: const EdgeInsets.only(left: 8),
                             child: _buildCell(
                               classId: classId,

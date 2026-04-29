@@ -2,6 +2,8 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../common/link_utils.dart';
+import '../common/storage_image.dart';
 import 'admin_post_composer_page.dart';
 
 const _bg = Color(0xFFF2F4F8);
@@ -70,6 +72,7 @@ class _PostItem {
   final String audienceLabel;
   final String senderName;
   final bool pinned;
+  final String imageUrl;
 
   const _PostItem({
     required this.docId,
@@ -81,6 +84,7 @@ class _PostItem {
     required this.audienceLabel,
     required this.senderName,
     required this.pinned,
+    this.imageUrl = '',
   });
 }
 
@@ -484,6 +488,7 @@ class _PostsListState extends State<_PostsList> {
                 audienceLabel: audience,
                 senderName: (data['senderName'] ?? '').toString(),
                 pinned: data['pinned'] == true,
+                imageUrl: (data['imageUrl'] ?? '').toString(),
               ));
             }
 
@@ -512,6 +517,7 @@ class _PostsListState extends State<_PostsList> {
                 audienceLabel: audience,
                 senderName: (data['createdByName'] ?? '').toString(),
                 pinned: data['pinned'] == true,
+                imageUrl: (data['imageUrl'] ?? '').toString(),
               ));
             }
 
@@ -767,7 +773,35 @@ class _PostCard extends StatelessWidget {
                 ],
               ),
             ),
+            // Image preview (right of text)
+            if (item.imageUrl.isNotEmpty) ...[
+              const SizedBox(width: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: StorageImage(
+                    url: item.imageUrl,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (_) => Container(
+                      color: color.withValues(alpha: 0.08),
+                    ),
+                    errorBuilder: (_, _) => Container(
+                      color: color.withValues(alpha: 0.08),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.broken_image_rounded,
+                        color: _textMuted,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
             // Actions
+            const SizedBox(width: 6),
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -1324,10 +1358,72 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
     final publishedTs = _fullDoc!['createdAt'] as Timestamp?;
     final hoursWorth = _fullDoc!['hoursWorth']?.toString() ?? '';
     final maxPart = _fullDoc!['maxParticipants']?.toString() ?? '';
+    final imageUrl = _fullDoc!['imageUrl']?.toString() ?? '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (imageUrl.isNotEmpty) ...[
+          Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 560),
+                child: StorageImage(
+                  url: imageUrl,
+                  fit: BoxFit.scaleDown,
+                  loadingBuilder: (_) => Container(
+                    width: 280,
+                    height: 180,
+                    color: const Color(0xFFE8EAF2),
+                    alignment: Alignment.center,
+                    child: const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2.4),
+                    ),
+                  ),
+                  errorBuilder: (_, error) => Container(
+                    width: 320,
+                    color: const Color(0xFFE8EAF2),
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.broken_image_rounded,
+                          color: _textMuted,
+                          size: 28,
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Could not load image',
+                          style: TextStyle(
+                            color: _textMuted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '$error',
+                          textAlign: TextAlign.center,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: _textMuted,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         // ── Meta chips row ────────────────────────────────────────
         Wrap(
           spacing: 8,
@@ -1432,6 +1528,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
                   isFirst: location.isEmpty &&
                       eventDateTs == null &&
                       !(isVol && hoursWorth.isNotEmpty),
+                  onTap: () => launchExternalUrl(context, link),
                 ),
               if (location.isEmpty &&
                   eventDateTs == null &&
@@ -1627,64 +1724,84 @@ class _InfoRow extends StatelessWidget {
   final String value;
   final Color iconColor;
   final bool isFirst;
+  final VoidCallback? onTap;
+
   const _InfoRow({
     required this.icon,
     required this.label,
     required this.value,
     required this.iconColor,
     this.isFirst = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isLink = onTap != null;
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: iconColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: _textMuted,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: isLink ? iconColor : _textDark,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                    decoration: isLink ? TextDecoration.underline : null,
+                    decorationColor: isLink ? iconColor : null,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isLink) ...[
+            const SizedBox(width: 6),
+            Icon(Icons.open_in_new_rounded, size: 14, color: iconColor),
+          ],
+        ],
+      ),
+    );
+
     return Column(
       children: [
         if (!isFirst)
-          const Divider(height: 1, color: Color(0xFFEEF0F8), indent: 14, endIndent: 14),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, size: 16, color: iconColor),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: _textMuted,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      value,
-                      style: const TextStyle(
-                        color: _textDark,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          const Divider(
+            height: 1,
+            color: Color(0xFFEEF0F8),
+            indent: 14,
+            endIndent: 14,
           ),
-        ),
+        if (isLink)
+          InkWell(onTap: onTap, child: content)
+        else
+          content,
       ],
     );
   }
