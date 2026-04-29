@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:ui' show ImageFilter;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:school_mate/common/link_utils.dart';
+import 'package:school_mate/common/storage_image.dart';
 import 'package:school_mate/student/bookmarks_service.dart';
 import 'package:school_mate/student/meniu.dart';
 import 'package:school_mate/student/widgets/no_anim_route.dart';
@@ -865,6 +867,8 @@ class _InboxRequestTileState extends State<_InboxRequestTile>
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl =
+        (widget.data.raw['imageUrl'] ?? '').toString().trim();
     return AnimatedBuilder(
       animation: _bounceCtrl,
       builder: (context, child) {
@@ -901,7 +905,12 @@ class _InboxRequestTileState extends State<_InboxRequestTile>
                           ),
                         ),
                         Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+                      padding: EdgeInsets.fromLTRB(
+                        18,
+                        20,
+                        imageUrl.isEmpty ? 18 : 12,
+                        20,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -980,6 +989,33 @@ class _InboxRequestTileState extends State<_InboxRequestTile>
                       ],
                     ),
                   ),
+                  if (imageUrl.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 14, 14, 14),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SizedBox(
+                          width: 92,
+                          height: 92,
+                          child: StorageImage(
+                            url: imageUrl,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (_) => Container(
+                              color: widget.data.leadingBackground,
+                            ),
+                            errorBuilder: (_, _) => Container(
+                              color: widget.data.leadingBackground,
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.broken_image_rounded,
+                                color: widget.data.leadingForeground,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -1321,6 +1357,7 @@ class _InboxCardDetailDialog extends StatelessWidget {
     final audienceLabel = (raw['audienceLabel'] ?? '').toString().trim();
 
     final accent = data.leadingForeground;
+    final imageUrl = (raw['imageUrl'] ?? '').toString().trim();
     final isRequest = data.category == _InboxFilter.requests;
     final bookmarkCategory = switch (data.category) {
       _InboxFilter.competition => 'competition',
@@ -1353,6 +1390,43 @@ class _InboxCardDetailDialog extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (imageUrl.isNotEmpty) ...[
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 480),
+                  child: StorageImage(
+                    url: imageUrl,
+                    fit: BoxFit.scaleDown,
+                    loadingBuilder: (_) => Container(
+                      width: 280,
+                      height: 180,
+                      color: const Color(0xFFE8EAF2),
+                      alignment: Alignment.center,
+                      child: const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2.4),
+                      ),
+                    ),
+                    errorBuilder: (_, _) => Container(
+                      width: 280,
+                      height: 160,
+                      color: const Color(0xFFE8EAF2),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.broken_image_rounded,
+                        color: _textMuted,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           if (eventDate != null ||
               requestedForDate != null ||
               location.isNotEmpty) ...[
@@ -1419,29 +1493,37 @@ class _DetailLinkBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2F4F8),
+    return Material(
+      color: const Color(0xFFF2F4F8),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
         borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.link_rounded, size: 18, color: accent),
-          const SizedBox(width: 10),
-          Expanded(
-            child: SelectableText(
-              link,
-              style: TextStyle(
-                color: accent,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 1.35,
+        onTap: () => launchExternalUrl(context, link),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.link_rounded, size: 18, color: accent),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  link,
+                  style: TextStyle(
+                    color: accent,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                    decoration: TextDecoration.underline,
+                    decorationColor: accent,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              Icon(Icons.open_in_new_rounded, size: 16, color: accent),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

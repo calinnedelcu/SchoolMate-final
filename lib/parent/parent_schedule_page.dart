@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../common/class_timetable.dart';
 import '../core/session.dart';
 import '../student/widgets/school_decor.dart';
-import '../student/widgets/timetable.dart';
 
 const _primary = Color(0xFF2848B0);
 const _surface = Color(0xFFF2F4F8);
@@ -276,7 +276,7 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
                             onNext: () => setState(() => _weekOffset += 1),
                           ),
                           const SizedBox(height: 14),
-                          const TimetableGrid(),
+                          ClassTimetable(classId: classId),
                           const SizedBox(height: 14),
                           const _LegendRow(),
                         ],
