@@ -17,7 +17,6 @@ class GateScanResultPageArguments {
   final String? fullName;
   final String? classId;
   final String? reason;
-  final String? scanType;
   final String? studentId;
   final bool hasActiveLeave;
   final String? errorMessage;
@@ -29,7 +28,6 @@ class GateScanResultPageArguments {
     this.classId,
     this.reason,
     this.studentId,
-    this.scanType,
     this.hasActiveLeave = false,
     this.errorMessage,
   });
@@ -41,9 +39,18 @@ class GateScanResultPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final args =
-        ModalRoute.of(context)!.settings.arguments as GateScanResultPageArguments;
+        ModalRoute.of(context)?.settings.arguments as GateScanResultPageArguments?;
 
-    final initials = (args.fullName ?? '??')
+    if (args == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text('Invalid scan arguments'),
+        ),
+      );
+    }
+
+    final name = args.fullName ?? '??';
+    final initials = name
         .trim()
         .split(' ')
         .where((s) => s.isNotEmpty)
@@ -52,49 +59,104 @@ class GateScanResultPage extends StatelessWidget {
         .join()
         .toUpperCase();
 
-    final scanType = (args.scanType ?? '').toLowerCase();
-    final isExit = scanType == 'exit';
+    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>?>(
+      future: (args.classId != null && args.classId!.isNotEmpty)
+          ? FirebaseFirestore.instance.collection('timetables').doc(args.classId!).get()
+          : null,
+      builder: (context, snapshot) {
+        final timetableData = snapshot.data?.data();
+        final bool isDayFinished = _calculateIsDayFinished(timetableData);
 
-    return Scaffold(
-      backgroundColor: _surface,
-      body: SafeArea(
-        top: false,
-        bottom: false,
-        child: Column(
-          children: [
-            PageBlueHeader(
-              title: 'Scan result',
-              subtitle: args.isAllowed
-                  ? (isExit ? 'Exit recorded' : 'Entry recorded')
-                  : 'Access denied',
-              onBack: () => Navigator.of(context).pop(),
-              trailing: _GatePill(),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _StudentCard(
-                      initials: initials,
-                      fullName: args.fullName,
-                      classId: args.classId,
-                      userId: args.userId,
-                    ),
-                    const SizedBox(height: 14),
-                    _LeaveRequestCard(hasActiveLeave: args.hasActiveLeave),
-                    const SizedBox(height: 14),
-                    _ScheduleCard(classId: args.classId),
-                  ],
+        return Scaffold(
+          backgroundColor: _surface,
+          body: SafeArea(
+            top: false,
+            bottom: false,
+            child: Column(
+              children: [
+                PageBlueHeader(
+                  title: 'Scan result',
+                  subtitle: (args.isAllowed || isDayFinished) ? 'Exit recorded' : 'Access denied',
+                  onBack: () => Navigator.of(context).pop(),
+                  trailing: _GatePill(),
                 ),
-              ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _StudentCard(
+                          initials: initials,
+                          fullName: args.fullName,
+                          classId: args.classId,
+                          userId: args.userId,
+                        ),
+                        const SizedBox(height: 14),
+                        _LeaveRequestCard(hasActiveLeave: args.hasActiveLeave),
+                        const SizedBox(height: 14),
+                        _ScheduleCard(
+                          classId: args.classId,
+                          timetableData: timetableData,
+                          isLoading: snapshot.connectionState == ConnectionState.waiting,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                _ResultFooter(
+                  args: args,
+                  isDayFinished: isDayFinished,
+                  ok: args.isAllowed || isDayFinished,
+                ),
+              ],
             ),
-            _ResultFooter(args: args),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
+  }
+
+  bool _calculateIsDayFinished(Map<String, dynamic>? data) {
+    if (data == null) return false;
+    final String? startStr = data['startTime'];
+    final List slots = data['slots'] ?? []; // Global slots configuration
+    if (startStr == null || startStr.isEmpty || slots.isEmpty) return false;
+
+    final now = DateTime.now();
+    final dayData = (data['days'] as Map<String, dynamic>?)?[now.weekday.toString()] as Map<String, dynamic>?;
+    final parts = startStr.split(':');
+    DateTime current = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+    );
+
+    DateTime actualLastLessonEnd = current; // Initialize to the start of the day
+    bool hasAnyAssignedLesson = false; // Flag to track if any lesson was actually scheduled
+
+    int lessonIndex = 0;
+
+    for (var slot in slots) {
+      final duration = (slot['duration'] ?? 0) as int;
+      if (slot['type'] == 'lesson') {
+        // Check if dayData exists and if a subject is assigned for this lessonIndex
+        if (dayData != null && dayData[lessonIndex.toString()] != null) {
+          actualLastLessonEnd = current.add(Duration(minutes: duration));
+          hasAnyAssignedLesson = true;
+        }
+        lessonIndex++;
+      }
+      current = current.add(Duration(minutes: duration));
+    }
+
+    // If no lessons were assigned for today, the day is considered "finished"
+    // in the sense that there's nothing to wait for.
+    if (!hasAnyAssignedLesson) return true;
+
+    return now.isAfter(actualLastLessonEnd);
   }
 }
 
@@ -340,57 +402,52 @@ class _LeaveRequestCard extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 class _ScheduleCard extends StatelessWidget {
   final String? classId;
-  const _ScheduleCard({this.classId});
+  final Map<String, dynamic>? timetableData;
+  final bool isLoading;
+  const _ScheduleCard({this.classId, this.timetableData, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
-    return _ThemedCard(
-      variant: 4,
-      child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        future: (classId != null && classId!.isNotEmpty)
-            ? FirebaseFirestore.instance.collection('timetables').doc(classId).get()
-            : Future.value(null),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+    if (isLoading) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
                 child: CircularProgressIndicator(strokeWidth: 2, color: _primary),
               ),
             );
-          }
-          if (snapshot.hasError) {
-            return const Text('Error loading schedule', style: TextStyle(color: _statusRed));
-          }
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Text('No schedule available', style: TextStyle(color: _labelColor));
-          }
+    }
+    if (timetableData == null) {
+      return const _ThemedCard(variant: 4, child: Text('No schedule available', style: TextStyle(color: _labelColor)));
+    }
 
-          final data = snapshot.data!.data();
-          if (data == null) return const SizedBox.shrink();
-
-          final String startStr = data['startTime'] ?? '08:00';
-          final List slots = data['slots'] ?? [];
+    return _ThemedCard(
+      variant: 4,
+      child: () {
+          final String? startStr = timetableData?['startTime'];
+          if (startStr == null || startStr.isEmpty) {
+            return const Text('No schedule start time defined', style: TextStyle(color: _labelColor));
+          }
+          
+          final List slots = timetableData!['slots'] ?? [];
           final now = DateTime.now();
+          final dayData = (timetableData!['days'] as Map<String, dynamic>?)?[now.weekday.toString()] as Map<String, dynamic>? ?? {};
+          
           final parts = startStr.split(':');
-          DateTime current = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            int.parse(parts[0]),
-            int.parse(parts[1]),
-          );
+          DateTime current = DateTime(now.year, now.month, now.day, int.parse(parts[0]), int.parse(parts[1]));
 
           final List<Widget> scheduleWidgets = [];
-          int lessonCount = 0;
+          int lessonIndex = 0;
 
           for (int i = 0; i < slots.length; i++) {
             final slot = slots[i] as Map<String, dynamic>;
-            final type = (slot['type'] ?? '').toString();
+            final type = (slot['type'] ?? 'lesson').toString();
             final duration = (slot['duration'] ?? 0) as int;
 
             if (type == 'lesson') {
-              lessonCount++;
+              final daySlotInfo = dayData[lessonIndex.toString()] as Map<String, dynamic>?;
+              final subjectId = daySlotInfo?['subjectId'] as String?;
+
+              if (subjectId != null) {
               final lessonEnd = current.add(Duration(minutes: duration));
               
               final startFmt = '${current.hour.toString().padLeft(2, '0')}:${current.minute.toString().padLeft(2, '0')}';
@@ -403,12 +460,14 @@ class _ScheduleCard extends StatelessWidget {
               scheduleWidgets.add(
                 _ScheduleItem(
                   time: '$startFmt - $endFmt',
-                  subject: 'Lesson $lessonCount',
+                  subjectId: subjectId,
                   isNow: isNow,
                   isCompleted: isCompleted,
                   isFuture: isFuture,
                 ),
               );
+            }
+              lessonIndex++;
             }
             current = current.add(Duration(minutes: duration));
           }
@@ -438,21 +497,20 @@ class _ScheduleCard extends StatelessWidget {
               ],
             ],
           );
-        },
-      ),
+      }(),
     );
   }
 }
 
 class _ScheduleItem extends StatelessWidget {
   final String time;
-  final String subject;
+  final String? subjectId;
   final bool isCompleted;
   final bool isNow;
   final bool isFuture;
   const _ScheduleItem({
     required this.time,
-    required this.subject,
+    this.subjectId,
     this.isCompleted = false,
     this.isNow = false,
     this.isFuture = false,
@@ -477,15 +535,30 @@ class _ScheduleItem extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Text(
-              subject,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isFuture ? _labelColor : _onSurface,
-                fontWeight: isNow ? FontWeight.w900 : FontWeight.w600,
-                fontSize: 15,
-              ),
+            child: FutureBuilder<DocumentSnapshot>(
+              future: subjectId != null
+                  ? FirebaseFirestore.instance.collection('subjects').doc(subjectId).get()
+                  : null,
+              builder: (context, snapshot) {
+                String label = '...';
+                if (snapshot.hasData && snapshot.data!.exists) {
+                  final data = snapshot.data!.data() as Map<String, dynamic>?;
+                  label = data?['name'] ?? 'Unknown Subject';
+                } else if (snapshot.hasError) {
+                  label = 'Error';
+                }
+
+                return Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isFuture ? _labelColor : _onSurface,
+                    fontWeight: isNow ? FontWeight.w900 : FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                );
+              },
             ),
           ),
           if (isNow)
@@ -550,7 +623,13 @@ class _DottedLinePainter extends CustomPainter {
 // ─────────────────────────────────────────────────────────────────────────────
 class _ResultFooter extends StatelessWidget {
   final GateScanResultPageArguments args;
-  const _ResultFooter({required this.args});
+  final bool isDayFinished;
+  final bool ok;
+  const _ResultFooter({
+    required this.args,
+    required this.isDayFinished,
+    required this.ok,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -570,7 +649,11 @@ class _ResultFooter extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _StatusBanner(args: args),
+          _StatusBanner(
+            args: args,
+            isDayFinished: isDayFinished,
+            ok: ok,
+          ),
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
@@ -609,27 +692,45 @@ class _ResultFooter extends StatelessWidget {
 
 class _StatusBanner extends StatelessWidget {
   final GateScanResultPageArguments args;
-  const _StatusBanner({required this.args});
+  final bool isDayFinished;
+  final bool ok;
+  const _StatusBanner({
+    required this.args,
+    required this.isDayFinished,
+    required this.ok,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final ok = args.isAllowed;
     final color = ok ? _statusGreen : _statusRed;
-    final scanType = (args.scanType ?? '').toLowerCase();
-    final isExit = scanType == 'exit';
-    final title = ok
-        ? (isExit ? 'EXIT GRANTED' : 'ENTRY GRANTED')
-        : 'ACCESS DENIED';
-    final desc = ok
-        ? (args.hasActiveLeave
-            ? 'Approved leave on file.'
-            : 'Student access verified.')
-        : (args.errorMessage?.isNotEmpty ?? false)
-            ? args.errorMessage!
-            : (args.reason?.isNotEmpty ?? false)
-                ? args.reason!
-                : 'Leave not yet approved by form master.';
-    final icon = ok ? Icons.check_circle_rounded : Icons.cancel_rounded;
+    final String title;
+    final String desc;
+    final IconData icon;
+
+    title = ok ? 'EXIT GRANTED' : 'ACCESS DENIED';
+    if (ok) {
+      desc = args.hasActiveLeave
+          ? 'Approved leave on file.'
+          : (isDayFinished ? 'Classes for today are finished.' : 'Student access verified.');
+    } else {
+      final rawReason = (args.reason == 'NO_ACTIVE_LEAVE')
+          ? 'no_active_leave_request'
+          : (args.reason ?? '');
+
+      final reasonText = rawReason
+          .toLowerCase()
+          .replaceAll('_', ' ')
+          .split(' ')
+          .map((w) => w.isEmpty ? '' : w[0].toUpperCase() + w.substring(1))
+          .join(' ');
+
+      desc = (args.errorMessage?.isNotEmpty ?? false)
+          ? args.errorMessage!
+          : reasonText.isNotEmpty
+              ? '$reasonText.'
+              : 'No active leave request found.';
+    }
+    icon = ok ? Icons.check_circle_rounded : Icons.cancel_rounded;
 
     return Container(
       width: double.infinity,

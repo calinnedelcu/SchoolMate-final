@@ -56,8 +56,7 @@ class _GateScanPageState extends State<GateScanPage> {
       final userId = (res['userId'] ?? '-').toString();
       final fullName = (res['fullName'] ?? '').toString();
       final classId = (res['classId'] ?? '').toString();
-      final reason = (res['reason'] ?? '').toString();
-      final scanType = (res['type'] ?? (ok ? 'entry' : 'deny')).toString();
+      final reason = (res['reason'] ?? '').toString(); // Will be null if ok is true
       final hasActiveLeave = (res['hasActiveLeave'] ?? false) as bool;
 
       if (ok) {
@@ -73,7 +72,6 @@ class _GateScanPageState extends State<GateScanPage> {
           fullName: fullName,
           classId: classId,
           reason: reason,
-          scanType: scanType,
           hasActiveLeave: hasActiveLeave,
         ),
       );
@@ -84,6 +82,10 @@ class _GateScanPageState extends State<GateScanPage> {
         arguments: GateScanResultPageArguments(
           isAllowed: false,
           errorMessage: 'Eroare validare: $e',
+          userId: '-',
+          fullName: 'Eroare sistem',
+          classId: '',
+          reason: 'SCAN_ERROR',
         ),
       );
     }
