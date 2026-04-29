@@ -119,6 +119,7 @@ class _ClassSelector extends StatefulWidget {
 class _ClassSelectorState extends State<_ClassSelector> {
   final _link = LayerLink();
   OverlayEntry? _entry;
+  bool _hovered = false;
 
   void _open() {
     final overlay = Overlay.of(context);
@@ -169,26 +170,30 @@ class _ClassSelectorState extends State<_ClassSelector> {
 
     return CompositedTransformTarget(
       link: _link,
-      child: GestureDetector(
-        onTap: isOpen ? _close : _open,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isOpen ? _kPrimary : const Color(0xFFDDE1EA),
-              width: isOpen ? 1.5 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          onTap: isOpen ? _close : _open,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+              color: (isOpen || _hovered) ? const Color(0xFFEEF1FB) : Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isOpen ? _kPrimary : (_hovered ? const Color(0xFF2848B0) : const Color(0xFFDDE1EA)),
+                width: (isOpen || _hovered) ? 1.5 : 1,
               ),
-            ],
-          ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -217,6 +222,7 @@ class _ClassSelectorState extends State<_ClassSelector> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );
@@ -372,6 +378,276 @@ class _ClassDropdownOverlayState extends State<_ClassDropdownOverlay> {
                                               ),
                                             ),
                                           ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SEARCHABLE TEACHER DROPDOWN
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _TeacherSelector extends StatefulWidget {
+  const _TeacherSelector({
+    required this.teacherDocs,
+    required this.selectedUsername,
+    required this.onSelect,
+  });
+  final List<QueryDocumentSnapshot> teacherDocs;
+  final String? selectedUsername;
+  final void Function(String) onSelect;
+
+  @override
+  State<_TeacherSelector> createState() => _TeacherSelectorState();
+}
+
+class _TeacherSelectorState extends State<_TeacherSelector> {
+  final _link = LayerLink();
+  OverlayEntry? _entry;
+
+  void _open() {
+    final overlay = Overlay.of(context);
+    _entry = OverlayEntry(
+      builder: (ctx) => _TeacherDropdownOverlay(
+        link: _link,
+        teacherDocs: widget.teacherDocs,
+        onSelect: (u) {
+          _close();
+          widget.onSelect(u);
+        },
+        onClose: _close,
+      ),
+    );
+    overlay.insert(_entry!);
+    setState(() {});
+  }
+
+  void _close() {
+    _entry?.remove();
+    _entry = null;
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _entry?.remove();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isOpen = _entry != null;
+    String label = 'Select teacher';
+    if (widget.selectedUsername != null) {
+      final doc = widget.teacherDocs.cast<QueryDocumentSnapshot?>().firstWhere(
+        (d) {
+          final data = d?.data() as Map<String, dynamic>?;
+          return (data?['username'] ?? d?.id) == widget.selectedUsername;
+        },
+        orElse: () => null,
+      );
+      if (doc != null) {
+        final data = doc.data() as Map<String, dynamic>;
+        label = ((data['fullName'] as String?)?.trim().isNotEmpty == true
+            ? data['fullName'] as String
+            : data['username'] as String? ?? widget.selectedUsername)!;
+      } else {
+        label = widget.selectedUsername!;
+      }
+    }
+
+    return CompositedTransformTarget(
+      link: _link,
+      child: GestureDetector(
+        onTap: isOpen ? _close : _open,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isOpen ? _kPrimary : const Color(0xFFBBBBBB),
+              width: isOpen ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: widget.selectedUsername == null
+                        ? const Color(0xFF9E9E9E)
+                        : const Color(0xFF1A2050),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                size: 18,
+                color: const Color(0xFF9AA0B0),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TeacherDropdownOverlay extends StatefulWidget {
+  const _TeacherDropdownOverlay({
+    required this.link,
+    required this.teacherDocs,
+    required this.onSelect,
+    required this.onClose,
+  });
+  final LayerLink link;
+  final List<QueryDocumentSnapshot> teacherDocs;
+  final void Function(String) onSelect;
+  final VoidCallback onClose;
+
+  @override
+  State<_TeacherDropdownOverlay> createState() =>
+      _TeacherDropdownOverlayState();
+}
+
+class _TeacherDropdownOverlayState extends State<_TeacherDropdownOverlay> {
+  final _ctrl = TextEditingController();
+  String _q = '';
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = widget.teacherDocs.where((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      final fn = (data['fullName'] as String?)?.trim() ?? '';
+      final u = (data['username'] as String?) ?? doc.id;
+      return fn.toLowerCase().contains(_q) || u.toLowerCase().contains(_q);
+    }).toList();
+
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: widget.onClose,
+            behavior: HitTestBehavior.opaque,
+            child: const SizedBox.expand(),
+          ),
+        ),
+        CompositedTransformFollower(
+          link: widget.link,
+          showWhenUnlinked: false,
+          offset: const Offset(0, 48),
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: Material(
+              color: Colors.white,
+              elevation: 16,
+              shadowColor: Colors.black.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(12),
+              child: ConstrainedBox(
+                constraints:
+                    const BoxConstraints(maxWidth: 340, maxHeight: 320),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: TextField(
+                        controller: _ctrl,
+                        autofocus: true,
+                        style: const TextStyle(fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: 'Search teacher...',
+                          hintStyle: const TextStyle(fontSize: 13),
+                          prefixIcon: const Icon(Icons.search, size: 16),
+                          isDense: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 9,
+                          ),
+                        ),
+                        onChanged: (v) =>
+                            setState(() => _q = v.toLowerCase().trim()),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Flexible(
+                      child: filtered.isEmpty
+                          ? const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Text(
+                                'No teacher found',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF999999),
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 6),
+                              itemCount: filtered.length,
+                              itemBuilder: (ctx, i) {
+                                final doc = filtered[i];
+                                final data =
+                                    doc.data() as Map<String, dynamic>;
+                                final u = (data['username'] as String?) ??
+                                    doc.id;
+                                final fn =
+                                    (data['fullName'] as String?)?.trim();
+                                final displayName =
+                                    (fn?.isNotEmpty == true) ? fn! : u;
+                                return InkWell(
+                                  onTap: () => widget.onSelect(u),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 10,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.person_outline,
+                                          size: 15,
+                                          color: Color(0xFF9AA0B0),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            displayName,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -784,52 +1060,52 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
               ),
             ),
             padding: const EdgeInsets.fromLTRB(28, 20, 28, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Weekly Timetable',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF1A2050),
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'View and edit the weekly timetable of the class.',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF7A7E9A),
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Weekly Timetable',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1A2050),
+                        ),
                       ),
-                    ),
-                    // Subjects button
+                      const SizedBox(height: 2),
+                      const Text(
+                        'View and edit the weekly timetable of the class.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF7A7E9A),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      _ClassSelector(
+                        classes: classDocs,
+                        timetableIds: timetableIds,
+                        selectedId: _selectedClassId,
+                        onSelect: (id) => setState(() => _selectedClassId = id),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Buttons — centered vertically against the left column
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     OutlinedButton.icon(
                       icon: const Icon(Icons.menu_book_outlined, size: 15, color: Color(0xFF2848B0)),
                       label: const Text('Subjects', style: TextStyle(color: Color(0xFF2848B0))),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF2848B0),
-                        backgroundColor: Colors.transparent,
-                        side: const BorderSide(color: Color(0xFFC0C4D8)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                      ),
+                      style: _headerButtonStyle(),
                       onPressed: () => _showSubjectsPanel(subjectDocs),
                     ),
-                    // Edit structure button (only when timetable exists)
                     if (_selectedClassId != null &&
                         timetableIds.contains(_selectedClassId)) ...[
                       const SizedBox(width: 10),
@@ -845,16 +1121,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                           return OutlinedButton.icon(
                             icon: const Icon(Icons.arrow_forward_ios, size: 13, color: Color(0xFF2848B0)),
                             label: const Text('Edit Structure', style: TextStyle(color: Color(0xFF2848B0))),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF2848B0),
-                              backgroundColor: Colors.transparent,
-                              side: const BorderSide(color: Color(0xFFC0C4D8)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(9),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                            ),
+                            style: _headerButtonStyle(),
                             onPressed: () => _showSlotEditor(
                               classId: _selectedClassId!,
                               initialStartTime: startTime,
@@ -866,14 +1133,6 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                       ),
                     ],
                   ],
-                ),
-                const SizedBox(height: 14),
-                // Class selector below subtitle
-                _ClassSelector(
-                  classes: classDocs,
-                  timetableIds: timetableIds,
-                  selectedId: _selectedClassId,
-                  onSelect: (id) => setState(() => _selectedClassId = id),
                 ),
               ],
             ),
@@ -1057,6 +1316,11 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
           );
         }
 
+        const double dayLabelWidth = 86;
+        const double slotWidth = 162;
+        const double rowHeight = 68;
+        const double headerHeight = 48;
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: SingleChildScrollView(
@@ -1064,77 +1328,79 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Day header row
+                // Time-slot header row
                 Row(
                   children: [
-                    const SizedBox(width: 72), // time col
-                    ...List.generate(5, (di) {
+                    const SizedBox(width: dayLabelWidth), // day col
+                    ...times.map((lt) {
+                      final (_, startT, endT) = lt;
                       return Container(
-                        width: 162,
-                        height: 38,
+                        width: slotWidth,
+                        height: headerHeight,
                         margin: const EdgeInsets.only(left: 8),
                         decoration: BoxDecoration(
                           color: _kPrimary.withValues(alpha: 0.07),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         alignment: Alignment.center,
-                        child: Text(
-                          _kDayHeaders[di],
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: _kPrimary,
-                            letterSpacing: 1.4,
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              startT,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1A2050),
+                              ),
+                            ),
+                            Text(
+                              endT,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFFBBBBBB),
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     }),
                   ],
                 ),
                 const SizedBox(height: 10),
-                // Lesson rows
-                ...times.map((lt) {
-                  final (lessonIdx, startT, endT) = lt;
+                // Day rows
+                ...List.generate(5, (di) {
+                  final dayNum = di + 1;
+                  final dayMap = days[dayNum.toString()] as Map?;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Time label
+                        // Day label
                         SizedBox(
-                          width: 72,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                startT,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1A2050),
-                                ),
+                          width: dayLabelWidth,
+                          height: rowHeight,
+                          child: Center(
+                            child: Text(
+                              _kDayHeaders[di],
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: _kPrimary,
+                                letterSpacing: 1.4,
                               ),
-                              Text(
-                                endT,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: Color(0xFFBBBBBB),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                        // Cells
-                        ...List.generate(5, (di) {
-                          final dayNum = di + 1;
-                          final dayMap =
-                              days[dayNum.toString()] as Map?;
-                          final assignment = dayMap?[
-                              lessonIdx.toString()] as Map?;
+                        // Cells (one per time slot)
+                        ...times.map((lt) {
+                          final (lessonIdx, startT, endT) = lt;
+                          final assignment =
+                              dayMap?[lessonIdx.toString()] as Map?;
                           return Container(
-                            width: 162,
-                            height: 68,
+                            width: slotWidth,
+                            height: rowHeight,
                             margin: const EdgeInsets.only(left: 8),
                             child: _buildCell(
                               classId: classId,
@@ -1186,81 +1452,41 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
           teacherDocs: teacherDocs,
         );
 
-    if (assignment == null) {
-      return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE8EAF2)),
-          ),
-          child: Center(
-            child: Icon(Icons.add, size: 18, color: Colors.grey.shade300),
-          ),
-        ),
-      );
-    }
-
-    final sid = assignment['subjectId'] as String? ?? '';
-    final teacherU = assignment['teacherUsername'] as String? ?? '';
-    final sd = subjectMap[sid];
-    final subjectName = sd?['name'] as String? ?? sid;
-    final subjectColor = Color(sd?['color'] as int? ?? 0xFF4361EE);
-    final teacherName = teacherMap[teacherU] ?? teacherU;
-
-    return Tooltip(
-      message: '$subjectName\nTeacher $teacherName',
-      preferBelow: true,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A2050),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      textStyle: const TextStyle(color: Colors.white, fontSize: 12, height: 1.5),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            color: subjectColor.withValues(alpha: 0.07),
-            borderRadius: BorderRadius.circular(10),
-            border: Border(
-              left: BorderSide(color: subjectColor, width: 3),
-              top: BorderSide(color: subjectColor.withValues(alpha: 0.2)),
-              right: BorderSide(color: subjectColor.withValues(alpha: 0.2)),
-              bottom: BorderSide(color: subjectColor.withValues(alpha: 0.2)),
-            ),
-          ),
-          padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                subjectName,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: subjectColor.withValues(alpha: 0.9),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 3),
-              Text(
-                'Teacher ${_shortName(teacherName)}',
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF777777),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
+    return _TimetableCell(
+      assignment: assignment,
+      subjectMap: subjectMap,
+      teacherMap: teacherMap,
+      shortName: _shortName,
+      onTap: onTap,
     );
   }
+
+  ButtonStyle _headerButtonStyle() => ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered)) {
+            return const Color(0xFFEEF1FB);
+          }
+          return Colors.transparent;
+        }),
+        foregroundColor: WidgetStateProperty.all(const Color(0xFF2848B0)),
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+        side: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered)) {
+            return const BorderSide(color: Color(0xFF2848B0), width: 1.5);
+          }
+          return const BorderSide(color: Color(0xFFC0C4D8));
+        }),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+        ),
+        padding: WidgetStateProperty.all(
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        ),
+        textStyle: WidgetStateProperty.all(
+          const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+      );
 
   String _shortName(String full) {
     final p = full.trim().split(' ');
@@ -1769,27 +1995,10 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                     const SizedBox(height: 8),
                     teacherDocs.isEmpty
                         ? _hint('No teachers registered.')
-                        : DropdownButtonFormField<String>(
-                            initialValue: selTeacher,
-                            hint:
-                                const Text('Select teacher'),
-                            decoration: _dropDeco(),
-                            items: teacherDocs.map((doc) {
-                              final d = doc.data()
-                                  as Map<String, dynamic>;
-                              final u = d['username'] as String? ??
-                                  doc.id;
-                              final fn =
-                                  (d['fullName'] as String?)
-                                          ?.trim() ??
-                                      u;
-                              return DropdownMenuItem<String>(
-                                value: u,
-                                child: Text(fn),
-                              );
-                            }).toList(),
-                            onChanged: (v) =>
-                                setS(() => selTeacher = v),
+                        : _TeacherSelector(
+                            teacherDocs: teacherDocs,
+                            selectedUsername: selTeacher,
+                            onSelect: (u) => setS(() => selTeacher = u),
                           ),
                     const SizedBox(height: 28),
                     Row(
@@ -2010,62 +2219,12 @@ class _SubjectsPanelContent extends StatelessWidget {
                   final doc = docs[i];
                   final d = doc.data() as Map<String, dynamic>;
                   final name = d['name'] as String? ?? '';
-                  final color =
-                      Color(d['color'] as int? ?? 0xFF4361EE);
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                          color: Colors.grey.shade200),
-                    ),
-                    child: ListTile(
-                      dense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 2),
-                      leading: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      title: Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit_outlined,
-                                size: 17,
-                                color: Colors.grey.shade500),
-                            tooltip: 'Edit',
-                            onPressed: () => _showSubjectDialog(
-                                context,
-                                existing: d,
-                                id: doc.id),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                          const SizedBox(width: 10),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline,
-                                size: 17, color: Colors.redAccent),
-                            tooltip: 'Delete',
-                            onPressed: () =>
-                                _confirmDeleteSubject(context, doc.id, name),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
-                      ),
-                    ),
+                  final color = Color(d['color'] as int? ?? 0xFF4361EE);
+                  return _SubjectListItem(
+                    name: name,
+                    color: color,
+                    onEdit: () => _showSubjectDialog(context, existing: d, id: doc.id),
+                    onDelete: () => _confirmDeleteSubject(context, doc.id, name),
                   );
                 },
               );
@@ -2244,5 +2403,227 @@ class _SubjectsPanelContent extends StatelessWidget {
       ),
     );
     if (ok == true) await onDeleteSubject(id);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBJECT LIST ITEM (with hover)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SubjectListItem extends StatefulWidget {
+  const _SubjectListItem({
+    required this.name,
+    required this.color,
+    required this.onEdit,
+    required this.onDelete,
+  });
+  final String name;
+  final Color color;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  State<_SubjectListItem> createState() => _SubjectListItemState();
+}
+
+class _SubjectListItemState extends State<_SubjectListItem> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        decoration: BoxDecoration(
+          color: _hovered ? const Color(0xFFEEF1FB) : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: _hovered ? const Color(0xFF2848B0) : Colors.grey.shade200,
+            width: _hovered ? 1.5 : 1,
+          ),
+        ),
+        child: ListTile(
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          tileColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          leading: Container(
+            width: 14,
+            height: 14,
+            decoration: BoxDecoration(
+              color: widget.color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          title: Text(
+            widget.name,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.edit_outlined, size: 17, color: Colors.grey.shade500),
+                tooltip: 'Edit',
+                onPressed: widget.onEdit,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 10),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 17, color: Colors.redAccent),
+                tooltip: 'Delete',
+                onPressed: widget.onDelete,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TIMETABLE CELL (with hover)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _TimetableCell extends StatefulWidget {
+  const _TimetableCell({
+    required this.assignment,
+    required this.subjectMap,
+    required this.teacherMap,
+    required this.shortName,
+    required this.onTap,
+  });
+  final Map<String, dynamic>? assignment;
+  final Map<String, Map<String, dynamic>> subjectMap;
+  final Map<String, String> teacherMap;
+  final String Function(String) shortName;
+  final VoidCallback onTap;
+
+  @override
+  State<_TimetableCell> createState() => _TimetableCellState();
+}
+
+class _TimetableCellState extends State<_TimetableCell> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.assignment == null) {
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            decoration: BoxDecoration(
+              color: _hovered ? const Color(0xFFEEF1FB) : Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: _hovered ? const Color(0xFF2848B0) : const Color(0xFFE8EAF2),
+                width: _hovered ? 1.5 : 1,
+              ),
+            ),
+            child: Center(
+              child: Icon(
+                Icons.add,
+                size: 18,
+                color: _hovered ? const Color(0xFF2848B0) : Colors.grey.shade300,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final sid = widget.assignment!['subjectId'] as String? ?? '';
+    final teacherU = widget.assignment!['teacherUsername'] as String? ?? '';
+    final sd = widget.subjectMap[sid];
+    final subjectName = sd?['name'] as String? ?? sid;
+    final subjectColor = Color(sd?['color'] as int? ?? 0xFF4361EE);
+    final teacherName = widget.teacherMap[teacherU] ?? teacherU;
+
+    return Tooltip(
+      message: '$subjectName\nTeacher $teacherName',
+      preferBelow: true,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A2050),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      textStyle: const TextStyle(color: Colors.white, fontSize: 12, height: 1.5),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: _hovered
+                  ? subjectColor.withValues(alpha: 0.15)
+                  : subjectColor.withValues(alpha: 0.07),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: _hovered
+                    ? subjectColor.withValues(alpha: 0.5)
+                    : subjectColor.withValues(alpha: 0.2),
+                width: _hovered ? 1.5 : 1,
+              ),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 3,
+                  child: ColoredBox(color: subjectColor),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        subjectName,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: subjectColor.withValues(alpha: 0.9),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Teacher ${widget.shortName(teacherName)}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF777777),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

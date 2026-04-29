@@ -1,7 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' show ImageFilter;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../core/session.dart';
 import '../student/widgets/school_decor.dart';
 
@@ -172,6 +177,11 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
   DateTime? _eventEndDate;
   bool _submitting = false;
 
+  Uint8List? _imageBytes;
+  String? _imagePath;
+
+  String? _flashError;
+
   /// `null` = school-wide; otherwise an explicit list of classIds.
   Set<String>? _selectedClassIds;
 
@@ -191,6 +201,43 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     _locationCtrl.dispose();
     _linkCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 82,
+      maxWidth: 1600,
+    );
+    if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    if (!mounted) return;
+    setState(() {
+      _imageBytes = bytes;
+      _imagePath = picked.path;
+    });
+  }
+
+  void _clearImage() {
+    setState(() {
+      _imageBytes = null;
+      _imagePath = null;
+    });
+  }
+
+  Future<String?> _uploadImageIfAny(String broadcastId) async {
+    if (_imageBytes == null) return null;
+    final ref = FirebaseStorage.instance.ref(
+      'secretariat_posts/$broadcastId.jpg',
+    );
+    final meta = SettableMetadata(contentType: 'image/jpeg');
+    if (kIsWeb || _imagePath == null) {
+      final snap = await ref.putData(_imageBytes!, meta);
+      return snap.ref.getDownloadURL();
+    }
+    final snap = await ref.putFile(File(_imagePath!), meta);
+    return snap.ref.getDownloadURL();
   }
 
   Future<void> _pickEventDate({required bool isEnd}) async {
@@ -291,10 +338,14 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
   Future<void> _submit() async {
     final err = _validate();
     if (err != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
+      setState(() => _flashError = err);
       return;
     }
-    setState(() => _submitting = true);
+    setState(() {
+      _submitting = true;
+      _flashError = null;
+    });
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
       final audience = _audienceClassIds();
@@ -306,6 +357,10 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
       final location = _locationCtrl.text.trim();
       final link = _linkCtrl.text.trim();
 
+      final broadcastId =
+          '${DateTime.now().millisecondsSinceEpoch}_${_kind.categoryKey}';
+      final imageUrl = await _uploadImageIfAny(broadcastId);
+
       if (_kind == PostKind.vacation) {
         final vacationName = title;
         // Save to vacancies for the school calendar
@@ -314,6 +369,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           'startDate': Timestamp.fromDate(_eventDate!),
           'endDate': Timestamp.fromDate(_eventEndDate!),
           'createdAt': FieldValue.serverTimestamp(),
+          'imageUrl': ?imageUrl,
         });
         // Broadcast to students; parents see student-targeted broadcasts via
         // Firestore rules.
@@ -341,10 +397,11 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           'senderUid': senderUid,
           'senderName': senderName,
           'senderRole': senderRole,
-          'broadcastId': '${DateTime.now().millisecondsSinceEpoch}_vacation',
+          'broadcastId': broadcastId,
           'messageType': 'secretariatGlobal',
           'source': 'secretariat',
           'status': 'active',
+          'imageUrl': ?imageUrl,
         });
       } else {
         // Announcement / Competition / Camp → secretariatMessages broadcast.
@@ -375,32 +432,36 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           'senderUid': senderUid,
           'senderName': senderName,
           'senderRole': senderRole,
-          'broadcastId':
-              '${DateTime.now().millisecondsSinceEpoch}_${_kind.categoryKey}',
+          'broadcastId': broadcastId,
           'messageType': 'secretariatGlobal',
           'source': senderRole == 'teacher' ? 'teacher' : 'secretariat',
           'status': 'active',
+          'imageUrl': ?imageUrl,
         });
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${_kindLabel(_kind)} published!',
-          ),
-        ),
-      );
+      final successMsg = '${_kindLabel(_kind)} published!';
       if (widget.formOnly) {
         Navigator.of(context).pop();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(successMsg),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
         return;
       }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(successMsg),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       _resetForm();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      setState(() => _flashError = 'Error: $e');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -417,33 +478,34 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     setState(() {
       _eventDate = null;
       _eventEndDate = null;
+      _imageBytes = null;
+      _imagePath = null;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     if (widget.formOnly) {
-      final accent = _kind.accentColor;
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(22, 18, 12, 18),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: _kind.headerGradient,
+                colors: [Color(0xFF1E3CA0), Color(0xFF2848B0), Color(0xFF3060D0)],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
             ),
             child: Row(
               children: [
-                Icon(_kind.icon, color: Colors.white, size: 20),
+                const Icon(Icons.campaign_rounded, color: Colors.white, size: 20),
                 const SizedBox(width: 10),
-                Expanded(
+                const Expanded(
                   child: Text(
-                    '${_t('New post', 'New post')} · ${_kindLabel(_kind)}',
-                    style: const TextStyle(
+                    'New post',
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
@@ -470,9 +532,9 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildKindChips(accent: accent),
+                    _buildKindChips(),
                     const SizedBox(height: 14),
-                    _buildComposerCard(accent: accent),
+                    _buildComposerCard(),
                     const SizedBox(height: 8),
                   ],
                 ),
@@ -623,7 +685,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     return PostKind.values;
   }
 
-  Widget _buildKindChips({Color? accent}) {
+  Widget _buildKindChips() {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -666,8 +728,8 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     );
   }
 
-  Widget _buildComposerCard({Color? accent}) {
-    final color = accent ?? _kind.accentColor;
+  Widget _buildComposerCard() {
+    final color = _primary;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -698,6 +760,10 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
               ),
             ],
           ),
+          if (_flashError != null) ...[
+            const SizedBox(height: 12),
+            _buildErrorBanner(_flashError!),
+          ],
           const SizedBox(height: 14),
           _ComposerInput(
             controller: _titleCtrl,
@@ -742,6 +808,8 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
             const SizedBox(height: 10),
             if (_kind != PostKind.announcement) _buildDatePickers(),
           ],
+          const SizedBox(height: 14),
+          _buildImagePicker(),
           const SizedBox(height: 14),
           if (_kind != PostKind.vacation) _buildAudienceSelector(),
           const SizedBox(height: 16),
@@ -809,6 +877,153 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
             ),
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildErrorBanner(String text) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: _danger.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _danger.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.error_outline_rounded, color: _danger, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: _danger,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                height: 1.35,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => setState(() => _flashError = null),
+            child: const Padding(
+              padding: EdgeInsets.only(left: 6),
+              child: Icon(Icons.close_rounded, color: _danger, size: 16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImagePicker() {
+    final hasImage = _imageBytes != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'PHOTO',
+          style: TextStyle(
+            color: _outline,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.6,
+          ),
+        ),
+        const SizedBox(height: 8),
+        if (hasImage)
+          Container(
+            decoration: BoxDecoration(
+              color: _fieldBg,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                  child: Image.memory(
+                    _imageBytes!,
+                    width: double.infinity,
+                    height: 160,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: _submitting ? null : _pickImage,
+                        icon: const Icon(Icons.swap_horiz_rounded, size: 16),
+                        label: const Text('Replace'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: _primary,
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: _submitting ? null : _clearImage,
+                        icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                        label: const Text('Remove'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: _danger,
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          )
+        else
+          GestureDetector(
+            onTap: _submitting ? null : _pickImage,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+              decoration: BoxDecoration(
+                color: _fieldBg,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFFC0C4D8),
+                  style: BorderStyle.solid,
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.add_photo_alternate_rounded,
+                    color: _outline,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    _t('Add a photo (optional)', 'Add a photo (optional)'),
+                    style: const TextStyle(
+                      color: _onSurface,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

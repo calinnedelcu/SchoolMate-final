@@ -2217,8 +2217,6 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
         bool msgIsError = false;
         String currentFullName = fullName;
         String currentClassId = classId;
-        List<Map<String, String>> allClassesList = [];
-        bool allClassesLoaded = false;
 
         return StatefulBuilder(
           builder: (ctx, setS) => PopScope(
@@ -2640,63 +2638,26 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         ),
                                       ),
                                       const SizedBox(height: 6),
-                                      FutureBuilder<QuerySnapshot>(
-                                        future: allClassesLoaded
-                                            ? null
-                                            : FirebaseFirestore.instance
-                                                  .collection('classes')
-                                                  .get(),
+                                      StreamBuilder<QuerySnapshot>(
+                                        stream: FirebaseFirestore.instance
+                                            .collection('classes')
+                                            .snapshots(),
                                         builder: (_, snap) {
-                                          if (!allClassesLoaded &&
-                                              snap.connectionState ==
-                                                  ConnectionState.done &&
-                                              snap.hasData) {
-                                            allClassesLoaded = true;
-                                            allClassesList =
-                                                snap.data!.docs.map((d) {
-                                                  final data =
-                                                      d.data()
-                                                          as Map<
-                                                            String,
-                                                            dynamic
-                                                          >;
-                                                  return {
-                                                    'id': d.id,
-                                                    'teacherUsername':
-                                                        (data['teacherUsername'] ??
-                                                                '')
-                                                            .toString()
-                                                            .trim()
-                                                            .toLowerCase(),
-                                                  };
-                                                }).toList()..sort(
-                                                  (a, b) => a['id']!.compareTo(
-                                                    b['id']!,
-                                                  ),
-                                                );
+                                          final availableIds = <String>[];
+                                          if (snap.hasData) {
+                                            for (final d in snap.data!.docs) {
+                                              final t = ((d.data() as Map<String, dynamic>)['teacherUsername'] ?? '')
+                                                  .toString().trim().toLowerCase();
+                                              if (t.isEmpty || d.id == currentClassId || t == username.trim().toLowerCase()) {
+                                                availableIds.add(d.id);
+                                              }
+                                            }
+                                            availableIds.sort();
                                           }
 
-                                          final availableClassIds =
-                                              allClassesList
-                                                  .where((c) {
-                                                    final classTeacher =
-                                                        (c['teacherUsername'] ??
-                                                                '')
-                                                            .trim()
-                                                            .toLowerCase();
-                                                    final classDocId =
-                                                        c['id'] ?? '';
-                                                    return classTeacher
-                                                            .isEmpty ||
-                                                        classDocId ==
-                                                            currentClassId ||
-                                                        classTeacher ==
-                                                            username
-                                                                .trim()
-                                                                .toLowerCase();
-                                                  })
-                                                  .map((c) => c['id']!)
-                                                  .toList();
+                                          final dropdownValue = currentClassId.isEmpty
+                                              ? '__NONE__'
+                                              : (availableIds.contains(currentClassId) ? currentClassId : '__NONE__');
 
                                           return Container(
                                             width: double.infinity,
@@ -2707,91 +2668,106 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFFE8EAF2),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
+                                              borderRadius: BorderRadius.circular(10),
                                             ),
                                             child: DropdownButtonHideUnderline(
                                               child: DropdownButton<String>(
-                                                value:
-                                                    availableClassIds.contains(
-                                                      currentClassId,
-                                                    )
-                                                    ? currentClassId
-                                                    : null,
+                                                value: dropdownValue,
                                                 isExpanded: true,
-                                                hint: Text(
-                                                  currentClassId.isNotEmpty
-                                                      ? _formatClassName(
-                                                          currentClassId,
-                                                        )
-                                                      : 'Select class...',
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Color(0xFF000000),
-                                                  ),
-                                                ),
                                                 icon: const Icon(
-                                                  Icons
-                                                      .keyboard_arrow_down_rounded,
+                                                  Icons.keyboard_arrow_down_rounded,
                                                   size: 20,
                                                   color: Color(0xFF7A7E9A),
                                                 ),
-                                                items: availableClassIds
-                                                    .map(
-                                                      (c) => DropdownMenuItem(
-                                                        value: c,
-                                                        child: Text(
-                                                          _formatClassName(c),
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 16,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                color: Color(
-                                                                  0xFF000000,
-                                                                ),
-                                                              ),
+                                                items: <DropdownMenuItem<String>>[
+                                                  const DropdownMenuItem(
+                                                    value: '__NONE__',
+                                                    child: Text(
+                                                      'None',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: Color(0xFF7A7E9A),
+                                                        fontStyle: FontStyle.italic,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  ...availableIds.map(
+                                                    (c) => DropdownMenuItem(
+                                                      value: c,
+                                                      child: Text(
+                                                        _formatClassName(c),
+                                                        style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Color(0xFF000000),
                                                         ),
                                                       ),
-                                                    )
-                                                    .toList(),
+                                                    ),
+                                                  ),
+                                                ],
                                                 onChanged: busy
                                                     ? null
                                                     : (val) async {
-                                                        if (val == null ||
-                                                            val ==
-                                                                currentClassId) {
-                                                          return;
-                                                        }
-                                                        setS(() {
-                                                          busy = true;
-                                                          msg = null;
-                                                        });
+                                                        if (val == null || val == dropdownValue) return;
+                                                        final newClassId = val == '__NONE__' ? '' : val;
+                                                        setS(() { busy = true; msg = null; });
                                                         try {
-                                                          await store
-                                                              .moveStudent(
-                                                                username,
-                                                                val,
+                                                          final db = FirebaseFirestore.instance;
+                                                          final batch = db.batch();
+                                                          final teacherRef = db.collection('users').doc(uid);
+
+                                                          if (newClassId.isEmpty) {
+                                                            batch.set(
+                                                              db.collection('classes').doc(currentClassId),
+                                                              {
+                                                                'teacherUsername': FieldValue.delete(),
+                                                                'updatedAt': FieldValue.serverTimestamp(),
+                                                              },
+                                                              SetOptions(merge: true),
+                                                            );
+                                                            batch.update(teacherRef, {
+                                                              'classId': FieldValue.delete(),
+                                                              'updatedAt': FieldValue.serverTimestamp(),
+                                                            });
+                                                          } else {
+                                                            if (currentClassId.isNotEmpty) {
+                                                              batch.set(
+                                                                db.collection('classes').doc(currentClassId),
+                                                                {
+                                                                  'teacherUsername': FieldValue.delete(),
+                                                                  'updatedAt': FieldValue.serverTimestamp(),
+                                                                },
+                                                                SetOptions(merge: true),
                                                               );
+                                                            }
+                                                            batch.set(
+                                                              db.collection('classes').doc(newClassId),
+                                                              {
+                                                                'teacherUsername': username,
+                                                                'updatedAt': FieldValue.serverTimestamp(),
+                                                              },
+                                                              SetOptions(merge: true),
+                                                            );
+                                                            batch.update(teacherRef, {
+                                                              'classId': newClassId,
+                                                              'updatedAt': FieldValue.serverTimestamp(),
+                                                            });
+                                                          }
+
+                                                          await batch.commit();
                                                           setS(() {
                                                             busy = false;
-                                                            currentClassId =
-                                                                val;
-                                                            msg =
-                                                                'The homeroom teacher was moved to class $val.';
+                                                            currentClassId = newClassId;
+                                                            msg = newClassId.isEmpty
+                                                                ? 'Class assignment removed.'
+                                                                : 'Teacher assigned to ${_formatClassName(newClassId)}.';
                                                             msgIsError = false;
                                                           });
                                                         } catch (e) {
                                                           setS(() {
                                                             busy = false;
-                                                            msg = e
-                                                                .toString()
-                                                                .replaceFirst(
-                                                                  'Exception: ',
-                                                                  '',
-                                                                );
+                                                            msg = e.toString().replaceFirst('Exception: ', '');
                                                             msgIsError = true;
                                                           });
                                                         }
@@ -3076,6 +3052,688 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     );
 
     renameC.dispose();
+  }
+
+  Future<void> _showChangeTeacherDialog(
+    BuildContext context, {
+    required String classId,
+    required String currentTeacherUsername,
+  }) async {
+    final searchC = TextEditingController();
+
+    await _showBlurDialog<void>(
+      context: context,
+      builder: (ctx) {
+        String searchQuery = '';
+        bool busy = false;
+        String? msg;
+        bool msgIsError = false;
+
+        return StatefulBuilder(
+          builder: (ctx, setS) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 80,
+              vertical: 40,
+            ),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 560, maxHeight: 580),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.14),
+                    blurRadius: 32,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Change Homeroom Teacher',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF2848B0),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Tooltip(
+                          message:
+                              'Selecting a teacher will assign them as the homeroom teacher of this class.\n'
+                              'The current homeroom teacher will be unassigned from this class.\n'
+                              'If the selected teacher already has a class, that class will be left without a homeroom teacher.',
+                          preferBelow: true,
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                            height: 1.5,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          child: const Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: Color(0xFF7A7E9A),
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: busy ? null : () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close_rounded),
+                          color: const Color(0xFF7A7E9A),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: TextField(
+                      controller: searchC,
+                      onChanged: (v) =>
+                          setS(() => searchQuery = v.toLowerCase().trim()),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search),
+                        hintText: 'Search teacher by name…',
+                        filled: true,
+                        fillColor: const Color(0xFFF2F4F8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (msg != null) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _buildDialogStatusBanner(msg!, msgIsError),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .where('role', isEqualTo: 'teacher')
+                          .snapshots(),
+                      builder: (_, snap) {
+                        if (!snap.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        final db = FirebaseFirestore.instance;
+                        final allTeachers = snap.data!.docs.where((d) {
+                          final data = d.data() as Map<String, dynamic>;
+                          final fn =
+                              (data['fullName'] ?? '').toString().toLowerCase();
+                          final un =
+                              (data['username'] ?? '').toString().toLowerCase();
+                          return searchQuery.isEmpty ||
+                              fn.contains(searchQuery) ||
+                              un.contains(searchQuery);
+                        }).toList()
+                          ..sort((a, b) {
+                            final ad = a.data() as Map;
+                            final bd = b.data() as Map;
+                            return (ad['fullName'] ?? '')
+                                .toString()
+                                .toLowerCase()
+                                .compareTo(
+                                  (bd['fullName'] ?? '').toString().toLowerCase(),
+                                );
+                          });
+
+                        return ListView(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          children: [
+                            if (searchQuery.isEmpty &&
+                                currentTeacherUsername.isNotEmpty)
+                              ListTile(
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF2F4F8),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.person_off_outlined,
+                                    color: Color(0xFF7A7E9A),
+                                    size: 20,
+                                  ),
+                                ),
+                                title: const Text(
+                                  'No teacher',
+                                  style: TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    color: Color(0xFF7A7E9A),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: const Text(
+                                  'Remove homeroom teacher from this class',
+                                  style: TextStyle(fontSize: 11),
+                                ),
+                                trailing: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                      color: Color(0xFFB03040),
+                                    ),
+                                    foregroundColor: const Color(0xFFB03040),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  onPressed: busy
+                                      ? null
+                                      : () async {
+                                          setS(() {
+                                            busy = true;
+                                            msg = null;
+                                          });
+                                          try {
+                                            final batch = db.batch();
+                                            final oldSnap = await db
+                                                .collection('users')
+                                                .where(
+                                                  'username',
+                                                  isEqualTo:
+                                                      currentTeacherUsername,
+                                                )
+                                                .limit(1)
+                                                .get();
+                                            batch.set(
+                                              db.collection('classes').doc(
+                                                classId,
+                                              ),
+                                              {
+                                                'teacherUsername':
+                                                    FieldValue.delete(),
+                                                'updatedAt':
+                                                    FieldValue.serverTimestamp(),
+                                              },
+                                              SetOptions(merge: true),
+                                            );
+                                            if (oldSnap.docs.isNotEmpty) {
+                                              batch.update(
+                                                db
+                                                    .collection('users')
+                                                    .doc(oldSnap.docs.first.id),
+                                                {
+                                                  'classId': FieldValue.delete(),
+                                                  'updatedAt':
+                                                      FieldValue.serverTimestamp(),
+                                                },
+                                              );
+                                            }
+                                            await batch.commit();
+                                            setS(() {
+                                              busy = false;
+                                              msg = 'Homeroom teacher removed.';
+                                              msgIsError = false;
+                                            });
+                                          } catch (e) {
+                                            setS(() {
+                                              busy = false;
+                                              msg = e
+                                                  .toString()
+                                                  .replaceFirst('Exception: ', '');
+                                              msgIsError = true;
+                                            });
+                                          }
+                                        },
+                                  child: const Text('Remove'),
+                                ),
+                              ),
+                            ...allTeachers.map((d) {
+                              final data = d.data() as Map<String, dynamic>;
+                              final username =
+                                  (data['username'] ?? d.id).toString();
+                              final fullName =
+                                  (data['fullName'] ?? username).toString();
+                              final teacherClassId =
+                                  (data['classId'] ?? '').toString();
+                              final isCurrentTeacher =
+                                  username.toLowerCase() ==
+                                  currentTeacherUsername.toLowerCase();
+                              final hasOtherClass = teacherClassId.isNotEmpty &&
+                                  teacherClassId != classId;
+
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: _avatarColor(fullName),
+                                  child: Text(
+                                    _initials(fullName),
+                                    style: const TextStyle(
+                                      color: Color(0xFF1A2050),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                                title: Text(
+                                  fullName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  isCurrentTeacher
+                                      ? 'Current homeroom teacher'
+                                      : teacherClassId.isEmpty
+                                      ? 'No class assigned'
+                                      : 'Homeroom of ${_formatClassName(teacherClassId)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isCurrentTeacher
+                                        ? const Color(0xFF4CAF50)
+                                        : const Color(0xFF7A7E9A),
+                                  ),
+                                ),
+                                trailing: isCurrentTeacher
+                                    ? const Text(
+                                        'Current',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF4CAF50),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      )
+                                    : FilledButton(
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xFF2848B0),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 8,
+                                          ),
+                                          textStyle: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        onPressed: busy
+                                            ? null
+                                            : () async {
+                                                setS(() {
+                                                  busy = true;
+                                                  msg = null;
+                                                });
+                                                try {
+                                                  final batch = db.batch();
+                                                  if (currentTeacherUsername
+                                                      .isNotEmpty) {
+                                                    final oldSnap = await db
+                                                        .collection('users')
+                                                        .where(
+                                                          'username',
+                                                          isEqualTo:
+                                                              currentTeacherUsername,
+                                                        )
+                                                        .limit(1)
+                                                        .get();
+                                                    if (oldSnap
+                                                        .docs.isNotEmpty) {
+                                                      batch.update(
+                                                        db
+                                                            .collection('users')
+                                                            .doc(
+                                                              oldSnap
+                                                                  .docs.first.id,
+                                                            ),
+                                                        {
+                                                          'classId':
+                                                              FieldValue.delete(),
+                                                          'updatedAt': FieldValue
+                                                              .serverTimestamp(),
+                                                        },
+                                                      );
+                                                    }
+                                                  }
+                                                  if (hasOtherClass) {
+                                                    batch.set(
+                                                      db
+                                                          .collection('classes')
+                                                          .doc(teacherClassId),
+                                                      {
+                                                        'teacherUsername':
+                                                            FieldValue.delete(),
+                                                        'updatedAt': FieldValue
+                                                            .serverTimestamp(),
+                                                      },
+                                                      SetOptions(merge: true),
+                                                    );
+                                                  }
+                                                  batch.set(
+                                                    db
+                                                        .collection('classes')
+                                                        .doc(classId),
+                                                    {
+                                                      'teacherUsername': username,
+                                                      'updatedAt': FieldValue
+                                                          .serverTimestamp(),
+                                                    },
+                                                    SetOptions(merge: true),
+                                                  );
+                                                  batch.update(
+                                                    db
+                                                        .collection('users')
+                                                        .doc(d.id),
+                                                    {
+                                                      'classId': classId,
+                                                      'updatedAt': FieldValue
+                                                          .serverTimestamp(),
+                                                    },
+                                                  );
+                                                  await batch.commit();
+                                                  setS(() {
+                                                    busy = false;
+                                                    msg =
+                                                        '$fullName set as homeroom teacher.';
+                                                    msgIsError = false;
+                                                  });
+                                                } catch (e) {
+                                                  setS(() {
+                                                    busy = false;
+                                                    msg = e
+                                                        .toString()
+                                                        .replaceFirst(
+                                                          'Exception: ',
+                                                          '',
+                                                        );
+                                                    msgIsError = true;
+                                                  });
+                                                }
+                                              },
+                                        child: const Text('Assign'),
+                                      ),
+                              );
+                            }),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    searchC.dispose();
+  }
+
+  Future<void> _showAddStudentDialog(
+    BuildContext context, {
+    required String classId,
+    required String className,
+  }) async {
+    final searchC = TextEditingController();
+
+    await _showBlurDialog<void>(
+      context: context,
+      builder: (ctx) {
+        String searchQuery = '';
+        bool busy = false;
+        String? msg;
+        bool msgIsError = false;
+
+        return StatefulBuilder(
+          builder: (ctx, setS) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 80,
+              vertical: 40,
+            ),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 560, maxHeight: 580),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.14),
+                    blurRadius: 32,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Add Student to $className',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF2848B0),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close_rounded),
+                          color: const Color(0xFF7A7E9A),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: TextField(
+                      controller: searchC,
+                      onChanged: (v) =>
+                          setS(() => searchQuery = v.toLowerCase().trim()),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search),
+                        hintText: 'Search student by name…',
+                        filled: true,
+                        fillColor: const Color(0xFFF2F4F8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (msg != null) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _buildDialogStatusBanner(msg!, msgIsError),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .where('role', isEqualTo: 'student')
+                          .snapshots(),
+                      builder: (_, snap) {
+                        if (!snap.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        final allStudents = snap.data!.docs.where((d) {
+                          final data = d.data() as Map<String, dynamic>;
+                          final fn =
+                              (data['fullName'] ?? '').toString().toLowerCase();
+                          final un =
+                              (data['username'] ?? '').toString().toLowerCase();
+                          return searchQuery.isEmpty ||
+                              fn.contains(searchQuery) ||
+                              un.contains(searchQuery);
+                        }).toList()
+                          ..sort((a, b) {
+                            final ad = a.data() as Map;
+                            final bd = b.data() as Map;
+                            return (ad['fullName'] ?? '')
+                                .toString()
+                                .toLowerCase()
+                                .compareTo(
+                                  (bd['fullName'] ?? '').toString().toLowerCase(),
+                                );
+                          });
+
+                        if (allStudents.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              'No students found.',
+                              style: TextStyle(color: Color(0xFF7A7E9A)),
+                            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          itemCount: allStudents.length,
+                          itemBuilder: (_, i) {
+                            final d = allStudents[i];
+                            final data = d.data() as Map<String, dynamic>;
+                            final username =
+                                (data['username'] ?? d.id).toString();
+                            final fullName =
+                                (data['fullName'] ?? username).toString();
+                            final currentClassId =
+                                (data['classId'] ?? '').toString();
+                            final isAlreadyHere = currentClassId == classId;
+
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: _avatarColor(fullName),
+                                child: Text(
+                                  _initials(fullName),
+                                  style: const TextStyle(
+                                    color: Color(0xFF1A2050),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                fullName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              subtitle: Text(
+                                currentClassId.isEmpty
+                                    ? 'No class'
+                                    : _formatClassName(currentClassId),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isAlreadyHere
+                                      ? const Color(0xFF4CAF50)
+                                      : const Color(0xFF7A7E9A),
+                                ),
+                              ),
+                              trailing: isAlreadyHere
+                                  ? const Text(
+                                      'Already here',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF4CAF50),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    )
+                                  : FilledButton(
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFF2848B0),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                        textStyle: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      onPressed: busy
+                                          ? null
+                                          : () async {
+                                              setS(() {
+                                                busy = true;
+                                                msg = null;
+                                              });
+                                              try {
+                                                await api.moveStudentClass(
+                                                  username: username,
+                                                  newClassId: classId,
+                                                );
+                                                setS(() {
+                                                  busy = false;
+                                                  msg =
+                                                      '$fullName moved to $className.';
+                                                  msgIsError = false;
+                                                });
+                                              } catch (e) {
+                                                setS(() {
+                                                  busy = false;
+                                                  msg = e
+                                                      .toString()
+                                                      .replaceFirst(
+                                                        'Exception: ',
+                                                        '',
+                                                      );
+                                                  msgIsError = true;
+                                                });
+                                              }
+                                            },
+                                      child: const Text('Move to this class'),
+                                    ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    searchC.dispose();
   }
 
   Future<void> _deleteSelectedClass({
@@ -3616,115 +4274,122 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 10),
-                                FutureBuilder<Map<String, dynamic>?>(
-                                  future: teacherUsername.isNotEmpty
-                                      ? FirebaseFirestore.instance
-                                            .collection('users')
-                                            .where(
-                                              'username',
-                                              isEqualTo: teacherUsername,
-                                            )
-                                            .limit(1)
-                                            .get()
-                                            .then(
-                                              (s) => s.docs.isEmpty
-                                                  ? null
-                                                  : {
-                                                      'uid': s.docs.first.id,
-                                                      ...s.docs.first.data(),
-                                                    },
-                                            )
-                                      : Future.value(null),
-                                  builder: (_, snap) {
-                                    final td = snap.data;
-                                    final teacherName = td != null
-                                        ? (td['fullName'] ?? teacherUsername)
-                                              .toString()
-                                        : (snap.connectionState ==
-                                                  ConnectionState.done
-                                              ? '—'
-                                              : '…');
-                                    return Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                StreamBuilder<DocumentSnapshot>(
+                                  stream: FirebaseFirestore.instance
+                                      .collection('classes')
+                                      .doc(classId)
+                                      .snapshots(),
+                                  builder: (_, classSnap) {
+                                    final liveData = classSnap.hasData
+                                        ? (classSnap.data!.data() as Map<String, dynamic>? ?? {})
+                                        : <String, dynamic>{};
+                                    final liveTeacherUsername = (liveData['teacherUsername'] ?? '').toString();
+
+                                    return FutureBuilder<Map<String, dynamic>?>(
+                                      key: ValueKey(liveTeacherUsername),
+                                      future: liveTeacherUsername.isNotEmpty
+                                          ? FirebaseFirestore.instance
+                                                .collection('users')
+                                                .where('username', isEqualTo: liveTeacherUsername)
+                                                .limit(1)
+                                                .get()
+                                                .then(
+                                                  (s) => s.docs.isEmpty
+                                                      ? null
+                                                      : {'uid': s.docs.first.id, ...s.docs.first.data()},
+                                                )
+                                          : Future.value(null),
+                                      builder: (_, snap) {
+                                        final td = snap.data;
+                                        final teacherName = td != null
+                                            ? (td['fullName'] ?? liveTeacherUsername).toString()
+                                            : (liveTeacherUsername.isNotEmpty &&
+                                                      snap.connectionState != ConnectionState.done
+                                                  ? '…'
+                                                  : '—');
+                                        return Row(
                                           mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
-                                            const Text(
-                                              'HOMEROOM TEACHER',
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w700,
-                                                color: Color(0xFF7A7E9A),
-                                                letterSpacing: 1,
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Text(
+                                                  'HOMEROOM TEACHER',
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Color(0xFF7A7E9A),
+                                                    letterSpacing: 1,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  teacherName,
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Color(0xFF1A2050),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(width: 8),
+                                            IconButton(
+                                              tooltip: 'Change homeroom teacher',
+                                              icon: const Icon(
+                                                Icons.edit_outlined,
+                                                color: Color(0xFF2848B0),
+                                                size: 18,
+                                              ),
+                                              style: IconButton.styleFrom(
+                                                backgroundColor: const Color(0xFFE8EAF2),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                padding: const EdgeInsets.all(6),
+                                                minimumSize: Size.zero,
+                                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              ),
+                                              onPressed: () => _showChangeTeacherDialog(
+                                                ctx,
+                                                classId: classId,
+                                                currentTeacherUsername: liveTeacherUsername,
                                               ),
                                             ),
-                                            Text(
-                                              teacherName,
-                                              style: const TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w700,
-                                                color: Color(0xFF1A2050),
+                                            if (td != null) ...[
+                                              const SizedBox(width: 4),
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.settings_outlined,
+                                                  color: Color(0xFF1A2050),
+                                                  size: 18,
+                                                ),
+                                                style: IconButton.styleFrom(
+                                                  backgroundColor: const Color(0xFFF2F4F8),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  padding: const EdgeInsets.all(6),
+                                                  minimumSize: Size.zero,
+                                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                ),
+                                                onPressed: () => _openTeacherDialog(
+                                                  ctx,
+                                                  uid: td['uid'].toString(),
+                                                  username: (td['username'] ?? liveTeacherUsername).toString(),
+                                                  fullName: teacherName,
+                                                  classId: (td['classId'] ?? classId).toString(),
+                                                  status: (td['status'] ?? 'active').toString(),
+                                                  onboardingComplete: td['onboardingComplete'] as bool? ?? false,
+                                                  email: (td['personalEmail'] ?? td['email'])?.toString(),
+                                                  photoUrl: (td['photoUrl'] ?? td['avatarUrl'] ?? '').toString(),
+                                                ),
                                               ),
-                                            ),
+                                            ],
                                           ],
-                                        ),
-                                        if (td != null) ...[
-                                          const SizedBox(width: 8),
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.settings_outlined,
-                                              color: Color(0xFF1A2050),
-                                              size: 18,
-                                            ),
-                                            style: IconButton.styleFrom(
-                                              backgroundColor: const Color(
-                                                0xFFF2F4F8,
-                                              ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              padding: const EdgeInsets.all(6),
-                                              minimumSize: Size.zero,
-                                              tapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                            ),
-                                            onPressed: () => _openTeacherDialog(
-                                              ctx,
-                                              uid: td['uid'].toString(),
-                                              username:
-                                                  (td['username'] ??
-                                                          teacherUsername)
-                                                      .toString(),
-                                              fullName: teacherName,
-                                              classId:
-                                                  (td['classId'] ?? classId)
-                                                      .toString(),
-                                              status: (td['status'] ?? 'active')
-                                                  .toString(),
-                                              onboardingComplete:
-                                                  td['onboardingComplete']
-                                                      as bool? ??
-                                                  false,
-                                              email:
-                                                  (td['personalEmail'] ??
-                                                          td['email'])
-                                                      ?.toString(),
-                                              photoUrl:
-                                                  (td['photoUrl'] ??
-                                                          td['avatarUrl'] ??
-                                                          '')
-                                                      .toString(),
-                                            ),
-                                          ),
-                                        ],
-                                      ],
+                                        );
+                                      },
                                     );
                                   },
                                 ),
@@ -3812,6 +4477,26 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             ),
                             const SizedBox(width: 8),
                           ],
+                          IconButton(
+                            tooltip: 'Add existing student',
+                            icon: const Icon(
+                              Icons.group_add_outlined,
+                              size: 18,
+                              color: Color(0xFF2848B0),
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: const Color(0xFFE8EAF2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () => _showAddStudentDialog(
+                              ctx,
+                              classId: classId,
+                              className: className,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           IconButton(
                             tooltip: 'Export full class report',
                             icon: const Icon(
@@ -3972,7 +4657,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       ),
                                     ),
                                     const SizedBox(
-                                      width: 52,
+                                      width: 72,
                                       child: Center(
                                         child: Text(
                                           'SETTINGS',
@@ -4188,7 +4873,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                           ),
                                           SizedBox(
-                                            width: 52,
+                                            width: 72,
                                             child: Center(
                                               child: IconButton(
                                                 icon: const Icon(

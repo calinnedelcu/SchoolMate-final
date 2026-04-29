@@ -157,7 +157,10 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                           ),
                           const SizedBox(width: 12),
                           TextButton(
-                            onPressed: () => showAdminCreateUserDialog(context, lockedRole: 'student'),
+                            onPressed: () => showAdminCreateUserDialog(
+                              context,
+                              lockedRole: 'student',
+                            ),
                             style: TextButton.styleFrom(
                               foregroundColor: const Color(0xFF2848B0),
                               padding: const EdgeInsets.symmetric(
@@ -184,7 +187,14 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                         children: [
                           Expanded(flex: 5, child: _colHeader('STUDENT')),
                           Expanded(flex: 2, child: _colHeader('CLASS')),
-                          Expanded(flex: 4, child: Center(child: _colHeader('EMAIL'))),
+                          Expanded(
+                            flex: 3,
+                            child: Center(child: _colHeader('MAIN PARENT')),
+                          ),
+                          Expanded(
+                            flex: 4,
+                            child: Center(child: _colHeader('EMAIL')),
+                          ),
                           const SizedBox(width: 30),
                         ],
                       ),
@@ -333,7 +343,9 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                         fullName: fullName,
                                         classId: classId,
                                         status: status,
-                                        onboardingComplete: onboardingComplete,
+                                        onboardingComplete:
+                                            onboardingComplete ||
+                                            passwordChanged,
                                         emailVerified: emailVerified,
                                         passwordChanged: passwordChanged,
                                         email: email,
@@ -343,136 +355,179 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                       hoverColor: const Color(0xFFF7F8FA),
                                       child: Padding(
                                         padding: const EdgeInsets.fromLTRB(
-                                          32, 16, 32, 16,
+                                          32,
+                                          16,
+                                          32,
+                                          16,
                                         ),
                                         child: Row(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.center,
                                           children: [
-                                          Expanded(
-                                            flex: 5,
-                                            child: Row(
-                                              children: [
-                                                CircleAvatar(
-                                                  radius: 20,
-                                                  backgroundColor: _avatarColor(
-                                                    fullName,
+                                            Expanded(
+                                              flex: 5,
+                                              child: Row(
+                                                children: [
+                                                  CircleAvatar(
+                                                    radius: 20,
+                                                    backgroundColor:
+                                                        _avatarColor(fullName),
+                                                    backgroundImage:
+                                                        photoUrl.isNotEmpty
+                                                        ? NetworkImage(photoUrl)
+                                                              as ImageProvider
+                                                        : null,
+                                                    child: photoUrl.isEmpty
+                                                        ? Text(
+                                                            _initials(fullName),
+                                                            style:
+                                                                const TextStyle(
+                                                                  color: Color(
+                                                                    0xFF1A1A1A,
+                                                                  ),
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w800,
+                                                                  fontSize: 13,
+                                                                ),
+                                                          )
+                                                        : null,
                                                   ),
-                                                  backgroundImage:
-                                                      photoUrl.isNotEmpty
-                                                      ? NetworkImage(photoUrl)
-                                                            as ImageProvider
-                                                      : null,
-                                                  child: photoUrl.isEmpty
-                                                      ? Text(
-                                                          _initials(fullName),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          fullName,
                                                           style:
                                                               const TextStyle(
-                                                                color: Color(
-                                                                  0xFF1A1A1A,
-                                                                ),
                                                                 fontWeight:
                                                                     FontWeight
-                                                                        .w800,
-                                                                fontSize: 13,
+                                                                        .w700,
+                                                                fontSize: 14,
+                                                                color: Color(
+                                                                  0xFF111111,
+                                                                ),
                                                               ),
-                                                        )
-                                                      : null,
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        fullName,
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          fontSize: 14,
-                                                          color: Color(
-                                                            0xFF111111,
-                                                          ),
                                                         ),
-                                                      ),
-                                                      Text(
-                                                        'Username: $username',
-                                                        style: const TextStyle(
-                                                          fontSize: 12,
-                                                          color: Color(
-                                                            0xFF8FABC1,
-                                                          ),
+                                                        Text(
+                                                          'Username: $username',
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 12,
+                                                                color: Color(
+                                                                  0xFF8FABC1,
+                                                                ),
+                                                              ),
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 2,
-                                            child: Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: classId.isNotEmpty
-                                                  ? Container(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 12,
-                                                            vertical: 5,
-                                                          ),
-                                                      decoration: BoxDecoration(
-                                                        color: const Color(
-                                                          0xFFD9E6F1,
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              20,
-                                                            ),
-                                                      ),
-                                                      child: Text(
-                                                        _formatClassName(
-                                                          classId,
-                                                        ),
-                                                        style: const TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          color: Color(
-                                                            0xFF5094CD,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    )
-                                                  : const Text('-'),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 4,
-                                            child: Text(
-                                              (email != null &&
-                                                      email.isNotEmpty)
-                                                  ? email
-                                                  : '-',
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                color: Color(0xFF111111),
+                                                ],
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          const Icon(
-                                            Icons.chevron_right_rounded,
-                                            color: Color(0xFFB0B8C8),
-                                            size: 22,
-                                          ),
-                                        ],
+                                            Expanded(
+                                              flex: 2,
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: classId.isNotEmpty
+                                                    ? Container(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 12,
+                                                              vertical: 5,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: const Color(
+                                                            0xFFD9E6F1,
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                20,
+                                                              ),
+                                                        ),
+                                                        child: Text(
+                                                          _formatClassName(
+                                                            classId,
+                                                          ),
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                color: Color(
+                                                                  0xFF5094CD,
+                                                                ),
+                                                              ),
+                                                        ),
+                                                      )
+                                                    : const Text('-'),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 3,
+                                              child: FutureBuilder<String>(
+                                                future:
+                                                    parentUsernames.isNotEmpty
+                                                    ? FirebaseFirestore.instance
+                                                          .collection('users')
+                                                          .doc(
+                                                            parentUsernames
+                                                                .first,
+                                                          )
+                                                          .get()
+                                                          .then(
+                                                            (s) => s.exists
+                                                                ? (s.data()?['fullName'] ??
+                                                                          '-')
+                                                                      .toString()
+                                                                : '-',
+                                                          )
+                                                    : Future.value('-'),
+                                                builder: (_, snap) => Text(
+                                                  snap.data ??
+                                                      (parentUsernames
+                                                              .isNotEmpty
+                                                          ? '…'
+                                                          : '-'),
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(
+                                                    fontSize: 13,
+                                                    color: Color(0xFF111111),
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 4,
+                                              child: Text(
+                                                (email != null &&
+                                                        email.isNotEmpty)
+                                                    ? email
+                                                    : '-',
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Color(0xFF111111),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            const Icon(
+                                              Icons.chevron_right_rounded,
+                                              color: Color(0xFFB0B8C8),
+                                              size: 22,
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  );
+                                    );
                                   },
                                 ),
                               ),
@@ -485,9 +540,9 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                     14,
                                   ),
                                   decoration: const BoxDecoration(
-                                    color: Color(0xFFF2F6FA),
+                                    color: Color(0xFFF2F4F8),
                                     border: Border(
-                                      top: BorderSide(color: Color(0xFFE8E8E8)),
+                                      top: BorderSide(color: Color(0xFFE8EAF2)),
                                     ),
                                     borderRadius: BorderRadius.only(
                                       bottomLeft: Radius.circular(20),
@@ -536,35 +591,10 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
 
     void addPage(int index) {
       pages.add(
-        GestureDetector(
+        _PageNumberButton(
+          index: index,
+          isActive: _currentPage == index,
           onTap: () => setState(() => _currentPage = index),
-          child: Container(
-            width: 36,
-            height: 36,
-            margin: const EdgeInsets.symmetric(horizontal: 2),
-            decoration: BoxDecoration(
-              color: _currentPage == index
-                  ? const Color(0xFF424242)
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: _currentPage == index
-                    ? const Color(0xFF424242)
-                    : const Color(0xFFD0D0D0),
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              '${index + 1}',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: _currentPage == index
-                    ? Colors.white
-                    : const Color(0xFF333333),
-              ),
-            ),
-          ),
         ),
       );
     }
@@ -581,7 +611,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF999999),
+              color: Color(0xFF7A7E9A),
             ),
           ),
         ),
@@ -703,11 +733,11 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
             final loaded = studentSnap.hasData && parentSnap.hasData;
 
             final total = students.length;
-            final configured = students
-                .where((d) =>
-                    (d.data() as Map<String, dynamic>)['onboardingComplete'] ==
-                    true)
-                .length;
+            final configured = students.where((d) {
+              final data = d.data() as Map<String, dynamic>;
+              return data['onboardingComplete'] == true ||
+                  data['passwordChanged'] == true;
+            }).length;
             final notConfigured = total - configured;
 
             final linkedIds = <String>{};
@@ -769,7 +799,9 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                     iconColor: const Color(0xFFF5A623),
                     label: 'NOT CONFIGURED',
                     value: loaded ? '$notConfigured' : '—',
-                    subtitle: notConfigured == 0 ? 'All set up' : 'Pending setup',
+                    subtitle: notConfigured == 0
+                        ? 'All set up'
+                        : 'Pending setup',
                   ),
                 ),
               ],
@@ -853,9 +885,6 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
       ),
     );
   }
-
-
-
 
   Future<void> _openStudentDialog(
     BuildContext context, {
@@ -966,14 +995,14 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                               style: TextStyle(
                                 fontSize: 27,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF4B83B2),
+                                color: Color(0xFF2848B0),
                               ),
                             ),
                             const Spacer(),
                             TextButton(
                               onPressed: busy ? null : () => Navigator.pop(ctx),
                               style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFF809CB3),
+                                foregroundColor: const Color(0xFF7A7E9A),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20,
                                   vertical: 14,
@@ -1032,7 +1061,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                       if (ctx.mounted) Navigator.pop(ctx);
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4C8EC5),
+                                backgroundColor: const Color(0xFF2848B0),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(
@@ -1088,7 +1117,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                 decoration: BoxDecoration(
                                                   color: msgIsError
                                                       ? const Color(0xFFFFEBEB)
-                                                      : const Color(0xFFDEECF7),
+                                                      : const Color(0xFFE8EAF2),
                                                   borderRadius:
                                                       BorderRadius.circular(10),
                                                   border: Border.all(
@@ -1097,7 +1126,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                             0xFFE57373,
                                                           )
                                                         : const Color(
-                                                            0xFF86B2D6,
+                                                            0xFF2848B0,
                                                           ),
                                                   ),
                                                 ),
@@ -1130,7 +1159,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                   0xFFB71C1C,
                                                                 )
                                                               : const Color(
-                                                                  0xFF378BD2,
+                                                                  0xFF2848B0,
                                                                 ),
                                                         ),
                                                       ),
@@ -1149,7 +1178,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w800,
-                                                  color: Color(0xFF4B83B2),
+                                                  color: Color(0xFF2848B0),
                                                 ),
                                               ),
                                               const Spacer(),
@@ -1161,7 +1190,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: onboardingComplete
-                                                      ? const Color(0xFFE3EBF2)
+                                                      ? const Color(0xFFE8EAF2)
                                                       : const Color(0xFFFFEBEB),
                                                   border: Border.all(
                                                     color: onboardingComplete
@@ -1231,7 +1260,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF4B8BC1),
+                                              color: Color(0xFF2848B0),
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -1243,7 +1272,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                             ),
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFE2EBF2),
+                                              color: const Color(0xFFE8EAF2),
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -1334,7 +1363,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
                                                         color: Color(
-                                                          0xFF4B8BC1,
+                                                          0xFF2848B0,
                                                         ),
                                                       ),
                                                     ),
@@ -1349,7 +1378,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
-                                                          0xFFF2F6FA,
+                                                          0xFFF2F4F8,
                                                         ),
                                                         borderRadius:
                                                             BorderRadius.circular(
@@ -1361,7 +1390,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                         style: const TextStyle(
                                                           fontSize: 16,
                                                           color: Color(
-                                                            0xFF555555,
+                                                            0xFF1A2050,
                                                           ),
                                                         ),
                                                       ),
@@ -1383,7 +1412,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
                                                         color: Color(
-                                                          0xFF4B8BC1,
+                                                          0xFF2848B0,
                                                         ),
                                                       ),
                                                     ),
@@ -1398,7 +1427,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                           ),
                                                       decoration: BoxDecoration(
                                                         color: const Color(
-                                                          0xFFF2F6FA,
+                                                          0xFFF2F4F8,
                                                         ),
                                                         borderRadius:
                                                             BorderRadius.circular(
@@ -1410,7 +1439,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                         style: const TextStyle(
                                                           fontSize: 16,
                                                           color: Color(
-                                                            0xFF555555,
+                                                            0xFF1A2050,
                                                           ),
                                                         ),
                                                       ),
@@ -1618,7 +1647,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                             ),
                                                         decoration: BoxDecoration(
                                                           color: const Color(
-                                                            0xFFE2EBF2,
+                                                            0xFFE8EAF2,
                                                           ),
                                                           borderRadius:
                                                               BorderRadius.circular(
@@ -1742,7 +1771,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                 FontWeight.w700,
                                                             letterSpacing: 1,
                                                             color: Color(
-                                                              0xFF4B8BC1,
+                                                              0xFF2848B0,
                                                             ),
                                                           ),
                                                         ),
@@ -1847,7 +1876,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                 FontWeight.w700,
                                                             letterSpacing: 1,
                                                             color: Color(
-                                                              0xFF4B8BC1,
+                                                              0xFF2848B0,
                                                             ),
                                                           ),
                                                         ),
@@ -1865,7 +1894,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                               ),
                                                           decoration: BoxDecoration(
                                                             color: const Color(
-                                                              0xFFF2F6FA,
+                                                              0xFFF2F4F8,
                                                             ),
                                                             borderRadius:
                                                                 BorderRadius.circular(
@@ -1881,7 +1910,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                     fontSize:
                                                                         16,
                                                                     color: Color(
-                                                                      0xFF555555,
+                                                                      0xFF1A2050,
                                                                     ),
                                                                   ),
                                                                 ),
@@ -1907,7 +1936,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                             fontStyle: FontStyle
                                                                 .italic,
                                                             color: Color(
-                                                              0xFF555555,
+                                                              0xFF1A2050,
                                                             ),
                                                           ),
                                                         ),
@@ -1926,7 +1955,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF4B8BC1),
+                                              color: Color(0xFF2848B0),
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -1958,7 +1987,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: const Color(
-                                                    0xFFE2EBF2,
+                                                    0xFFE8EAF2,
                                                   ),
                                                   borderRadius:
                                                       BorderRadius.circular(10),
@@ -2136,12 +2165,12 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                       ),
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF7B2D5E),
+                                      backgroundColor: const Color(0xFFB03040),
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 22,
-                                        horizontal: 36,
+                                        vertical: 18,
+                                        horizontal: 30,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(14),
@@ -2162,9 +2191,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                   xls.Excel.createExcel();
                                               final sheet = excel['Student'];
                                               sheet.appendRow([
-                                                xls.TextCellValue(
-                                                  'Full Name',
-                                                ),
+                                                xls.TextCellValue('Full Name'),
                                                 xls.TextCellValue('Username'),
                                                 xls.TextCellValue('Email'),
                                                 xls.TextCellValue('Class'),
@@ -2459,7 +2486,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                               fontSize: 24,
                                                                               fontWeight: FontWeight.w800,
                                                                               color: Color(
-                                                                                0xFF4B83B2,
+                                                                                0xFF2848B0,
                                                                               ),
                                                                             ),
                                                                           ),
@@ -2693,7 +2720,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
   }
 }
 
-class _PaginationButton extends StatelessWidget {
+class _PaginationButton extends StatefulWidget {
   const _PaginationButton({
     required this.icon,
     required this.enabled,
@@ -2705,24 +2732,108 @@ class _PaginationButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_PaginationButton> createState() => _PaginationButtonState();
+}
+
+class _PaginationButtonState extends State<_PaginationButton> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: enabled ? const Color(0xFFD0D0D0) : const Color(0xFFE8E8E8),
+    return MouseRegion(
+      cursor: widget.enabled
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.enabled ? widget.onTap : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: widget.enabled && _hovered
+                ? const Color(0xFFEEF1FB)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: widget.enabled && _hovered
+                  ? const Color(0xFF2848B0)
+                  : const Color(0xFFE8EAF2),
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Icon(
+            widget.icon,
+            size: 20,
+            color: widget.enabled
+                ? const Color(0xFF1A2050)
+                : const Color(0xFFC0C4D8),
           ),
         ),
-        alignment: Alignment.center,
-        child: Icon(
-          icon,
-          size: 20,
-          color: enabled ? const Color(0xFF333333) : const Color(0xFFCCCCCC),
+      ),
+    );
+  }
+}
+
+class _PageNumberButton extends StatefulWidget {
+  const _PageNumberButton({
+    required this.index,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final int index;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  State<_PageNumberButton> createState() => _PageNumberButtonState();
+}
+
+class _PageNumberButtonState extends State<_PageNumberButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 36,
+          height: 36,
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          decoration: BoxDecoration(
+            color: widget.isActive
+                ? const Color(0xFF1A2050)
+                : _hovered
+                    ? const Color(0xFFEEF1FB)
+                    : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: widget.isActive
+                  ? const Color(0xFF1A2050)
+                  : _hovered
+                      ? const Color(0xFF2848B0)
+                      : const Color(0xFFE8EAF2),
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            '${widget.index + 1}',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: widget.isActive
+                  ? Colors.white
+                  : const Color(0xFF1A2050),
+            ),
+          ),
         ),
       ),
     );

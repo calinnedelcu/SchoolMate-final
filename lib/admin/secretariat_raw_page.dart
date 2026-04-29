@@ -1,13 +1,9 @@
 ﻿import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
-import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:path_provider/path_provider.dart';
 import 'services/admin_api.dart';
 import 'services/admin_store.dart';
 import 'admin_classes_page.dart';
@@ -15,9 +11,9 @@ import 'admin_students_page.dart';
 import 'admin_teachers_page.dart';
 import 'admin_parents_page.dart';
 import 'admin_turnstiles_page.dart';
-import 'admin_post_composer_page.dart';
 import 'admin_posts_announcements_page.dart';
 import 'admin_timetable_page.dart';
+import 'widgets/admin_create_user_dialog.dart';
 // import 'secretariat_global_messages_page.dart'; // unused after menu cleanup
 import '../services/security_flags_service.dart';
 import '../core/session.dart';
@@ -33,7 +29,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
   final api = AdminApi();
   final store = AdminStore();
   String activeSidebarLabel = "Menu";
-  String _globalSearchQuery = '';
+  final ValueNotifier<String> _searchQueryNotifier = ValueNotifier<String>('');
+  String get _globalSearchQuery => _searchQueryNotifier.value;
+  set _globalSearchQuery(String v) => _searchQueryNotifier.value = v;
 
   // create user
   final fullNameC = TextEditingController();
@@ -73,15 +71,14 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
   String selectedLetter = "A";
 
   String log = "";
-  final _rng = Random.secure();
   final Set<String> _busyActions = <String>{};
 
   // top bar search
   final _topSearchController = TextEditingController();
-
-  // Web-only in-memory CSV buffer (no file system on web).
-  final StringBuffer _webCsvBuffer = StringBuffer();
-  bool _webCsvHasHeader = false;
+  final FocusNode _topSearchFocus = FocusNode();
+  final LayerLink _topSearchLink = LayerLink();
+  final OverlayPortalController _topSearchOverlay =
+      OverlayPortalController();
 
   void _log(String s) => setState(() => log = "$s\n$log");
 
@@ -137,26 +134,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     }
   }
 
-  String _friendlyCreateUserError(Object error, String role, String? classId) {
-    final raw = error.toString().toLowerCase();
-
-    if (role == 'teacher') {
-      if (raw.contains('deja') && raw.contains('diriginte')) {
-        final cid = (classId ?? '').trim().toUpperCase();
-        if (cid.isNotEmpty) {
-          return 'Class $cid already has a homeroom teacher.';
-        }
-        return 'The selected class already has a homeroom teacher.';
-      }
-      if (raw.contains('trebuie selectata o clasa') ||
-          raw.contains('class') && raw.contains('required')) {
-        return 'Select a class for the teacher.';
-      }
-    }
-
-    return _friendlyError('create-user');
-  }
-
   bool _isActionBusy(String key) => _busyActions.contains(key);
 
   Future<void> _runGuarded(
@@ -175,115 +152,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
       onBusyChanged?.call(() {});
     }
   }
-
-  String _normalizeName(String s) {
-    return s.trim().toLowerCase();
-  }
-
-  String _baseFromFullName(String fullName) {
-    final n = _normalizeName(fullName);
-    if (n.isEmpty) return "user";
-
-    final parts = n.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
-    if (parts.isEmpty) return "user";
-
-    final first = parts.first;
-    final last = parts.length > 1 ? parts.last : "";
-    final base = (last.isEmpty) ? first : "${first[0]}$last";
-    return base.replaceAll(RegExp(r'[^a-z0-9]'), "");
-  }
-
-  String _randDigits(int len) {
-    const digits = "0123456789";
-    return List.generate(
-      len,
-      (_) => digits[_rng.nextInt(digits.length)],
-    ).join();
-  }
-
-  String _randPassword(int len) {
-    const chars =
-        "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#";
-    return List.generate(len, (_) => chars[_rng.nextInt(chars.length)]).join();
-  }
-
-  Future<Directory> _getCredentialsExportDirectory() async {
-    if (kIsWeb) {
-      throw UnsupportedError('CSV export is not available on web.');
-    }
-
-    Directory? baseDir;
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      baseDir = await getExternalStorageDirectory();
-    }
-    baseDir ??= await getApplicationDocumentsDirectory();
-
-    final exportDir = Directory(
-      '${baseDir.path}${Platform.pathSeparator}exports',
-    );
-    if (!await exportDir.exists()) {
-      await exportDir.create(recursive: true);
-    }
-    return exportDir;
-  }
-
-  Future<File> _getCredentialsCsvFile() async {
-    final exportDir = await _getCredentialsExportDirectory();
-    return File(
-      '${exportDir.path}${Platform.pathSeparator}credentiale_utilizatori.csv',
-    );
-  }
-
-  String _csvCell(String value) {
-    final escaped = value.replaceAll('"', '""');
-    if (escaped.contains(RegExp(r'[",\n\r]'))) {
-      return '"$escaped"';
-    }
-    return escaped;
-  }
-
-  Future<String> _appendCreatedUserToCsv({
-    required String username,
-    required String password,
-    required String fullName,
-    required String role,
-    String? classId,
-  }) async {
-    final row = [
-      DateTime.now().toIso8601String(),
-      username,
-      password,
-      fullName,
-      role,
-      classId ?? '',
-    ].map(_csvCell).join(',');
-
-    if (kIsWeb) {
-      if (!_webCsvHasHeader) {
-        _webCsvBuffer.writeln(
-          'created_at,username,password,full_name,role,class_id',
-        );
-        _webCsvHasHeader = true;
-      }
-      _webCsvBuffer.writeln(row);
-      return '(browser memory)';
-    }
-
-    final file = await _getCredentialsCsvFile();
-    final exists = await file.exists();
-    final isEmpty = !exists || await file.length() == 0;
-
-    final sink = file.openWrite(mode: FileMode.append);
-    if (isEmpty) {
-      sink.writeln('created_at,username,password,full_name,role,class_id');
-    }
-    sink.writeln(row);
-    await sink.flush();
-    await sink.close();
-
-    return file.path;
-  }
-
 
   Future<void> _showLogoutDialog() async {
     const Color primaryGreen = Color(0xFF2848B0);
@@ -529,51 +397,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
   }
 
   Future<void> _showCreateUserPopup() async {
-    await showGeneralDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Create user',
-      barrierColor: Colors.black.withValues(alpha: 0.35),
-      transitionDuration: const Duration(milliseconds: 200),
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-          child: child,
-        );
-      },
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: Center(
-            child: StatefulBuilder(
-              builder: (context, dialogSetState) => Dialog(
-                insetPadding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 24,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: 680,
-                    maxHeight: MediaQuery.of(context).size.height * 0.85,
-                  ),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: _buildCleanCreateUserCard(
-                        dialogSetState: dialogSetState,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+    await showAdminCreateUserDialog(context);
   }
 
   Future<void> _ensureRecentAdminActivityDoc() async {
@@ -646,6 +470,70 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
       },
     };
     _ensureRecentAdminActivityDoc();
+    _topSearchFocus.addListener(_handleTopSearchFocusChange);
+  }
+
+  void _handleTopSearchFocusChange() {
+    if (_topSearchFocus.hasFocus) {
+      if (_globalSearchQuery.isNotEmpty) _topSearchOverlay.show();
+    } else {
+      // delay so a tap on a result registers before the overlay closes
+      Future<void>.delayed(const Duration(milliseconds: 180), () {
+        if (!mounted) return;
+        if (!_topSearchFocus.hasFocus) _topSearchOverlay.hide();
+      });
+    }
+  }
+
+  Widget _buildTopSearchOverlay(BuildContext context) {
+    return Positioned(
+      width: 360,
+      child: CompositedTransformFollower(
+        link: _topSearchLink,
+        targetAnchor: Alignment.bottomRight,
+        followerAnchor: Alignment.topRight,
+        offset: const Offset(0, 6),
+        showWhenUnlinked: false,
+        child: TapRegion(
+          onTapOutside: (_) => _topSearchOverlay.hide(),
+          child: Material(
+            elevation: 8,
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 380),
+              child: _TopSearchResults(
+                queryListenable: _searchQueryNotifier,
+                onSelect: _handleTopSearchResultTap,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleTopSearchResultTap(_TopSearchHit hit) {
+    _topSearchOverlay.hide();
+    _topSearchFocus.unfocus();
+    final String label = switch (hit.kind) {
+      _TopSearchKind.student => 'Students',
+      _TopSearchKind.teacher => 'Teachers',
+      _TopSearchKind.parent => 'Parents',
+      _TopSearchKind.classRoom => 'Classes',
+    };
+    setState(() {
+      activeSidebarLabel = label;
+      // For users we pre-fill the per-page search by name. Classes have no
+      // searchQuery prop on AdminClassesPage today, so we just navigate there.
+      if (hit.kind == _TopSearchKind.classRoom) {
+        _globalSearchQuery = '';
+        _topSearchController.clear();
+      } else {
+        _globalSearchQuery = hit.searchTerm;
+        _topSearchController.text = hit.searchTerm;
+      }
+    });
   }
 
   @override
@@ -657,6 +545,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     targetUserFullNameC.dispose();
     targetUserNewPasswordC.dispose();
     _topSearchController.dispose();
+    _topSearchFocus.removeListener(_handleTopSearchFocusChange);
+    _topSearchFocus.dispose();
+    _searchQueryNotifier.dispose();
     super.dispose();
   }
 
@@ -904,70 +795,76 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                       ),
                       const Spacer(),
                       // Right side: search bar (fixed width, not full stretch)
-                      SizedBox(
-                        width: 300,
-                        height: 42,
-                        child: TextField(
-                            controller: _topSearchController,
-                            decoration: InputDecoration(
-                              hintText: 'Search students, teachers, classes...',
-                              hintStyle: const TextStyle(
-                                color: Color(0xFF7A7E9A),
+                      CompositedTransformTarget(
+                        link: _topSearchLink,
+                        child: OverlayPortal(
+                          controller: _topSearchOverlay,
+                          overlayChildBuilder: _buildTopSearchOverlay,
+                          child: SizedBox(
+                            width: 300,
+                            height: 42,
+                            child: TextField(
+                              controller: _topSearchController,
+                              focusNode: _topSearchFocus,
+                              decoration: InputDecoration(
+                                hintText:
+                                    'Search students, teachers, classes...',
+                                hintStyle: const TextStyle(
+                                  color: Color(0xFF7A7E9A),
+                                  fontSize: 13,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.search_rounded,
+                                  size: 18,
+                                  color: Color(0xFF7A7E9A),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 0,
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFFF2F4F8),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE8EAF2),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE8EAF2),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF2848B0),
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                              onChanged: (v) {
+                                final trimmed = v.trim();
+                                _searchQueryNotifier.value = trimmed;
+                                if (trimmed.isEmpty) {
+                                  _topSearchOverlay.hide();
+                                } else if (_topSearchFocus.hasFocus &&
+                                    !_topSearchOverlay.isShowing) {
+                                  _topSearchOverlay.show();
+                                }
+                              },
+                              style: const TextStyle(
                                 fontSize: 13,
+                                color: Color(0xFF1A2050),
                               ),
-                              prefixIcon: const Icon(
-                                Icons.search_rounded,
-                                size: 18,
-                                color: Color(0xFF7A7E9A),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 0,
-                              ),
-                              filled: true,
-                              fillColor: const Color(0xFFF2F4F8),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE8EAF2),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE8EAF2),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF2848B0),
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                            onChanged: (v) => setState(() {
-                              _globalSearchQuery = v.trim();
-                            }),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF1A2050),
                             ),
                           ),
                         ),
+                      ),
                       const SizedBox(width: 16),
                       // Right: New post button
                       FilledButton.icon(
-                        onPressed: () {
-                          _goTo('Posts');
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const AdminPostComposerPage(
-                                embedded: false,
-                                mode: PostComposerMode.secretariat,
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: () => _goTo('Posts'),
                         icon: const Icon(Icons.add_rounded, size: 18),
                         label: const Text(
                           '+ New post',
@@ -1061,327 +958,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
     );
   }
 
-  // ── Clean Menu create-user card ────────────────────────────────────────────
-  Widget _buildCleanCreateUserCard({StateSetter? dialogSetState}) {
-    final localSetState = dialogSetState ?? setState;
-    const Color green = Color(0xFF5E96C5);
-    const Color darkGreen = Color(0xFF2848B0);
-
-    InputDecoration fieldDeco(String hint) => InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: Color(0xFF7A7E9A), fontSize: 14),
-      filled: true,
-      fillColor: const Color(0xFFF2F4F8),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFE8EAF2)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFE8EAF2)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF2848B0), width: 2),
-      ),
-    );
-
-    Widget fieldLabel(String text) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF6F92B0),
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-
-    Widget dropdownBox({
-      required List<DropdownMenuItem<String>> items,
-      required String? value,
-      required ValueChanged<String?> onChanged,
-      String hint = '',
-    }) => Container(
-      width: double.infinity,
-      height: 46,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2F4F8),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE8EAF2)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isExpanded: true,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF7A7E9A),
-          ),
-          hint: Text(
-            hint,
-            style: const TextStyle(color: Color(0xFF7A7E9A), fontSize: 14),
-          ),
-          items: items,
-          onChanged: onChanged,
-        ),
-      ),
-    );
-
-    final isBusy = _isActionBusy('create-user-meniu');
-
-    return _buildCard(
-      title: 'Create New User',
-      primaryGreen: green,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // ── Fields row ──────────────────────────────────────────
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Name
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    fieldLabel('FULL NAME'),
-                    TextField(
-                      controller: fullNameC,
-                      decoration: fieldDeco('Enter name...'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Role
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    fieldLabel('USER ROLE'),
-                    dropdownBox(
-                      value: role,
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'student',
-                          child: Text('Student'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'teacher',
-                          child: Text('Homeroom Teacher'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'parent',
-                          child: Text('Parent'),
-                        ),
-                        DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                        DropdownMenuItem(value: 'gate', child: Text('Guardian')),
-                      ],
-                      onChanged: (v) => localSetState(() {
-                        role = v ?? 'student';
-                        if (role != 'student' && role != 'teacher') {
-                          selectedCreateUserClassId = '';
-                        }
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-              // Class (only for student / teacher)
-              if (role == 'student' || role == 'teacher') ...[
-                const SizedBox(width: 16),
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('classes')
-                        .orderBy('name')
-                        .snapshots(),
-                    builder: (context, snap) {
-                      final classOptions = snap.hasData
-                          ? snap.data!.docs.map((doc) {
-                              final data = doc.data() as Map<String, dynamic>;
-                              return {
-                                'id': doc.id,
-                                'name': (data['name'] ?? doc.id).toString(),
-                              };
-                            }).toList()
-                          : <Map<String, String>>[];
-                      final hasSelected = classOptions.any(
-                        (o) => o['id'] == selectedCreateUserClassId,
-                      );
-                      if (!hasSelected &&
-                          selectedCreateUserClassId.isNotEmpty) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted) {
-                            localSetState(() => selectedCreateUserClassId = '');
-                          }
-                        });
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          fieldLabel('CLASS'),
-                          dropdownBox(
-                            value: hasSelected
-                                ? selectedCreateUserClassId
-                                : null,
-                            hint: 'Select...',
-                            items: classOptions
-                                .map(
-                                  (o) => DropdownMenuItem<String>(
-                                    value: o['id'],
-                                    child: Text(o['name']!),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (v) => localSetState(
-                              () => selectedCreateUserClassId = v ?? '',
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 20),
-          // ── Buttons row ─────────────────────────────────────────
-          Row(
-            children: [
-              const Spacer(),
-              // Create User Account
-              ElevatedButton.icon(
-                onPressed: isBusy
-                    ? null
-                    : () {
-                        _runGuarded('create-user-meniu', () async {
-                          final full = fullNameC.text.trim();
-                          if (full.isEmpty) {
-                            _showInfoMessage('Fill in the full name.');
-                            return;
-                          }
-                          if ((role == 'student' || role == 'teacher') &&
-                              selectedCreateUserClassId.trim().isEmpty) {
-                            _showInfoMessage(
-                              'Select a class for the student/teacher.',
-                            );
-                            return;
-                          }
-
-                          final base = _baseFromFullName(full);
-                          final uname = '$base${_randDigits(3)}';
-                          final pass = _randPassword(10);
-
-                          try {
-                            await api.createUser(
-                              username: uname.toLowerCase(),
-                              password: pass,
-                              role: role,
-                              fullName: full,
-                              classId: (role == 'student' || role == 'teacher')
-                                  ? selectedCreateUserClassId
-                                  : null,
-                            );
-
-                            String? csvPath;
-                            try {
-                              csvPath = await _appendCreatedUserToCsv(
-                                username: uname.toLowerCase(),
-                                password: pass,
-                                fullName: full,
-                                role: role,
-                                classId:
-                                    (role == 'student' || role == 'teacher')
-                                    ? selectedCreateUserClassId
-                                    : null,
-                              );
-                              _logSuccess('CSV updated: $csvPath');
-                            } catch (csvErr) {
-                              _logFailure(
-                                'User was created, but the CSV could not be saved: $csvErr',
-                              );
-                            }
-
-                            _logSuccess('User created: $uname');
-                            unawaited(
-                              _recordSecretariatActivity(
-                                message: 'Created $role account: $uname',
-                                detail: (role == 'student' || role == 'teacher')
-                                    ? 'Class: ${selectedCreateUserClassId.toUpperCase()}'
-                                    : 'No class assigned',
-                              ),
-                            );
-                            if (!mounted) return;
-                            localSetState(() {
-                              fullNameC.clear();
-                              selectedCreateUserClassId = '';
-                            });
-                            _showInfoMessage(
-                              csvPath == null
-                                  ? 'User created: $uname. CSV was not updated.'
-                                  : 'User created: $uname. CSV updated.',
-                            );
-                          } catch (e) {
-                            final msg = _friendlyCreateUserError(
-                              e,
-                              role,
-                              selectedCreateUserClassId,
-                            );
-                            _logFailure(msg);
-                            _showInfoMessage(msg);
-                          }
-                        }, onBusyChanged: dialogSetState);
-                      },
-                icon: isBusy
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.person_add_rounded, size: 18),
-                label: Text(
-                  isBusy ? 'Creating...' : 'Create User Account',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: darkGreen,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: darkGreen.withValues(alpha: 0.45),
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 28,
-                    vertical: 22,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildCard({
     required String title,
     required Color primaryGreen,
@@ -1456,18 +1032,28 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
       case 'Classes':
         return const AdminClassesPage(embedded: true);
       case 'Students':
-        return AdminStudentsPage(
-          key: const ValueKey('students-page-v2'),
-          searchQuery: _globalSearchQuery,
+        return ValueListenableBuilder<String>(
+          valueListenable: _searchQueryNotifier,
+          builder: (_, q, _) => AdminStudentsPage(
+            key: const ValueKey('students-page-v2'),
+            searchQuery: q,
+          ),
         );
       case 'Parents':
-        return AdminParentsPage(searchQuery: _globalSearchQuery);
+        return ValueListenableBuilder<String>(
+          valueListenable: _searchQueryNotifier,
+          builder: (_, q, _) => AdminParentsPage(searchQuery: q),
+        );
       case 'Teachers':
-        return AdminTeachersPage(searchQuery: _globalSearchQuery);
+        return ValueListenableBuilder<String>(
+          valueListenable: _searchQueryNotifier,
+          builder: (_, q, _) => AdminTeachersPage(searchQuery: q),
+        );
       case 'Guardians':
-        return AdminTurnstilesPage(
-          embedded: true,
-          searchQuery: _globalSearchQuery,
+        return ValueListenableBuilder<String>(
+          valueListenable: _searchQueryNotifier,
+          builder: (_, q, _) =>
+              AdminTurnstilesPage(embedded: true, searchQuery: q),
         );
       case 'Posts':
         return const AdminPostsAnnouncementsPage(embedded: true);
@@ -2897,4 +2483,256 @@ class _ClassTableRow {
     required this.teacherName,
     required this.studentCount,
   });
+}
+
+enum _TopSearchKind { student, teacher, parent, classRoom }
+
+class _TopSearchHit {
+  final _TopSearchKind kind;
+  final String title;
+  final String subtitle;
+  final String searchTerm;
+
+  const _TopSearchHit({
+    required this.kind,
+    required this.title,
+    required this.subtitle,
+    required this.searchTerm,
+  });
+}
+
+class _TopSearchResults extends StatelessWidget {
+  const _TopSearchResults({
+    required this.queryListenable,
+    required this.onSelect,
+  });
+
+  final ValueListenable<String> queryListenable;
+  final ValueChanged<_TopSearchHit> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<String>(
+      valueListenable: queryListenable,
+      builder: (context, query, _) => _buildBody(context, query),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, String query) {
+    final lower = query.trim().toLowerCase();
+    if (lower.isEmpty) {
+      return const _TopSearchEmpty(text: 'Type to search…');
+    }
+
+    final usersStream = FirebaseFirestore.instance
+        .collection('users')
+        .snapshots();
+    final classesStream = FirebaseFirestore.instance
+        .collection('classes')
+        .snapshots();
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: usersStream,
+      builder: (context, usersSnap) {
+        return StreamBuilder<QuerySnapshot>(
+          stream: classesStream,
+          builder: (context, classesSnap) {
+            if (usersSnap.connectionState == ConnectionState.waiting ||
+                classesSnap.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.all(20),
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              );
+            }
+
+            final hits = <_TopSearchHit>[];
+
+            for (final doc in usersSnap.data?.docs ?? const []) {
+              final data = doc.data() as Map<String, dynamic>;
+              final fullName = (data['fullName'] ?? '').toString();
+              final username = (data['username'] ?? doc.id).toString();
+              final classId = (data['classId'] ?? '').toString();
+              final role = (data['role'] ?? '').toString().toLowerCase();
+              final haystack =
+                  '$fullName $username $classId'.toLowerCase();
+              if (!haystack.contains(lower)) continue;
+
+              _TopSearchKind? kind;
+              switch (role) {
+                case 'student':
+                  kind = _TopSearchKind.student;
+                  break;
+                case 'teacher':
+                  kind = _TopSearchKind.teacher;
+                  break;
+                case 'parent':
+                  kind = _TopSearchKind.parent;
+                  break;
+              }
+              if (kind == null) continue;
+
+              final title = fullName.isNotEmpty ? fullName : username;
+              final subtitleParts = <String>[
+                if (role.isNotEmpty)
+                  role[0].toUpperCase() + role.substring(1),
+                if (classId.isNotEmpty) classId,
+                if (username.isNotEmpty && username != title) '@$username',
+              ];
+              hits.add(
+                _TopSearchHit(
+                  kind: kind,
+                  title: title,
+                  subtitle: subtitleParts.join(' · '),
+                  searchTerm: title,
+                ),
+              );
+            }
+
+            for (final doc in classesSnap.data?.docs ?? const []) {
+              final data = doc.data() as Map<String, dynamic>;
+              final name = (data['name'] ?? doc.id).toString();
+              final teacher = (data['teacherUsername'] ?? '').toString();
+              final haystack = '$name ${doc.id} $teacher'.toLowerCase();
+              if (!haystack.contains(lower)) continue;
+              hits.add(
+                _TopSearchHit(
+                  kind: _TopSearchKind.classRoom,
+                  title: name,
+                  subtitle: teacher.isEmpty
+                      ? 'Class'
+                      : 'Class · @$teacher',
+                  searchTerm: doc.id,
+                ),
+              );
+            }
+
+            if (hits.isEmpty) {
+              return _TopSearchEmpty(text: 'No results for "$query"');
+            }
+
+            // Show user hits before classes; cap to keep dropdown short.
+            const int maxResults = 12;
+            final shown = hits.take(maxResults).toList();
+
+            return ListView.separated(
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              itemCount: shown.length,
+              separatorBuilder: (_, _) => const Divider(
+                height: 1,
+                color: Color(0xFFEEF0F6),
+              ),
+              itemBuilder: (context, i) {
+                final hit = shown[i];
+                final IconData icon;
+                final Color iconBg;
+                final Color iconFg;
+                switch (hit.kind) {
+                  case _TopSearchKind.student:
+                    icon = Icons.school_rounded;
+                    iconBg = const Color(0xFFE7EDFF);
+                    iconFg = const Color(0xFF2848B0);
+                    break;
+                  case _TopSearchKind.teacher:
+                    icon = Icons.menu_book_rounded;
+                    iconBg = const Color(0xFFFFF3D6);
+                    iconFg = const Color(0xFF9A6B00);
+                    break;
+                  case _TopSearchKind.parent:
+                    icon = Icons.family_restroom_rounded;
+                    iconBg = const Color(0xFFE5F6EC);
+                    iconFg = const Color(0xFF1F7A45);
+                    break;
+                  case _TopSearchKind.classRoom:
+                    icon = Icons.class_rounded;
+                    iconBg = const Color(0xFFF1E8FF);
+                    iconFg = const Color(0xFF6A3DBE);
+                    break;
+                }
+                return InkWell(
+                  onTap: () => onSelect(hit),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: iconBg,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(icon, size: 18, color: iconFg),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                hit.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1A2050),
+                                ),
+                              ),
+                              if (hit.subtitle.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  hit.subtitle,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF7A7E9A),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          size: 18,
+                          color: Color(0xFF8F94AD),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _TopSearchEmpty extends StatelessWidget {
+  const _TopSearchEmpty({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 13, color: Color(0xFF7A7E9A)),
+      ),
+    );
+  }
 }
