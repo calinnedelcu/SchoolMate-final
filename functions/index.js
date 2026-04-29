@@ -1523,21 +1523,7 @@ exports.redeemQrToken = onCall(async (request) => {
             redeemedBy: callerUid,
         });
 
-        return {
-            ok: isAllowed,
-            userId,
-            fullName,
-            classId,
-            hasActiveLeave: approvedLeaveExit,
-            timestamp: scanTimestamp,
-            reason: !isAllowed ? "NO_ACTIVE_LEAVE" : null
-        };
-    });
-});
-
-exports.cleanupExpiredQrTokens = onSchedule("every 60 minutes", async (event) => {
-    const db = admin.firestore();
-    const cutoff = new Date(Date.now() - 60 * 60 * 1000); // 1 hour ago
+        t cutoff = new Date(Date.now() - 60 * 60 * 1000); // 1 hour ago
     const expiredSnap = await db.collection("qrTokens")
         .where("expiresAt", "<=", cutoff)
         .get();

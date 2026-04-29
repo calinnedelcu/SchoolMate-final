@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:school_mate/student/widgets/school_decor.dart';
 
 const _primary = Color(0xFF2848B0);
@@ -19,6 +20,7 @@ class GateScanResultPageArguments {
   final String? reason;
   final String? studentId;
   final bool hasActiveLeave;
+  final String? tokenId;
   final String? errorMessage;
 
   GateScanResultPageArguments({
@@ -29,12 +31,58 @@ class GateScanResultPageArguments {
     this.reason,
     this.studentId,
     this.hasActiveLeave = false,
+    this.tokenId,
     this.errorMessage,
   });
 }
 
-class GateScanResultPage extends StatelessWidget {
+class GateScanResultPage extends StatefulWidget {
   const GateScanResultPage({super.key});
+
+  @override
+  State<GateScanResultPage> createState() => _GateScanResultPageState();
+}
+
+class _GateScanResultPageState extends State<GateScanResultPage> {
+  bool _logged = false;
+  Future<DocumentSnapshot<Map<String, dynamic>>?>? _timetableFuture;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as GateScanResultPageArguments?;
+    if (args != null && _timetableFuture == null) {
+      if (args.classId != null && args.classId!.isNotEmpty) {
+        _timetableFuture = FirebaseFirestore.instance.collection('timetables').doc(args.classId!).get();
+        _timetableFuture!.then((doc) {
+          final isFinished = _calculateIsDayFinished(doc?.data());
+          _logAccessEvent(args, isFinished);
+        });
+      } else {
+        _timetableFuture = Future.value(null);
+        _logAccessEvent(args, false);
+      }
+    }
+  }
+
+  void _logAccessEvent(GateScanResultPageArguments args, bool isDayFinished) {
+    if (_logged) return;
+    _logged = true;
+
+    final bool finalOk = args.isAllowed || isDayFinished;
+    final gateUid = FirebaseAuth.instance.currentUser?.uid;
+
+    FirebaseFirestore.instance.collection('accessEvents').add({
+      'classId': args.classId,
+      'fullName': args.fullName,
+      'gateUid': gateUid,
+      'reason': finalOk ? null : args.reason,
+      'scanResult': finalOk ? 'allowed' : 'denied',
+      'timestamp': FieldValue.serverTimestamp(),
+      'tokenId': args.tokenId,
+      'userId': args.userId,
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +108,7 @@ class GateScanResultPage extends StatelessWidget {
         .toUpperCase();
 
     return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>?>(
-      future: (args.classId != null && args.classId!.isNotEmpty)
-          ? FirebaseFirestore.instance.collection('timetables').doc(args.classId!).get()
-          : null,
+      future: _timetableFuture,
       builder: (context, snapshot) {
         final timetableData = snapshot.data?.data();
         final bool isDayFinished = _calculateIsDayFinished(timetableData);
