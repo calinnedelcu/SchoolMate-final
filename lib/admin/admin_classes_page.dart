@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -11,6 +10,7 @@ import 'package:flutter/material.dart';
 import '../core/session.dart';
 import 'services/admin_api.dart';
 import 'services/admin_store.dart';
+import 'utils/admin_ui.dart';
 
 Future<T?> _showBlurDialog<T>({
   required BuildContext context,
@@ -289,7 +289,6 @@ class AdminClassesPage extends StatefulWidget {
 class _AdminClassesPageState extends State<AdminClassesPage> {
   final api = AdminApi();
   final store = AdminStore();
-  final Random _rng = Random.secure();
 
   String? selectedClassId;
   Map<String, dynamic>? selectedClassData;
@@ -323,66 +322,6 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     if (suffixCmp != 0) return suffixCmp;
 
     return aTrim.toLowerCase().compareTo(bTrim.toLowerCase());
-  }
-
-  String _randPassword(int len) {
-    const chars =
-        'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#';
-    return List.generate(len, (_) => chars[_rng.nextInt(chars.length)]).join();
-  }
-
-  String _formatClassName(String classId) {
-    if (classId.isEmpty) return '-';
-    if (classId.toLowerCase().startsWith('class')) return classId;
-
-    final original = classId.trim();
-    final match = RegExp(r'^(\d+)(.*)$').firstMatch(original);
-
-    if (match != null) {
-      final numStr = match.group(1)!;
-      final letter = match.group(2)!.trim();
-
-      String roman = numStr;
-      if (numStr == '9') {
-        roman = 'IX';
-      } else if (numStr == '10') {
-        roman = 'X';
-      } else if (numStr == '11') {
-        roman = 'XI';
-      } else if (numStr == '12') {
-        roman = 'XII';
-      }
-
-      if (letter.isNotEmpty) {
-        return 'Class $roman $letter';
-      }
-      return 'Class $roman';
-    }
-
-    return 'Class $original';
-  }
-
-  String _initials(String name) {
-    final trimmed = name.trim();
-    final spaceIdx = trimmed.indexOf(' ');
-    if (spaceIdx > 0 && spaceIdx < trimmed.length - 1) {
-      return '${trimmed[0]}${trimmed[spaceIdx + 1]}'.toUpperCase();
-    }
-    return trimmed.isNotEmpty ? trimmed[0].toUpperCase() : '?';
-  }
-
-  Color _avatarColor(String name) {
-    const colors = [
-      Color(0xFF7FA8D9),
-      Color(0xFF7CAAD6),
-      Color(0xFFFF8A65),
-      Color(0xFFADCAE3),
-      Color(0xFFCE93D8),
-      Color(0xFF84D0E4),
-      Color(0xFFFFCC80),
-      Color(0xFF8FAFC4),
-    ];
-    return colors[name.hashCode.abs() % colors.length];
   }
 
   String _classLabelFromDoc(QueryDocumentSnapshot doc) {
@@ -419,12 +358,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
         final t = teacherSnap.docs.first.data();
         final tFullName = (t['fullName'] ?? teacherUsername).toString();
         final tEmail = (t['personalEmail'] ?? t['email'] ?? '-').toString();
-        final tNewPass = _randPassword(10);
+        final tNewPass = randPassword(10);
         teacherSheet.appendRow([
           xls.TextCellValue(tFullName),
           xls.TextCellValue(teacherUsername),
           xls.TextCellValue(tEmail),
-          xls.TextCellValue(_formatClassName(classId)),
+          xls.TextCellValue(formatClassName(classId)),
           xls.TextCellValue(tNewPass),
         ]);
         await AdminApi().resetPassword(
@@ -475,13 +414,13 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
       final sUsername = (sd['username'] ?? s.id).toString();
       final sFullName = (sd['fullName'] ?? sUsername).toString();
       final sEmail = (sd['personalEmail'] ?? sd['email'] ?? '-').toString();
-      final sNewPass = _randPassword(10);
+      final sNewPass = randPassword(10);
 
       studentsSheet.appendRow([
         xls.TextCellValue(sFullName),
         xls.TextCellValue(sUsername),
         xls.TextCellValue(sEmail),
-        xls.TextCellValue(_formatClassName(classId)),
+        xls.TextCellValue(formatClassName(classId)),
         xls.TextCellValue(sNewPass),
       ]);
 
@@ -525,7 +464,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
         final pFullName = (pData['fullName'] ?? pUsername).toString();
         final pEmail = (pData['personalEmail'] ?? pData['email'] ?? '-')
             .toString();
-        final pNewPass = _randPassword(10);
+        final pNewPass = randPassword(10);
 
         parentsSheet.appendRow([
           xls.TextCellValue(pFullName),
@@ -1655,7 +1594,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                             })
                                                       : Future.value('-'),
                                                   builder: (_, snap) {
-                                                    final diriginte =
+                                                    final homeroomTeacher =
                                                         snap.data ?? '…';
 
                                                     return Column(
@@ -1700,7 +1639,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                             children: [
                                                               Expanded(
                                                                 child: Text(
-                                                                  diriginte,
+                                                                  homeroomTeacher,
                                                                   style: const TextStyle(
                                                                     fontSize:
                                                                         16,
@@ -1797,7 +1736,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     isExpanded: true,
                                                     hint: Text(
                                                       currentClassId.isNotEmpty
-                                                          ? _formatClassName(
+                                                          ? formatClassName(
                                                               currentClassId,
                                                             )
                                                           : 'Select class...',
@@ -1823,7 +1762,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                           ) => DropdownMenuItem(
                                                             value: c,
                                                             child: Text(
-                                                              _formatClassName(
+                                                              formatClassName(
                                                                 c,
                                                               ),
                                                               style: const TextStyle(
@@ -1909,7 +1848,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         padding: const EdgeInsets.all(5),
                                         child: CircleAvatar(
                                           radius: 63,
-                                          backgroundColor: _avatarColor(
+                                          backgroundColor: avatarColor(
                                             currentFullName,
                                           ),
                                           backgroundImage: photoUrl.isNotEmpty
@@ -1917,7 +1856,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               : null,
                                           child: photoUrl.isEmpty
                                               ? Text(
-                                                  _initials(currentFullName),
+                                                  initials(currentFullName),
                                                   style: const TextStyle(
                                                     color: Color(0xFF1A2050),
                                                     fontWeight: FontWeight.w800,
@@ -1971,7 +1910,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     onPressed: busy
                                         ? null
                                         : () async {
-                                            final newPass = _randPassword(10);
+                                            final newPass = randPassword(10);
 
                                             setS(() {
                                               busy = true;
@@ -1982,9 +1921,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   xls.Excel.createExcel();
                                               final sheet = excel['Student'];
                                               sheet.appendRow([
-                                                xls.TextCellValue(
-                                                  'Full Name',
-                                                ),
+                                                xls.TextCellValue('Full Name'),
                                                 xls.TextCellValue('Username'),
                                                 xls.TextCellValue('Email'),
                                                 xls.TextCellValue('Class'),
@@ -1999,7 +1936,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                 xls.TextCellValue(username),
                                                 xls.TextCellValue(email ?? '-'),
                                                 xls.TextCellValue(
-                                                  _formatClassName(
+                                                  formatClassName(
                                                     currentClassId,
                                                   ),
                                                 ),
@@ -2148,7 +2085,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       'Selected student',
                                                   selectedName: currentFullName,
                                                   selectedSubtitle: username,
-                                                  confirmLabel: 'Delete student',
+                                                  confirmLabel:
+                                                      'Delete student',
                                                 );
                                             if (ok != true) {
                                               return;
@@ -2646,18 +2584,36 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           final availableIds = <String>[];
                                           if (snap.hasData) {
                                             for (final d in snap.data!.docs) {
-                                              final t = ((d.data() as Map<String, dynamic>)['teacherUsername'] ?? '')
-                                                  .toString().trim().toLowerCase();
-                                              if (t.isEmpty || d.id == currentClassId || t == username.trim().toLowerCase()) {
+                                              final t =
+                                                  ((d.data()
+                                                              as Map<
+                                                                String,
+                                                                dynamic
+                                                              >)['teacherUsername'] ??
+                                                          '')
+                                                      .toString()
+                                                      .trim()
+                                                      .toLowerCase();
+                                              if (t.isEmpty ||
+                                                  d.id == currentClassId ||
+                                                  t ==
+                                                      username
+                                                          .trim()
+                                                          .toLowerCase()) {
                                                 availableIds.add(d.id);
                                               }
                                             }
                                             availableIds.sort();
                                           }
 
-                                          final dropdownValue = currentClassId.isEmpty
+                                          final dropdownValue =
+                                              currentClassId.isEmpty
                                               ? '__NONE__'
-                                              : (availableIds.contains(currentClassId) ? currentClassId : '__NONE__');
+                                              : (availableIds.contains(
+                                                      currentClassId,
+                                                    )
+                                                    ? currentClassId
+                                                    : '__NONE__');
 
                                           return Container(
                                             width: double.infinity,
@@ -2668,106 +2624,184 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFFE8EAF2),
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
                                             child: DropdownButtonHideUnderline(
                                               child: DropdownButton<String>(
                                                 value: dropdownValue,
                                                 isExpanded: true,
                                                 icon: const Icon(
-                                                  Icons.keyboard_arrow_down_rounded,
+                                                  Icons
+                                                      .keyboard_arrow_down_rounded,
                                                   size: 20,
                                                   color: Color(0xFF7A7E9A),
                                                 ),
-                                                items: <DropdownMenuItem<String>>[
-                                                  const DropdownMenuItem(
-                                                    value: '__NONE__',
-                                                    child: Text(
-                                                      'None',
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: Color(0xFF7A7E9A),
-                                                        fontStyle: FontStyle.italic,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  ...availableIds.map(
-                                                    (c) => DropdownMenuItem(
-                                                      value: c,
-                                                      child: Text(
-                                                        _formatClassName(c),
-                                                        style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight: FontWeight.w600,
-                                                          color: Color(0xFF000000),
+                                                items:
+                                                    <DropdownMenuItem<String>>[
+                                                      const DropdownMenuItem(
+                                                        value: '__NONE__',
+                                                        child: Text(
+                                                          'None',
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Color(
+                                                              0xFF7A7E9A,
+                                                            ),
+                                                            fontStyle: FontStyle
+                                                                .italic,
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                  ),
-                                                ],
+                                                      ...availableIds.map(
+                                                        (c) => DropdownMenuItem(
+                                                          value: c,
+                                                          child: Text(
+                                                            formatClassName(c),
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  color: Color(
+                                                                    0xFF000000,
+                                                                  ),
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                 onChanged: busy
                                                     ? null
                                                     : (val) async {
-                                                        if (val == null || val == dropdownValue) return;
-                                                        final newClassId = val == '__NONE__' ? '' : val;
-                                                        setS(() { busy = true; msg = null; });
+                                                        if (val == null ||
+                                                            val ==
+                                                                dropdownValue)
+                                                          return;
+                                                        final newClassId =
+                                                            val == '__NONE__'
+                                                            ? ''
+                                                            : val;
+                                                        setS(() {
+                                                          busy = true;
+                                                          msg = null;
+                                                        });
                                                         try {
-                                                          final db = FirebaseFirestore.instance;
-                                                          final batch = db.batch();
-                                                          final teacherRef = db.collection('users').doc(uid);
+                                                          final db =
+                                                              FirebaseFirestore
+                                                                  .instance;
+                                                          final batch = db
+                                                              .batch();
+                                                          final teacherRef = db
+                                                              .collection(
+                                                                'users',
+                                                              )
+                                                              .doc(uid);
 
-                                                          if (newClassId.isEmpty) {
+                                                          if (newClassId
+                                                              .isEmpty) {
                                                             batch.set(
-                                                              db.collection('classes').doc(currentClassId),
+                                                              db
+                                                                  .collection(
+                                                                    'classes',
+                                                                  )
+                                                                  .doc(
+                                                                    currentClassId,
+                                                                  ),
                                                               {
-                                                                'teacherUsername': FieldValue.delete(),
-                                                                'updatedAt': FieldValue.serverTimestamp(),
+                                                                'teacherUsername':
+                                                                    FieldValue.delete(),
+                                                                'updatedAt':
+                                                                    FieldValue.serverTimestamp(),
                                                               },
-                                                              SetOptions(merge: true),
+                                                              SetOptions(
+                                                                merge: true,
+                                                              ),
                                                             );
-                                                            batch.update(teacherRef, {
-                                                              'classId': FieldValue.delete(),
-                                                              'updatedAt': FieldValue.serverTimestamp(),
-                                                            });
+                                                            batch.update(
+                                                              teacherRef,
+                                                              {
+                                                                'classId':
+                                                                    FieldValue.delete(),
+                                                                'updatedAt':
+                                                                    FieldValue.serverTimestamp(),
+                                                              },
+                                                            );
                                                           } else {
-                                                            if (currentClassId.isNotEmpty) {
+                                                            if (currentClassId
+                                                                .isNotEmpty) {
                                                               batch.set(
-                                                                db.collection('classes').doc(currentClassId),
+                                                                db
+                                                                    .collection(
+                                                                      'classes',
+                                                                    )
+                                                                    .doc(
+                                                                      currentClassId,
+                                                                    ),
                                                                 {
-                                                                  'teacherUsername': FieldValue.delete(),
-                                                                  'updatedAt': FieldValue.serverTimestamp(),
+                                                                  'teacherUsername':
+                                                                      FieldValue.delete(),
+                                                                  'updatedAt':
+                                                                      FieldValue.serverTimestamp(),
                                                                 },
-                                                                SetOptions(merge: true),
+                                                                SetOptions(
+                                                                  merge: true,
+                                                                ),
                                                               );
                                                             }
                                                             batch.set(
-                                                              db.collection('classes').doc(newClassId),
+                                                              db
+                                                                  .collection(
+                                                                    'classes',
+                                                                  )
+                                                                  .doc(
+                                                                    newClassId,
+                                                                  ),
                                                               {
-                                                                'teacherUsername': username,
-                                                                'updatedAt': FieldValue.serverTimestamp(),
+                                                                'teacherUsername':
+                                                                    username,
+                                                                'updatedAt':
+                                                                    FieldValue.serverTimestamp(),
                                                               },
-                                                              SetOptions(merge: true),
+                                                              SetOptions(
+                                                                merge: true,
+                                                              ),
                                                             );
-                                                            batch.update(teacherRef, {
-                                                              'classId': newClassId,
-                                                              'updatedAt': FieldValue.serverTimestamp(),
-                                                            });
+                                                            batch.update(
+                                                              teacherRef,
+                                                              {
+                                                                'classId':
+                                                                    newClassId,
+                                                                'updatedAt':
+                                                                    FieldValue.serverTimestamp(),
+                                                              },
+                                                            );
                                                           }
 
                                                           await batch.commit();
                                                           setS(() {
                                                             busy = false;
-                                                            currentClassId = newClassId;
-                                                            msg = newClassId.isEmpty
+                                                            currentClassId =
+                                                                newClassId;
+                                                            msg =
+                                                                newClassId
+                                                                    .isEmpty
                                                                 ? 'Class assignment removed.'
-                                                                : 'Teacher assigned to ${_formatClassName(newClassId)}.';
+                                                                : 'Teacher assigned to ${formatClassName(newClassId)}.';
                                                             msgIsError = false;
                                                           });
                                                         } catch (e) {
                                                           setS(() {
                                                             busy = false;
-                                                            msg = e.toString().replaceFirst('Exception: ', '');
+                                                            msg = e
+                                                                .toString()
+                                                                .replaceFirst(
+                                                                  'Exception: ',
+                                                                  '',
+                                                                );
                                                             msgIsError = true;
                                                           });
                                                         }
@@ -2786,7 +2820,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     const SizedBox(height: 8),
                                     CircleAvatar(
                                       radius: 63,
-                                      backgroundColor: _avatarColor(
+                                      backgroundColor: avatarColor(
                                         currentFullName,
                                       ),
                                       backgroundImage: photoUrl.isNotEmpty
@@ -2794,7 +2828,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           : null,
                                       child: photoUrl.isEmpty
                                           ? Text(
-                                              _initials(currentFullName),
+                                              initials(currentFullName),
                                               style: const TextStyle(
                                                 color: Color(0xFF1A2050),
                                                 fontWeight: FontWeight.w800,
@@ -2847,7 +2881,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   onPressed: busy
                                       ? null
                                       : () async {
-                                          final newPass = _randPassword(10);
+                                          final newPass = randPassword(10);
 
                                           setS(() {
                                             busy = true;
@@ -2856,7 +2890,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           try {
                                             final excel =
                                                 xls.Excel.createExcel();
-                                            final sheet = excel['HomeroomTeacher'];
+                                            final sheet =
+                                                excel['HomeroomTeacher'];
                                             sheet.appendRow([
                                               xls.TextCellValue('Full Name'),
                                               xls.TextCellValue('Username'),
@@ -2872,7 +2907,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               xls.TextCellValue(email ?? '-'),
                                               xls.TextCellValue(
                                                 currentClassId.isNotEmpty
-                                                    ? _formatClassName(
+                                                    ? formatClassName(
                                                         currentClassId,
                                                       )
                                                     : '-',
@@ -2882,7 +2917,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             final bytes = excel.encode();
                                             if (bytes != null) {
                                               await FileSaver.instance.saveFile(
-                                                name: 'homeroom_teacher_$username',
+                                                name:
+                                                    'homeroom_teacher_$username',
                                                 bytes: Uint8List.fromList(
                                                   bytes,
                                                 ),
@@ -3009,10 +3045,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             title: 'Delete homeroom teacher',
                                             description:
                                                 'Confirmation is permanent and will delete the homeroom teacher account and its associated data.',
-                                            selectedLabel: 'Selected homeroom teacher',
+                                            selectedLabel:
+                                                'Selected homeroom teacher',
                                             selectedName: currentFullName,
                                             selectedSubtitle: username,
-                                            confirmLabel: 'Delete homeroom teacher',
+                                            confirmLabel:
+                                                'Delete homeroom teacher',
                                           );
                                           if (ok != true) return;
                                           setS(() {
@@ -3177,26 +3215,30 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           );
                         }
                         final db = FirebaseFirestore.instance;
-                        final allTeachers = snap.data!.docs.where((d) {
-                          final data = d.data() as Map<String, dynamic>;
-                          final fn =
-                              (data['fullName'] ?? '').toString().toLowerCase();
-                          final un =
-                              (data['username'] ?? '').toString().toLowerCase();
-                          return searchQuery.isEmpty ||
-                              fn.contains(searchQuery) ||
-                              un.contains(searchQuery);
-                        }).toList()
-                          ..sort((a, b) {
-                            final ad = a.data() as Map;
-                            final bd = b.data() as Map;
-                            return (ad['fullName'] ?? '')
-                                .toString()
-                                .toLowerCase()
-                                .compareTo(
-                                  (bd['fullName'] ?? '').toString().toLowerCase(),
-                                );
-                          });
+                        final allTeachers =
+                            snap.data!.docs.where((d) {
+                              final data = d.data() as Map<String, dynamic>;
+                              final fn = (data['fullName'] ?? '')
+                                  .toString()
+                                  .toLowerCase();
+                              final un = (data['username'] ?? '')
+                                  .toString()
+                                  .toLowerCase();
+                              return searchQuery.isEmpty ||
+                                  fn.contains(searchQuery) ||
+                                  un.contains(searchQuery);
+                            }).toList()..sort((a, b) {
+                              final ad = a.data() as Map;
+                              final bd = b.data() as Map;
+                              return (ad['fullName'] ?? '')
+                                  .toString()
+                                  .toLowerCase()
+                                  .compareTo(
+                                    (bd['fullName'] ?? '')
+                                        .toString()
+                                        .toLowerCase(),
+                                  );
+                            });
 
                         return ListView(
                           padding: const EdgeInsets.symmetric(vertical: 4),
@@ -3264,9 +3306,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                 .limit(1)
                                                 .get();
                                             batch.set(
-                                              db.collection('classes').doc(
-                                                classId,
-                                              ),
+                                              db
+                                                  .collection('classes')
+                                                  .doc(classId),
                                               {
                                                 'teacherUsername':
                                                     FieldValue.delete(),
@@ -3281,7 +3323,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     .collection('users')
                                                     .doc(oldSnap.docs.first.id),
                                                 {
-                                                  'classId': FieldValue.delete(),
+                                                  'classId':
+                                                      FieldValue.delete(),
                                                   'updatedAt':
                                                       FieldValue.serverTimestamp(),
                                                 },
@@ -3296,9 +3339,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           } catch (e) {
                                             setS(() {
                                               busy = false;
-                                              msg = e
-                                                  .toString()
-                                                  .replaceFirst('Exception: ', '');
+                                              msg = e.toString().replaceFirst(
+                                                'Exception: ',
+                                                '',
+                                              );
                                               msgIsError = true;
                                             });
                                           }
@@ -3308,23 +3352,24 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               ),
                             ...allTeachers.map((d) {
                               final data = d.data() as Map<String, dynamic>;
-                              final username =
-                                  (data['username'] ?? d.id).toString();
-                              final fullName =
-                                  (data['fullName'] ?? username).toString();
-                              final teacherClassId =
-                                  (data['classId'] ?? '').toString();
+                              final username = (data['username'] ?? d.id)
+                                  .toString();
+                              final fullName = (data['fullName'] ?? username)
+                                  .toString();
+                              final teacherClassId = (data['classId'] ?? '')
+                                  .toString();
                               final isCurrentTeacher =
                                   username.toLowerCase() ==
                                   currentTeacherUsername.toLowerCase();
-                              final hasOtherClass = teacherClassId.isNotEmpty &&
+                              final hasOtherClass =
+                                  teacherClassId.isNotEmpty &&
                                   teacherClassId != classId;
 
                               return ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor: _avatarColor(fullName),
+                                  backgroundColor: avatarColor(fullName),
                                   child: Text(
-                                    _initials(fullName),
+                                    initials(fullName),
                                     style: const TextStyle(
                                       color: Color(0xFF1A2050),
                                       fontWeight: FontWeight.w800,
@@ -3344,7 +3389,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       ? 'Current homeroom teacher'
                                       : teacherClassId.isEmpty
                                       ? 'No class assigned'
-                                      : 'Homeroom of ${_formatClassName(teacherClassId)}',
+                                      : 'Homeroom of ${formatClassName(teacherClassId)}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: isCurrentTeacher
@@ -3363,8 +3408,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       )
                                     : FilledButton(
                                         style: FilledButton.styleFrom(
-                                          backgroundColor:
-                                              const Color(0xFF2848B0),
+                                          backgroundColor: const Color(
+                                            0xFF2848B0,
+                                          ),
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 12,
                                             vertical: 8,
@@ -3395,19 +3441,22 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                         .limit(1)
                                                         .get();
                                                     if (oldSnap
-                                                        .docs.isNotEmpty) {
+                                                        .docs
+                                                        .isNotEmpty) {
                                                       batch.update(
                                                         db
                                                             .collection('users')
                                                             .doc(
                                                               oldSnap
-                                                                  .docs.first.id,
+                                                                  .docs
+                                                                  .first
+                                                                  .id,
                                                             ),
                                                         {
                                                           'classId':
                                                               FieldValue.delete(),
-                                                          'updatedAt': FieldValue
-                                                              .serverTimestamp(),
+                                                          'updatedAt':
+                                                              FieldValue.serverTimestamp(),
                                                         },
                                                       );
                                                     }
@@ -3420,8 +3469,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       {
                                                         'teacherUsername':
                                                             FieldValue.delete(),
-                                                        'updatedAt': FieldValue
-                                                            .serverTimestamp(),
+                                                        'updatedAt':
+                                                            FieldValue.serverTimestamp(),
                                                       },
                                                       SetOptions(merge: true),
                                                     );
@@ -3431,9 +3480,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                         .collection('classes')
                                                         .doc(classId),
                                                     {
-                                                      'teacherUsername': username,
-                                                      'updatedAt': FieldValue
-                                                          .serverTimestamp(),
+                                                      'teacherUsername':
+                                                          username,
+                                                      'updatedAt':
+                                                          FieldValue.serverTimestamp(),
                                                     },
                                                     SetOptions(merge: true),
                                                   );
@@ -3443,8 +3493,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                         .doc(d.id),
                                                     {
                                                       'classId': classId,
-                                                      'updatedAt': FieldValue
-                                                          .serverTimestamp(),
+                                                      'updatedAt':
+                                                          FieldValue.serverTimestamp(),
                                                     },
                                                   );
                                                   await batch.commit();
@@ -3589,26 +3639,30 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             child: CircularProgressIndicator(),
                           );
                         }
-                        final allStudents = snap.data!.docs.where((d) {
-                          final data = d.data() as Map<String, dynamic>;
-                          final fn =
-                              (data['fullName'] ?? '').toString().toLowerCase();
-                          final un =
-                              (data['username'] ?? '').toString().toLowerCase();
-                          return searchQuery.isEmpty ||
-                              fn.contains(searchQuery) ||
-                              un.contains(searchQuery);
-                        }).toList()
-                          ..sort((a, b) {
-                            final ad = a.data() as Map;
-                            final bd = b.data() as Map;
-                            return (ad['fullName'] ?? '')
-                                .toString()
-                                .toLowerCase()
-                                .compareTo(
-                                  (bd['fullName'] ?? '').toString().toLowerCase(),
-                                );
-                          });
+                        final allStudents =
+                            snap.data!.docs.where((d) {
+                              final data = d.data() as Map<String, dynamic>;
+                              final fn = (data['fullName'] ?? '')
+                                  .toString()
+                                  .toLowerCase();
+                              final un = (data['username'] ?? '')
+                                  .toString()
+                                  .toLowerCase();
+                              return searchQuery.isEmpty ||
+                                  fn.contains(searchQuery) ||
+                                  un.contains(searchQuery);
+                            }).toList()..sort((a, b) {
+                              final ad = a.data() as Map;
+                              final bd = b.data() as Map;
+                              return (ad['fullName'] ?? '')
+                                  .toString()
+                                  .toLowerCase()
+                                  .compareTo(
+                                    (bd['fullName'] ?? '')
+                                        .toString()
+                                        .toLowerCase(),
+                                  );
+                            });
 
                         if (allStudents.isEmpty) {
                           return const Center(
@@ -3625,19 +3679,19 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           itemBuilder: (_, i) {
                             final d = allStudents[i];
                             final data = d.data() as Map<String, dynamic>;
-                            final username =
-                                (data['username'] ?? d.id).toString();
-                            final fullName =
-                                (data['fullName'] ?? username).toString();
-                            final currentClassId =
-                                (data['classId'] ?? '').toString();
+                            final username = (data['username'] ?? d.id)
+                                .toString();
+                            final fullName = (data['fullName'] ?? username)
+                                .toString();
+                            final currentClassId = (data['classId'] ?? '')
+                                .toString();
                             final isAlreadyHere = currentClassId == classId;
 
                             return ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: _avatarColor(fullName),
+                                backgroundColor: avatarColor(fullName),
                                 child: Text(
-                                  _initials(fullName),
+                                  initials(fullName),
                                   style: const TextStyle(
                                     color: Color(0xFF1A2050),
                                     fontWeight: FontWeight.w800,
@@ -3655,7 +3709,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               subtitle: Text(
                                 currentClassId.isEmpty
                                     ? 'No class'
-                                    : _formatClassName(currentClassId),
+                                    : formatClassName(currentClassId),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: isAlreadyHere
@@ -3674,8 +3728,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     )
                                   : FilledButton(
                                       style: FilledButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFF2848B0),
+                                        backgroundColor: const Color(
+                                          0xFF2848B0,
+                                        ),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,
                                           vertical: 8,
@@ -4281,38 +4336,56 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       .snapshots(),
                                   builder: (_, classSnap) {
                                     final liveData = classSnap.hasData
-                                        ? (classSnap.data!.data() as Map<String, dynamic>? ?? {})
+                                        ? (classSnap.data!.data()
+                                                  as Map<String, dynamic>? ??
+                                              {})
                                         : <String, dynamic>{};
-                                    final liveTeacherUsername = (liveData['teacherUsername'] ?? '').toString();
+                                    final liveTeacherUsername =
+                                        (liveData['teacherUsername'] ?? '')
+                                            .toString();
 
                                     return FutureBuilder<Map<String, dynamic>?>(
                                       key: ValueKey(liveTeacherUsername),
                                       future: liveTeacherUsername.isNotEmpty
                                           ? FirebaseFirestore.instance
                                                 .collection('users')
-                                                .where('username', isEqualTo: liveTeacherUsername)
+                                                .where(
+                                                  'username',
+                                                  isEqualTo:
+                                                      liveTeacherUsername,
+                                                )
                                                 .limit(1)
                                                 .get()
                                                 .then(
                                                   (s) => s.docs.isEmpty
                                                       ? null
-                                                      : {'uid': s.docs.first.id, ...s.docs.first.data()},
+                                                      : {
+                                                          'uid':
+                                                              s.docs.first.id,
+                                                          ...s.docs.first
+                                                              .data(),
+                                                        },
                                                 )
                                           : Future.value(null),
                                       builder: (_, snap) {
                                         final td = snap.data;
                                         final teacherName = td != null
-                                            ? (td['fullName'] ?? liveTeacherUsername).toString()
+                                            ? (td['fullName'] ??
+                                                      liveTeacherUsername)
+                                                  .toString()
                                             : (liveTeacherUsername.isNotEmpty &&
-                                                      snap.connectionState != ConnectionState.done
+                                                      snap.connectionState !=
+                                                          ConnectionState.done
                                                   ? '…'
                                                   : '—');
                                         return Row(
                                           mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
                                           children: [
                                             Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 const Text(
@@ -4336,26 +4409,36 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                             const SizedBox(width: 8),
                                             IconButton(
-                                              tooltip: 'Change homeroom teacher',
+                                              tooltip:
+                                                  'Change homeroom teacher',
                                               icon: const Icon(
                                                 Icons.edit_outlined,
                                                 color: Color(0xFF2848B0),
                                                 size: 18,
                                               ),
                                               style: IconButton.styleFrom(
-                                                backgroundColor: const Color(0xFFE8EAF2),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                backgroundColor: const Color(
+                                                  0xFFE8EAF2,
                                                 ),
-                                                padding: const EdgeInsets.all(6),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                padding: const EdgeInsets.all(
+                                                  6,
+                                                ),
                                                 minimumSize: Size.zero,
-                                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
                                               ),
-                                              onPressed: () => _showChangeTeacherDialog(
-                                                ctx,
-                                                classId: classId,
-                                                currentTeacherUsername: liveTeacherUsername,
-                                              ),
+                                              onPressed: () =>
+                                                  _showChangeTeacherDialog(
+                                                    ctx,
+                                                    classId: classId,
+                                                    currentTeacherUsername:
+                                                        liveTeacherUsername,
+                                                  ),
                                             ),
                                             if (td != null) ...[
                                               const SizedBox(width: 4),
@@ -4366,24 +4449,50 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   size: 18,
                                                 ),
                                                 style: IconButton.styleFrom(
-                                                  backgroundColor: const Color(0xFFF2F4F8),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(8),
+                                                  backgroundColor: const Color(
+                                                    0xFFF2F4F8,
                                                   ),
-                                                  padding: const EdgeInsets.all(6),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                  padding: const EdgeInsets.all(
+                                                    6,
+                                                  ),
                                                   minimumSize: Size.zero,
-                                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                  tapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
                                                 ),
                                                 onPressed: () => _openTeacherDialog(
                                                   ctx,
                                                   uid: td['uid'].toString(),
-                                                  username: (td['username'] ?? liveTeacherUsername).toString(),
+                                                  username:
+                                                      (td['username'] ??
+                                                              liveTeacherUsername)
+                                                          .toString(),
                                                   fullName: teacherName,
-                                                  classId: (td['classId'] ?? classId).toString(),
-                                                  status: (td['status'] ?? 'active').toString(),
-                                                  onboardingComplete: td['onboardingComplete'] as bool? ?? false,
-                                                  email: (td['personalEmail'] ?? td['email'])?.toString(),
-                                                  photoUrl: (td['photoUrl'] ?? td['avatarUrl'] ?? '').toString(),
+                                                  classId:
+                                                      (td['classId'] ?? classId)
+                                                          .toString(),
+                                                  status:
+                                                      (td['status'] ?? 'active')
+                                                          .toString(),
+                                                  onboardingComplete:
+                                                      td['onboardingComplete']
+                                                          as bool? ??
+                                                      false,
+                                                  email:
+                                                      (td['personalEmail'] ??
+                                                              td['email'])
+                                                          ?.toString(),
+                                                  photoUrl:
+                                                      (td['photoUrl'] ??
+                                                              td['avatarUrl'] ??
+                                                              '')
+                                                          .toString(),
                                                 ),
                                               ),
                                             ],
@@ -5348,9 +5457,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                         return;
                       }
                       if (m == null || m < 0 || m > 59) {
-                        setS(
-                          () => error = 'Minute must be between 0 and 59.',
-                        );
+                        setS(() => error = 'Minute must be between 0 and 59.');
                         return;
                       }
                       Navigator.of(ctx).pop(_fmtTime(h, m));
@@ -5427,7 +5534,9 @@ class _ScheduleCardState extends State<_ScheduleCard> {
 
     if (schedule.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select at least one day for the schedule.')),
+        const SnackBar(
+          content: Text('Select at least one day for the schedule.'),
+        ),
       );
       return;
     }
@@ -5858,7 +5967,10 @@ class _ClassTeacherCard extends StatelessWidget {
               style: _emptyStateTextStyle,
             )
           else if (teacherUsername.isEmpty)
-            const Text('The class has no homeroom teacher.', style: _emptyStateTextStyle)
+            const Text(
+              'The class has no homeroom teacher.',
+              style: _emptyStateTextStyle,
+            )
           else
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance

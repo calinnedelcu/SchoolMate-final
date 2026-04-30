@@ -44,6 +44,7 @@ class MeniuScreen extends StatefulWidget {
 class _MeniuScreenState extends State<MeniuScreen> {
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _userDocStream;
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _classDocStream;
+  Stream<DocumentSnapshot<Map<String, dynamic>>>? _timetableDocStream;
 
   @override
   void initState() {
@@ -62,7 +63,75 @@ class _MeniuScreenState extends State<MeniuScreen> {
           .collection('classes')
           .doc(classId)
           .snapshots();
+      _timetableDocStream = FirebaseFirestore.instance
+          .collection('timetables')
+          .doc(classId)
+          .snapshots();
     }
+  }
+
+  static int _parseHHMM(String value) {
+    final parts = value.split(':');
+    if (parts.length != 2) return -1;
+    final hour = int.tryParse(parts[0]) ?? -1;
+    final minute = int.tryParse(parts[1]) ?? -1;
+    if (hour < 0 || minute < 0) return -1;
+    return hour * 60 + minute;
+  }
+
+  static String _formatHHMM(int m) =>
+      '${(m ~/ 60).toString().padLeft(2, '0')}:${(m % 60).toString().padLeft(2, '0')}';
+
+  ({int startMin, int endMin, String startText, String endText})?
+  _todayScheduleFromTimetable(Map<String, dynamic> timetableData) {
+    final now = DateTime.now();
+    final weekday = now.weekday;
+    if (weekday > 5) return null;
+
+    final days = (timetableData['days'] as Map?)?.cast<String, dynamic>();
+    final dayMap = days?[weekday.toString()] as Map?;
+    if (dayMap == null || dayMap.isEmpty) return null;
+
+    final startTime = (timetableData['startTime'] as String?) ?? '08:00';
+    final baseMin = _parseHHMM(startTime);
+    if (baseMin < 0) return null;
+
+    final rawSlots = (timetableData['slots'] as List?) ?? const [];
+    final lessonStarts = <int>[];
+    final lessonEnds = <int>[];
+    int cur = baseMin;
+    for (final raw in rawSlots) {
+      if (raw is! Map) continue;
+      final m = raw.cast<String, dynamic>();
+      final type = (m['type'] as String?) ?? 'lesson';
+      final duration = (m['duration'] as num?)?.toInt() ?? 50;
+      final end = cur + duration;
+      if (type == 'lesson') {
+        lessonStarts.add(cur);
+        lessonEnds.add(end);
+      }
+      cur = end;
+    }
+
+    int firstIdx = -1;
+    int lastIdx = -1;
+    for (var i = 0; i < lessonStarts.length; i++) {
+      final entry = dayMap['$i'];
+      if (entry is Map && entry.isNotEmpty) {
+        if (firstIdx < 0) firstIdx = i;
+        lastIdx = i;
+      }
+    }
+    if (firstIdx < 0) return null;
+
+    final s = lessonStarts[firstIdx];
+    final e = lessonEnds[lastIdx];
+    return (
+      startMin: s,
+      endMin: e,
+      startText: _formatHHMM(s),
+      endText: _formatHHMM(e),
+    );
   }
 
   ({int startMin, int endMin, String startText, String endText})?
@@ -75,19 +144,10 @@ class _MeniuScreenState extends State<MeniuScreen> {
     final daySchedule = schedule[weekday.toString()] as Map?;
     if (daySchedule == null) return null;
 
-    int parseMinutes(String value) {
-      final parts = value.split(':');
-      if (parts.length != 2) return -1;
-      final hour = int.tryParse(parts[0]) ?? -1;
-      final minute = int.tryParse(parts[1]) ?? -1;
-      if (hour < 0 || minute < 0) return -1;
-      return hour * 60 + minute;
-    }
-
     final startText = (daySchedule['start'] ?? '').toString();
     final endText = (daySchedule['end'] ?? '').toString();
-    final startMin = parseMinutes(startText);
-    final endMin = parseMinutes(endText);
+    final startMin = _parseHHMM(startText);
+    final endMin = _parseHHMM(endText);
     if (startMin < 0 || endMin < 0) return null;
     return (
       startMin: startMin,
@@ -154,47 +214,64 @@ class _MeniuScreenState extends State<MeniuScreen> {
                       .doc(classId)
                       .snapshots()
                 : _classDocStream;
+            final timetableStream = classId.isNotEmpty
+                ? FirebaseFirestore.instance
+                      .collection('timetables')
+                      .doc(classId)
+                      .snapshots()
+                : _timetableDocStream;
 
             return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: classStream,
               builder: (context, classSnapshot) {
                 final classData =
                     classSnapshot.data?.data() ?? const <String, dynamic>{};
-                final todaySchedule = _todaySchedule(classData);
 
                 final now = DateTime.now();
                 final dateStr =
                     '${now.day} ${_homeMonths[now.month]} ${now.year}';
-                return Column(
-                  children: [
-                    WaveHeroHeader(
-                      title: 'Welcome,\n$resolvedName',
-                      subtitle: dateStr,
-                    ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        physics: const _DampedScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-                        child: Column(
-                          children: [
-                            _AziHeroCard(schedule: todaySchedule),
-                            const SizedBox(height: 16),
-                            _QuickActionsRow(
-                              onQr: () => _showQrSheet(context),
-                              onLeaveRequests: _openCereri,
-                            ),
-                            const SizedBox(height: 16),
-                            _InboxPreviewCard(
-                              studentUid:
-                                  FirebaseAuth.instance.currentUser?.uid ?? '',
-                              inboxLastOpenedAt: inboxLastOpenedAt,
-                              onTap: _openInbox,
-                            ),
-                          ],
+                return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                  stream: timetableStream,
+                  builder: (context, ttSnapshot) {
+                    final timetableData =
+                        ttSnapshot.data?.data() ?? const <String, dynamic>{};
+                    final todaySchedule =
+                        _todayScheduleFromTimetable(timetableData) ??
+                            _todaySchedule(classData);
+
+                    return Column(
+                      children: [
+                        WaveHeroHeader(
+                          title: 'Welcome,\n$resolvedName',
+                          subtitle: dateStr,
                         ),
-                      ),
-                    ),
-                  ],
+                        Expanded(
+                          child: SingleChildScrollView(
+                            physics: const _DampedScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                            child: Column(
+                              children: [
+                                _AziHeroCard(schedule: todaySchedule),
+                                const SizedBox(height: 16),
+                                _QuickActionsRow(
+                                  onQr: () => _showQrSheet(context),
+                                  onLeaveRequests: _openCereri,
+                                ),
+                                const SizedBox(height: 16),
+                                _InboxPreviewCard(
+                                  studentUid:
+                                      FirebaseAuth.instance.currentUser?.uid ??
+                                          '',
+                                  inboxLastOpenedAt: inboxLastOpenedAt,
+                                  onTap: _openInbox,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 );
               },
             );

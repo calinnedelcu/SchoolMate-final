@@ -164,9 +164,9 @@ enum PostComposerMode { secretariat, teacher }
 class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
   PostKind _kind = PostKind.announcement;
 
-  // Returns the English label (both branches now return English).
-  String _t(String en, String ro) =>
-      widget.mode == PostComposerMode.teacher ? en : ro;
+  // Picks copy based on the composer mode (teacher vs. secretariat).
+  String _modeText(String forTeacher, String forSecretariat) =>
+      widget.mode == PostComposerMode.teacher ? forTeacher : forSecretariat;
 
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
@@ -264,23 +264,23 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
 
   String? _validate() {
     final title = _titleCtrl.text.trim();
-    if (title.isEmpty) return _t('Add a title.', 'Add a title.');
+    if (title.isEmpty) return _modeText('Add a title.', 'Add a title.');
 
     if (_kind == PostKind.vacation) {
       if (_eventDate == null) {
-        return _t(
+        return _modeText(
           'Pick the vacation start date.',
           'Pick the vacation start date.',
         );
       }
       if (_eventEndDate == null) {
-        return _t(
+        return _modeText(
           'Pick the vacation end date.',
           'Pick the vacation end date.',
         );
       }
       if (_eventEndDate!.isBefore(_eventDate!)) {
-        return _t(
+        return _modeText(
           'End date must be after start date.',
           'End date must be after start date.',
         );
@@ -290,7 +290,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
 
     final desc = _descCtrl.text.trim();
     if (desc.length < 20) {
-      return _t(
+      return _modeText(
         'Description must be at least 20 characters.',
         'Description must be at least 20 characters.',
       );
@@ -305,7 +305,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
       case PostKind.camp:
       case PostKind.volunteer:
         if (_eventDate == null) {
-          return _t('Pick the event date.', 'Pick the event date.');
+          return _modeText('Pick the event date.', 'Pick the event date.');
         }
         break;
       case PostKind.announcement:
@@ -316,7 +316,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     if (link.isNotEmpty &&
         !link.startsWith('http://') &&
         !link.startsWith('https://')) {
-      return _t(
+      return _modeText(
         'Link must start with http:// or https://.',
         'Link must start with http:// or https://.',
       );
@@ -545,14 +545,14 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
       );
     }
 
-    final subtitle = _t(
+    final subtitle = _modeText(
       'Send announcements, competitions, camps and volunteering for your class.',
       widget.mode == PostComposerMode.teacher
           ? 'Send announcements, competitions, camps and volunteering for your class.'
           : 'Compose announcements, competitions, camps and volunteering for the whole school or selected classes.',
     );
-    final pageTitle = _t('Posts', 'Posts');
-    final recentLabel = _t('Recent posts', 'Recent posts');
+    final pageTitle = _modeText('Posts', 'Posts');
+    final recentLabel = _modeText('Recent posts', 'Recent posts');
 
     if (widget.embedded) {
       return Container(
@@ -610,7 +610,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           children: [
             PageBlueHeader(
               title: pageTitle,
-              subtitle: _t(
+              subtitle: _modeText(
                 'For your class',
                 widget.mode == PostComposerMode.teacher
                     ? 'For your class'
@@ -751,7 +751,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
               Icon(_kind.icon, color: color, size: 20),
               const SizedBox(width: 8),
               Text(
-                '${_t('New post', 'New post')} · ${_kindLabel(_kind)}',
+                '${_modeText('New post', 'New post')} · ${_kindLabel(_kind)}',
                 style: const TextStyle(
                   color: _onSurface,
                   fontSize: 15,
@@ -768,11 +768,11 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           _ComposerInput(
             controller: _titleCtrl,
             hint: _kind == PostKind.vacation
-                ? _t(
+                ? _modeText(
                     'Vacation name * (e.g. Winter break)',
                     'Vacation name * (e.g. Winter break)',
                   )
-                : _t('Title *', 'Title *'),
+                : _modeText('Title *', 'Title *'),
             maxLength: 90,
           ),
           if (_kind == PostKind.vacation) ...[
@@ -782,7 +782,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
             const SizedBox(height: 10),
             _ComposerInput(
               controller: _descCtrl,
-              hint: _t(
+              hint: _modeText(
                 'Description * (min. 20 characters)',
                 'Description * (min. 20 characters)',
               ),
@@ -793,13 +793,13 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
             if (_kind != PostKind.announcement) ...[
               _ComposerInput(
                 controller: _locationCtrl,
-                hint: _t('Location', 'Location'),
+                hint: _modeText('Location', 'Location'),
               ),
               const SizedBox(height: 10),
             ],
             _ComposerInput(
               controller: _linkCtrl,
-              hint: _t(
+              hint: _modeText(
                 'External link (optional, https://...)',
                 'External link (optional, https://...)',
               ),
@@ -833,7 +833,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
                         ),
                       )
                     : Text(
-                        _t('Publish', 'Publish'),
+                        _modeText('Publish', 'Publish'),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
@@ -851,13 +851,13 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
   Widget _buildDatePickers() {
     final showRange = _kind == PostKind.camp || _kind == PostKind.vacation;
     final startLabel = _kind == PostKind.vacation
-        ? _t('Start *', 'Start *')
+        ? _modeText('Start *', 'Start *')
         : (showRange
-            ? _t('Start', 'Start')
-            : _t('Date *', 'Date *'));
+            ? _modeText('Start', 'Start')
+            : _modeText('Date *', 'Date *'));
     final endLabel = _kind == PostKind.vacation
-        ? _t('End *', 'End *')
-        : _t('End', 'End');
+        ? _modeText('End *', 'End *')
+        : _modeText('End', 'End');
     return Row(
       children: [
         Expanded(
@@ -1013,7 +1013,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    _t('Add a photo (optional)', 'Add a photo (optional)'),
+                    _modeText('Add a photo (optional)', 'Add a photo (optional)'),
                     style: const TextStyle(
                       color: _onSurface,
                       fontSize: 13,

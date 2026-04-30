@@ -9,6 +9,7 @@ class BookmarkItem {
   final String link;
   final String senderName;
   final String location;
+  final String imageUrl;
   final DateTime? eventDate;
   final DateTime? eventEndDate;
   final int hoursWorth;
@@ -24,6 +25,7 @@ class BookmarkItem {
     required this.link,
     required this.senderName,
     required this.location,
+    required this.imageUrl,
     required this.eventDate,
     required this.eventEndDate,
     required this.hoursWorth,
@@ -44,6 +46,7 @@ class BookmarkItem {
       link: (data['link'] ?? '').toString(),
       senderName: (data['senderName'] ?? '').toString(),
       location: (data['location'] ?? '').toString(),
+      imageUrl: (data['imageUrl'] ?? '').toString(),
       eventDate: (data['eventDate'] as Timestamp?)?.toDate(),
       eventEndDate: (data['eventEndDate'] as Timestamp?)?.toDate(),
       hoursWorth: ((data['hoursWorth'] as num?) ?? 0).toInt(),
@@ -79,6 +82,7 @@ class BookmarksService {
     String link = '',
     String senderName = '',
     String location = '',
+    String imageUrl = '',
     DateTime? eventDate,
     DateTime? eventEndDate,
     int hoursWorth = 0,
@@ -92,6 +96,7 @@ class BookmarksService {
       'link': link,
       'senderName': senderName,
       'location': location,
+      'imageUrl': imageUrl,
       'eventDate': eventDate == null ? null : Timestamp.fromDate(eventDate),
       'eventEndDate':
           eventEndDate == null ? null : Timestamp.fromDate(eventEndDate),

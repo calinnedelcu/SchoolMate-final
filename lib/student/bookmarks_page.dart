@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:school_mate/common/storage_image.dart';
 import 'package:school_mate/core/session.dart';
 import 'package:school_mate/student/bookmarks_service.dart';
 import 'package:school_mate/student/widgets/school_decor.dart';
@@ -274,21 +275,21 @@ class _BookmarkTile extends StatelessWidget {
           icon: Icons.emoji_events_rounded,
           fg: const Color(0xFFCC8A1A),
           bg: const Color(0xFFFFF3D6),
-          label: 'COMPETITION',
+          label: 'Competition',
         );
       case 'camp':
         return (
           icon: Icons.forest_rounded,
           fg: const Color(0xFF3F8B3A),
           bg: const Color(0xFFD9EFD8),
-          label: 'CAMP',
+          label: 'Camp',
         );
       case 'volunteer':
         return (
           icon: Icons.volunteer_activism_rounded,
           fg: const Color(0xFF7B1FA2),
           bg: const Color(0xFFEDE0F4),
-          label: 'VOLUNTEERING',
+          label: 'Volunteering',
         );
       case 'announcement':
       default:
@@ -296,22 +297,28 @@ class _BookmarkTile extends StatelessWidget {
           icon: Icons.campaign_rounded,
           fg: const Color(0xFF3460CC),
           bg: const Color(0xFFDDE0EC),
-          label: 'ANNOUNCEMENT',
+          label: 'Announcement',
         );
     }
   }
 
-  String _formatDate(DateTime d) {
-    const months = <String>[
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
-    ];
-    return '${months[d.month - 1]} ${d.day}';
+  static String _timeAgo(DateTime? d) {
+    if (d == null) return '';
+    final diff = DateTime.now().difference(d);
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m';
+    if (diff.inHours < 24) return '${diff.inHours}h';
+    if (diff.inDays < 7) return '${diff.inDays}d';
+    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}w';
+    if (diff.inDays < 365) return '${(diff.inDays / 30).floor()}mo';
+    return '${(diff.inDays / 365).floor()}y';
   }
 
   @override
   Widget build(BuildContext context) {
     final style = _categoryStyle();
+    final timeAgoLabel = _timeAgo(item.savedAt);
+
     return Container(
       decoration: BoxDecoration(
         color: style.fg,
@@ -326,123 +333,134 @@ class _BookmarkTile extends StatelessWidget {
           onTap: () => _showDetail(context),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(14),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: WhiteCardSparklesPainter(
-                      primary: style.fg,
-                      variant: item.itemId.hashCode % 5,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 18, 12, 18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: WhiteCardSparklesPainter(
+                              primary: style.fg,
+                              variant: item.itemId.hashCode % 5,
                             ),
-                            decoration: BoxDecoration(
-                              color: style.bg,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(style.icon, color: style.fg, size: 14),
-                                const SizedBox(width: 6),
-                                Text(
-                                  style.label,
-                                  style: TextStyle(
-                                    color: style.fg,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: onRemove,
-                            tooltip: 'Remove bookmark',
-                            splashRadius: 20,
-                            icon: const Icon(
-                              Icons.bookmark_rounded,
-                              color: Color(0xFFCC8A1A),
-                              size: 22,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: Text(
-                          item.title.isEmpty ? 'Saved item' : item.title,
-                          style: const TextStyle(
-                            color: _textDark,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            height: 1.2,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        width: 36,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: kPencilYellow,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      if (item.message.isNotEmpty) ...[
-                        const SizedBox(height: 10),
                         Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: Text(
-                            item.message,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: _textMuted,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              height: 1.45,
-                            ),
+                          padding: EdgeInsets.fromLTRB(
+                            18,
+                            20,
+                            item.imageUrl.isEmpty ? 18 : 12,
+                            20,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.title.isEmpty
+                                              ? 'Saved item'
+                                              : item.title,
+                                          style: const TextStyle(
+                                            color: _textDark,
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: -0.3,
+                                            height: 1.2,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Container(
+                                          width: 36,
+                                          height: 3,
+                                          decoration: BoxDecoration(
+                                            color: kPencilYellow,
+                                            borderRadius:
+                                                BorderRadius.circular(2),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (timeAgoLabel.isNotEmpty) ...[
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      timeAgoLabel,
+                                      textAlign: TextAlign.right,
+                                      style: const TextStyle(
+                                        color: _textMuted,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                item.message.isEmpty
+                                    ? 'No content.'
+                                    : item.message,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: _textMuted,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.45,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              _SenderBadge(
+                                icon: style.icon,
+                                label: item.senderName.isEmpty
+                                    ? style.label
+                                    : item.senderName,
+                                bg: style.bg,
+                                fg: style.fg,
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 4,
-                        children: [
-                          if (item.eventDate != null)
-                            _MetaChip(
-                              icon: Icons.calendar_month_rounded,
-                              text: _formatDate(item.eventDate!),
-                            ),
-                          if (item.location.isNotEmpty)
-                            _MetaChip(
-                              icon: Icons.place_outlined,
-                              text: item.location,
-                            ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                  if (item.imageUrl.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 14, 14, 14),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SizedBox(
+                          width: 92,
+                          height: 92,
+                          child: StorageImage(
+                            url: item.imageUrl,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (_) => Container(color: style.bg),
+                            errorBuilder: (_, _) => Container(
+                              color: style.bg,
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.broken_image_rounded,
+                                color: style.fg,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -455,6 +473,50 @@ class _BookmarkTile extends StatelessWidget {
       context: context,
       barrierColor: const Color(0xCC0A0F2A),
       builder: (_) => _BookmarkDetailDialog(item: item),
+    );
+  }
+}
+
+class _SenderBadge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color bg;
+  final Color fg;
+
+  const _SenderBadge({
+    required this.icon,
+    required this.label,
+    required this.bg,
+    required this.fg,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: fg, size: 15),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: fg,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -489,6 +551,32 @@ class _BookmarkDetailDialog extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (item.imageUrl.isNotEmpty) ...[
+                          Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxHeight: 320),
+                                child: StorageImage(
+                                  url: item.imageUrl,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (_) => const SizedBox(
+                                    width: double.infinity,
+                                    height: 200,
+                                    child: ColoredBox(color: Color(0xFFE8EAF2)),
+                                  ),
+                                  errorBuilder: (_, _) => const SizedBox(
+                                    width: double.infinity,
+                                    height: 200,
+                                    child: ColoredBox(color: Color(0xFFE8EAF2)),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                        ],
                         if (item.eventDate != null || item.location.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 14),

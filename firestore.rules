@@ -200,14 +200,6 @@ service cloud.firestore {
               resource.data.recipientUid == '');
     }
 
-    function validQrTokenCreate() {
-      return isStudent() &&
-          request.resource.data.keys().hasAll(['userId', 'expiresAt', 'used']) &&
-          request.resource.data.userId == request.auth.uid &&
-          request.resource.data.expiresAt is timestamp &&
-          request.resource.data.used == false;
-    }
-
     match /users/{userId} {
       // Some legacy accounts may still have inconsistent profile documents
       // during bootstrap/login. Keep reads available to authenticated users so
@@ -221,6 +213,15 @@ service cloud.firestore {
 
       match /bookmarks/{itemId} {
         allow read, write: if isOwnUser(userId);
+      }
+
+      // Non-sensitive profile mirror maintained by the onUserDocWrite trigger
+      // (Admin SDK bypasses these rules). Reads are open to any signed-in
+      // user so future client code can list/lookup directory data without the
+      // parent users doc exposing personalEmail/fcmToken.
+      match /publicProfile/{docId} {
+        allow read: if isSignedIn();
+        allow write: if false;
       }
     }
 
@@ -263,15 +264,19 @@ service cloud.firestore {
 
     match /accessEvents/{eventId} {
       allow read: if canReadAccessEvent();
-      allow create: if isGate() || isAdmin();
-      allow update, delete: if false;
+      // Writes flow exclusively through the redeemQrToken Cloud Function
+      // (Admin SDK bypasses these rules). Direct client writes — even by gate
+      // accounts — are rejected to prevent forged entry/exit events.
+      allow create, update, delete: if false;
     }
 
     match /qrTokens/{tokenId} {
       allow read: if isAdmin() ||
           (isStudent() && resource.data.userId == request.auth.uid);
-      allow create: if validQrTokenCreate();
-      allow update: if false;
+      // Writes flow exclusively through the generateQrToken Cloud Function
+      // (Admin SDK bypasses these rules). Direct client writes are rejected so
+      // a student cannot forge a qrToken with an arbitrary expiresAt.
+      allow create, update: if false;
       allow delete: if isAdmin() ||
           (isStudent() && resource.data.userId == request.auth.uid);
     }

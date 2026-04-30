@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../utils/password_hash.dart';
+import '../models/user_role.dart';
 
 class AdminStore {
   final _db = FirebaseFirestore.instance;
@@ -18,15 +19,16 @@ class AdminStore {
     if (username.isEmpty || password.isEmpty || fullName.isEmpty) {
       throw Exception("Missing fields");
     }
-    if (!["student", "teacher", "admin", "gate", "parent"].contains(role)) {
+    final parsedRole = UserRole.fromWire(role);
+    if (parsedRole == null) {
       throw Exception("Invalid role");
     }
-    if ((role == "student" || role == "teacher") &&
+    if (parsedRole.requiresClassId &&
         (classId == null || classId.trim().isEmpty)) {
       throw Exception("classId required for $role");
     }
     // If student/teacher, the class MUST already exist in /classes
-    if (role == "student" || role == "teacher") {
+    if (parsedRole.requiresClassId) {
       final cId = classId!.trim().toUpperCase();
       final classSnap = await _db.collection('classes').doc(cId).get();
 
@@ -37,7 +39,7 @@ class AdminStore {
     final ref = _db.collection('users').doc(username);
     final snap = await ref.get();
     if (snap.exists) throw Exception("Username already exists");
-    if (role == "teacher") {
+    if (parsedRole == UserRole.teacher) {
       await _createTeacherAndAssign(
         username: username,
         password: password,
@@ -49,9 +51,9 @@ class AdminStore {
     final hp = await PasswordHash.hashPassword(password);
     await ref.set({
       "username": username,
-      "role": role,
+      "role": parsedRole.wire,
       "fullName": fullName,
-      "classId": (role == "student" || role == "teacher")
+      "classId": parsedRole.requiresClassId
           ? classId!.trim().toUpperCase()
           : null,
       "status": "active",
@@ -65,9 +67,6 @@ class AdminStore {
       "passwordChanged": false,
       "personalEmail": null,
     });
-    if (role == "teacher") {
-      await changeClassTeacher(classId: classId!, teacherUsername: username);
-    }
   }
 
   Future<void> setClassNoExitSchedule({
@@ -164,13 +163,13 @@ class AdminStore {
       batch.delete(d.reference);
     }
 
-    // 2) if a teacher exists -> delete them too (or just remove classId, see comment)
+    // 2) if a teacher exists -> unassign them from this class (do NOT delete the user)
     if (teacherUsername.isNotEmpty) {
       final tRef = _db.collection('users').doc(teacherUsername);
-      batch.delete(tRef);
-
-      // safer alternative (don't delete the teacher, just "unassign" them):
-      // batch.update(tRef, {"classId": FieldValue.delete()});
+      batch.update(tRef, {
+        "classId": FieldValue.delete(),
+        "updatedAt": FieldValue.serverTimestamp(),
+      });
     }
 
     // 3) delete the class
@@ -211,7 +210,7 @@ class AdminStore {
       // 1) create teacher user
       tx.set(userRef, {
         "username": username,
-        "role": "teacher",
+        "role": UserRole.teacher.wire,
         "fullName": fullName,
         "classId": classId,
         "status": "active",
@@ -297,48 +296,18 @@ class AdminStore {
       if (hasUpdates) await batch.commit();
     }
 
-    // Preferred path: backend function deletes both Firebase Auth account
-    // and Firestore user data.
-    try {
-      final callable = FirebaseFunctions.instance.httpsCallable(
-        'adminDeleteUser',
-      );
-      await callable.call(<String, dynamic>{'username': username});
-      // Defensive cleanup for legacy/inconsistent records.
-      await clearTeacherFromClasses();
-      await clearTeacherFromTimetables();
-      return;
-    } catch (_) {
-      // Fallback to local cleanup to avoid blocking admin workflows.
-    }
+    // Backend function is the only path: it deletes both the Firebase Auth
+    // account and the Firestore user document (the client cannot do the former
+    // and is not authorized to do the latter once write rules are tightened).
+    final callable = FirebaseFunctions.instance.httpsCallable(
+      'adminDeleteUser',
+    );
+    await callable.call(<String, dynamic>{'username': username});
 
-    final snap = await _db
-        .collection('users')
-        .where('username', isEqualTo: username)
-        .limit(1)
-        .get();
-
-    if (snap.docs.isEmpty) {
-      throw Exception("User does not exist");
-    }
-
-    final userRef = snap.docs.first.reference;
-    final data = snap.docs.first.data();
-    final role = (data['role'] ?? '').toString();
-    final classId = (data['classId'] ?? '').toString().toUpperCase();
-
-    if (role == "teacher") {
-      await clearTeacherFromClasses();
-      await clearTeacherFromTimetables();
-      if (classId.isNotEmpty) {
-        await _db.collection('classes').doc(classId).set({
-          "teacherUsername": FieldValue.delete(),
-          "updatedAt": FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-      }
-    }
-
-    await userRef.delete();
+    // Best-effort cleanup of stale references (head-teacher pointers on classes
+    // and lessons in timetables). Surfaced as errors if they fail.
+    await clearTeacherFromClasses();
+    await clearTeacherFromTimetables();
   }
 
   Future<void> setDisabled(String username, bool disabled) async {
@@ -392,7 +361,7 @@ class AdminStore {
       if (!userSnap.exists) throw Exception("User does not exist");
 
       final userData = userSnap.data() as Map<String, dynamic>;
-      final role = (userData["role"] ?? "").toString();
+      final role = UserRole.fromWire((userData["role"] ?? "").toString());
       final userUsername = (userData["username"] ?? "")
           .toString()
           .trim()
@@ -402,7 +371,7 @@ class AdminStore {
           .trim()
           .toUpperCase();
 
-      if (role != "student" && role != "teacher") {
+      if (role == null || !role.requiresClassId) {
         throw Exception("Only student/teacher can be moved");
       }
 
@@ -417,7 +386,7 @@ class AdminStore {
       }
 
       // STUDENT: just update classId
-      if (role == "student") {
+      if (role == UserRole.student) {
         tx.update(resolvedUserRef, {
           "classId": newClassId,
           "updatedAt": FieldValue.serverTimestamp(),
@@ -527,8 +496,8 @@ class AdminStore {
           throw Exception("Teacher '$teacherUsername' does not exist in users");
         }
         final newData = newSnap.data() as Map<String, dynamic>;
-        final newRole = (newData["role"] ?? "").toString();
-        if (newRole != "teacher") {
+        final newRole = UserRole.fromWire((newData["role"] ?? "").toString());
+        if (newRole != UserRole.teacher) {
           throw Exception("User '$teacherUsername' does not have role=teacher");
         }
         final teacherClass = (newData["classId"] ?? "")
