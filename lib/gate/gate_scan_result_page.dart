@@ -200,7 +200,10 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
       if (startStr == null || startStr.isEmpty || slots.isEmpty) return false;
 
       final now = DateTime.now();
-      final dayData = (data['days'] as Map<String, dynamic>?)?[now.weekday.toString()] as Map<String, dynamic>?;
+      final days = data['days'] as Map?;
+      // Handle potential integer/string key mismatch for weekday
+      final dayData = (days?[now.weekday.toString()] ?? days?[now.weekday]) as Map?;
+
       final parts = startStr.split(':');
       if (parts.length < 2) return false;
 
@@ -220,7 +223,10 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
       for (var slot in slots) {
         final duration = (slot['duration'] as num? ?? 0).toInt();
         if (slot['type'] == 'lesson') {
-          if (dayData != null && dayData[lessonIndex.toString()] != null) {
+          // Robust check for lesson presence at this index
+          final hasLesson = dayData != null && 
+              (dayData.containsKey(lessonIndex.toString()) || dayData.containsKey(lessonIndex));
+          if (hasLesson) {
             actualLastLessonEnd = current.add(Duration(minutes: duration));
             hasAnyAssignedLesson = true;
           }
@@ -518,10 +524,10 @@ class _ScheduleCard extends StatelessWidget {
 
     final List slots = (timetableData!['slots'] as List?) ?? const [];
     final now = DateTime.now();
+    final days = timetableData!['days'] as Map?;
     final dayData =
-        (timetableData!['days'] as Map<String, dynamic>?)?[now.weekday
-                .toString()]
-            as Map<String, dynamic>? ??
+        (days?[now.weekday.toString()] ?? days?[now.weekday])
+            as Map? ??
         const <String, dynamic>{};
 
     final parts = startStr.split(':');
@@ -542,8 +548,9 @@ class _ScheduleCard extends StatelessWidget {
       final duration = (slot['duration'] ?? 0) as int;
 
       if (type == 'lesson') {
-        final daySlotInfo =
-            dayData[lessonIndex.toString()] as Map<String, dynamic>?;
+        // Handle potential integer/string key mismatch for lesson index
+        final daySlotInfo = (dayData[lessonIndex.toString()] ?? dayData[lessonIndex]) 
+            as Map?;
         final subjectId = daySlotInfo?['subjectId'] as String?;
 
         if (subjectId != null) {
