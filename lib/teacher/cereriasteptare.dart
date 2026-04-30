@@ -254,9 +254,9 @@ class _RequestCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned.fill(
+          const Positioned.fill(
             child: CustomPaint(
-              painter: const WhiteCardSparklesPainter(
+              painter: WhiteCardSparklesPainter(
                 primary: _kPrimary,
                 variant: 2,
               ),
