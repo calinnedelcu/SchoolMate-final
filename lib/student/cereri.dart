@@ -151,11 +151,6 @@ class _CereriScreenState extends State<CereriScreen> {
     });
   }
 
-  TimeOfDay _parseHHmm(String s) {
-    final parts = s.split(':');
-    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-  }
-
   String _formatDateMmDdYyyy(DateTime dt) {
     final mm = dt.month.toString().padLeft(2, '0');
     final dd = dt.day.toString().padLeft(2, '0');
@@ -194,7 +189,7 @@ class _CereriScreenState extends State<CereriScreen> {
       if (classId.isNotEmpty) AppSession.classId = classId;
     }
 
-    if (classId == null || classId.isEmpty) return false;
+    if (classId.isEmpty) return false;
 
     setState(() => _loadingSchedule = true);
     try {
@@ -238,13 +233,14 @@ class _CereriScreenState extends State<CereriScreen> {
       }
 
       if (firstLessonStart == null || lastLessonEnd == null) return false;
+      final int startMin = firstLessonStart;
+      final int endMin = lastLessonEnd;
 
       if (mounted) {
         setState(() {
-          _scheduleStart = TimeOfDay(
-              hour: firstLessonStart! ~/ 60, minute: firstLessonStart! % 60);
-          _scheduleEnd = TimeOfDay(
-              hour: lastLessonEnd! ~/ 60, minute: lastLessonEnd! % 60);
+          _scheduleStart =
+              TimeOfDay(hour: startMin ~/ 60, minute: startMin % 60);
+          _scheduleEnd = TimeOfDay(hour: endMin ~/ 60, minute: endMin % 60);
         });
       }
       return true;
