@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -50,18 +51,22 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as GateScanResultPageArguments?;
-    if (args != null && _timetableFuture == null) {
-      if (args.classId != null && args.classId!.isNotEmpty) {
-        _timetableFuture = FirebaseFirestore.instance.collection('timetables').doc(args.classId!).get();
-        _timetableFuture!.then((doc) {
-          final isFinished = _calculateIsDayFinished(doc?.data());
-          _logAccessEvent(args, isFinished);
-        });
-      } else {
-        _timetableFuture = Future.value(null);
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+    if (routeArgs is! GateScanResultPageArguments || _timetableFuture != null) return;
+    final args = routeArgs;
+
+    if (args.classId != null && args.classId!.isNotEmpty) {
+      _timetableFuture = FirebaseFirestore.instance.collection('timetables').doc(args.classId!).get();
+      _timetableFuture!.then((doc) {
+        final isFinished = _calculateIsDayFinished(doc?.data());
+        _logAccessEvent(args, isFinished);
+      }).catchError((_) {
+        // Ensure we still log the attempt even if the timetable fetch fails
         _logAccessEvent(args, false);
-      }
+      });
+    } else {
+      _timetableFuture = Future.value(null);
+      _logAccessEvent(args, false);
     }
   }
 
@@ -70,17 +75,28 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
     _logged = true;
 
     final bool finalOk = args.isAllowed || isDayFinished;
-    final gateUid = FirebaseAuth.instance.currentUser?.uid;
+    final String? gateUid = FirebaseAuth.instance.currentUser?.uid;
+
+    // Determine a descriptive reason for the audit log
+    String? logReason = args.reason;
+    if (finalOk) {
+      if (args.isAllowed) {
+        logReason = 'leave_request';
+      } else if (isDayFinished) {
+        logReason = 'day_finished';
+      }
+    }
 
     FirebaseFirestore.instance.collection('accessEvents').add({
       'classId': args.classId,
       'fullName': args.fullName,
       'gateUid': gateUid,
-      'reason': finalOk ? null : args.reason,
+      'reason': logReason,
       'scanResult': finalOk ? 'allowed' : 'denied',
       'timestamp': FieldValue.serverTimestamp(),
       'tokenId': args.tokenId,
-      'userId': args.userId,
+      'userId': args.userId ?? args.studentId, // Ensure an ID is captured
+      if (args.errorMessage != null) 'error': args.errorMessage,
     });
   }
 
@@ -110,7 +126,7 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
     return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>?>(
       future: _timetableFuture,
       builder: (context, snapshot) {
-        final timetableData = snapshot.data?.data();
+        final Map<String, dynamic>? timetableData = snapshot.data?.data();
         final bool isDayFinished = _calculateIsDayFinished(timetableData);
 
         return Scaffold(
@@ -164,45 +180,50 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
   }
 
   bool _calculateIsDayFinished(Map<String, dynamic>? data) {
-    if (data == null) return false;
-    final String? startStr = data['startTime'];
-    final List slots = data['slots'] ?? []; // Global slots configuration
-    if (startStr == null || startStr.isEmpty || slots.isEmpty) return false;
+    try {
+      if (data == null) return false;
+      final String? startStr = data['startTime'];
+      final List slots = data['slots'] ?? [];
+      if (startStr == null || startStr.isEmpty || slots.isEmpty) return false;
 
-    final now = DateTime.now();
-    final dayData = (data['days'] as Map<String, dynamic>?)?[now.weekday.toString()] as Map<String, dynamic>?;
-    final parts = startStr.split(':');
-    DateTime current = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      int.parse(parts[0]),
-      int.parse(parts[1]),
-    );
+      final now = DateTime.now();
+      final dayData = (data['days'] as Map<String, dynamic>?)?[now.weekday.toString()] as Map<String, dynamic>?;
+      final parts = startStr.split(':');
+      if (parts.length < 2) return false;
 
-    DateTime actualLastLessonEnd = current; // Initialize to the start of the day
-    bool hasAnyAssignedLesson = false; // Flag to track if any lesson was actually scheduled
+      DateTime current = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        int.parse(parts[0]),
+        int.parse(parts[1]),
+      );
 
-    int lessonIndex = 0;
+      DateTime actualLastLessonEnd = current; 
+      bool hasAnyAssignedLesson = false; 
 
-    for (var slot in slots) {
-      final duration = (slot['duration'] ?? 0) as int;
-      if (slot['type'] == 'lesson') {
-        // Check if dayData exists and if a subject is assigned for this lessonIndex
-        if (dayData != null && dayData[lessonIndex.toString()] != null) {
-          actualLastLessonEnd = current.add(Duration(minutes: duration));
-          hasAnyAssignedLesson = true;
+      int lessonIndex = 0;
+
+      for (var slot in slots) {
+        final duration = (slot['duration'] as num? ?? 0).toInt();
+        if (slot['type'] == 'lesson') {
+          if (dayData != null && dayData[lessonIndex.toString()] != null) {
+            actualLastLessonEnd = current.add(Duration(minutes: duration));
+            hasAnyAssignedLesson = true;
+          }
+          lessonIndex++;
         }
-        lessonIndex++;
+        current = current.add(Duration(minutes: duration));
       }
-      current = current.add(Duration(minutes: duration));
+
+      // If no lessons were assigned for today, the day is considered "finished"
+      if (!hasAnyAssignedLesson) return true;
+
+      return now.isAfter(actualLastLessonEnd);
+    } catch (e) {
+      debugPrint('Error calculating day finished: $e');
+      return false;
     }
-
-    // If no lessons were assigned for today, the day is considered "finished"
-    // in the sense that there's nothing to wait for.
-    if (!hasAnyAssignedLesson) return true;
-
-    return now.isAfter(actualLastLessonEnd);
   }
 }
 
@@ -487,7 +508,7 @@ class _ScheduleCard extends StatelessWidget {
           for (int i = 0; i < slots.length; i++) {
             final slot = slots[i] as Map<String, dynamic>;
             final type = (slot['type'] ?? 'lesson').toString();
-            final duration = (slot['duration'] ?? 0) as int;
+            final duration = (slot['duration'] as num? ?? 0).toInt();
 
             if (type == 'lesson') {
               final daySlotInfo = dayData[lessonIndex.toString()] as Map<String, dynamic>?;
@@ -572,7 +593,7 @@ class _ScheduleItem extends StatelessWidget {
             width: 100,
             child: Text(
               time,
-              style: const TextStyle(
+              style: TextStyle(
                 color: _primary,
                 fontWeight: FontWeight.w900,
                 fontSize: 13,

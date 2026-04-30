@@ -1,6 +1,6 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
-const { onDocumentCreated, onDocumentUpdated, onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { randomBytes, createHash } = require("crypto");
 const nodemailer = require("nodemailer");
 
@@ -517,15 +517,11 @@ exports.authRequestPasswordReset = onCall(async (request) => {
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiryMs = nowMs + PASSWORD_RESET_CODE_TTL_MS;
-    const codeHash = createHash("sha256").update(code).digest("hex");
 
     await admin.firestore().collection("users").doc(resolved.uid).set({
-        // Store only the hash. The plain code is delivered via email.
-        passwordResetCodeHash: codeHash,
+        passwordResetCode: code,
         passwordResetCodeExpiry: admin.firestore.Timestamp.fromMillis(expiryMs),
         passwordResetSentAt: admin.firestore.FieldValue.serverTimestamp(),
-        // Wipe legacy plain field if it existed.
-        passwordResetCode: admin.firestore.FieldValue.delete(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
 
@@ -588,11 +584,10 @@ exports.authConfirmPasswordReset = onCall(async (request) => {
 
     const resolved = await resolveUserByLoginInput(input);
     const userData = resolved.userData || {};
-    const storedHash = String(userData.passwordResetCodeHash || "");
+    const storedCode = String(userData.passwordResetCode || "");
     const expiryMs = userData.passwordResetCodeExpiry?.toMillis?.() || 0;
-    const inputHash = createHash("sha256").update(code).digest("hex");
 
-    if (!storedHash || storedHash !== inputHash) {
+    if (!storedCode || storedCode !== code) {
         throw new HttpsError("invalid-argument", "Cod invalid");
     }
     if (!expiryMs || expiryMs < Date.now()) {
@@ -605,7 +600,6 @@ exports.authConfirmPasswordReset = onCall(async (request) => {
     await admin.firestore().collection("users").doc(resolved.uid).set({
         passwordChanged: true,
         onboardingComplete: emailVerified,
-        passwordResetCodeHash: admin.firestore.FieldValue.delete(),
         passwordResetCode: admin.firestore.FieldValue.delete(),
         passwordResetCodeExpiry: admin.firestore.FieldValue.delete(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -847,7 +841,6 @@ exports.adminRemovePersonalEmail = onCall(async (request) => {
         personalEmailLower: admin.firestore.FieldValue.delete(),
         pendingPersonalEmail: admin.firestore.FieldValue.delete(),
         pendingPersonalEmailLower: admin.firestore.FieldValue.delete(),
-        verificationCodeHash: admin.firestore.FieldValue.delete(),
         verificationCode: admin.firestore.FieldValue.delete(),
         verificationCodeExpiry: admin.firestore.FieldValue.delete(),
         emailVerified: false,
@@ -1530,7 +1523,21 @@ exports.redeemQrToken = onCall(async (request) => {
             redeemedBy: callerUid,
         });
 
-        t cutoff = new Date(Date.now() - 60 * 60 * 1000); // 1 hour ago
+        return {
+            ok: isAllowed,
+            userId,
+            fullName,
+            classId,
+            hasActiveLeave: approvedLeaveExit,
+            timestamp: scanTimestamp,
+            reason: !isAllowed ? "NO_ACTIVE_LEAVE" : null
+        };
+    });
+});
+
+exports.cleanupExpiredQrTokens = onSchedule("every 60 minutes", async (event) => {
+    const db = admin.firestore();
+    const cutoff = new Date(Date.now() - 60 * 60 * 1000); // 1 hour ago
     const expiredSnap = await db.collection("qrTokens")
         .where("expiresAt", "<=", cutoff)
         .get();
@@ -1705,18 +1712,15 @@ exports.sendVerificationEmail = onCall(async (request) => {
     // Generez cod 6 cifre
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiryMs = Date.now() + 60 * 60 * 1000; // 1 ora
-    const codeHash = createHash("sha256").update(code).digest("hex");
 
-    // Salvez doar hash-ul. Codul plain ajunge la utilizator prin email.
+    // Salvez codul în Firestore
     await userRef.update({
         pendingPersonalEmail: email,
         pendingPersonalEmailLower: emailLower,
         emailVerified: false,
         onboardingComplete: false,
-        verificationCodeHash: codeHash,
+        verificationCode: code,
         verificationCodeExpiry: admin.firestore.Timestamp.fromMillis(expiryMs),
-        // Wipe legacy plain field if it existed.
-        verificationCode: admin.firestore.FieldValue.delete(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -1867,19 +1871,18 @@ exports.verifyEmailCode = onCall(async (request) => {
     }
 
     const userData = userDoc.data();
-    const storedHash = String(userData.verificationCodeHash || "");
+    const storedCode = String(userData.verificationCode || "");
     const expiryTs = userData.verificationCodeExpiry;
     const pendingPersonalEmail = String(userData.pendingPersonalEmail || "").trim();
     const pendingPersonalEmailLower = normalizeEmail(
         userData.pendingPersonalEmailLower || pendingPersonalEmail
     );
-    const inputHash = createHash("sha256").update(code).digest("hex");
 
-    if (!storedHash) {
+    if (!storedCode) {
         throw new HttpsError("failed-precondition", "Niciun cod de verificare in asteptare");
     }
 
-    if (storedHash !== inputHash) {
+    if (storedCode !== code) {
         throw new HttpsError("invalid-argument", "Cod de verificare incorect");
     }
 
@@ -1903,7 +1906,6 @@ exports.verifyEmailCode = onCall(async (request) => {
         onboardingComplete: passwordChanged,
         pendingPersonalEmail: admin.firestore.FieldValue.delete(),
         pendingPersonalEmailLower: admin.firestore.FieldValue.delete(),
-        verificationCodeHash: admin.firestore.FieldValue.delete(),
         verificationCode: admin.firestore.FieldValue.delete(),
         verificationCodeExpiry: admin.firestore.FieldValue.delete(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -2148,124 +2150,4 @@ exports.authResendSecondFactor = onCall(async (request) => {
     await sendTwoFactorEmail(personalEmail, code);
 
     return { sent: true, maskedEmail: maskEmail(personalEmail) };
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Public profile mirror + custom claims sync
-// ─────────────────────────────────────────────────────────────────────────────
-// Maintains a `users/{uid}/publicProfile/main` doc with non-sensitive fields
-// (fullName, username, role, classId, status) so future client code can read
-// directory-style data without `users.read` exposing personalEmail/fcmToken.
-//
-// Also keeps Firebase Auth custom claims in sync with role/classId. Once
-// rules are migrated to use `request.auth.token.role`, lookups become free.
-// Until then, claims are dormant — setting them is harmless.
-//
-// Purely additive: nothing in current rules or client code reads from these
-// outputs yet. Safe to deploy without coordinated client changes.
-
-const PUBLIC_PROFILE_FIELDS = [
-    "fullName",
-    "username",
-    "role",
-    "classId",
-    "status",
-];
-
-function buildPublicProfile(data) {
-    const out = {};
-    for (const f of PUBLIC_PROFILE_FIELDS) {
-        const v = data?.[f];
-        if (v === undefined || v === null || v === "") continue;
-        out[f] = v;
-    }
-    out.updatedAt = admin.firestore.FieldValue.serverTimestamp();
-    return out;
-}
-
-function buildClaims(data) {
-    const role = String(data?.role || "").trim().toLowerCase();
-    const classId = String(data?.classId || "").trim().toUpperCase();
-    const claims = {};
-    if (role) claims.role = role;
-    if (classId) claims.classId = classId;
-    return claims;
-}
-
-async function syncUserMirrors(uid, data) {
-    const publicRef = admin.firestore()
-        .collection("users").doc(uid)
-        .collection("publicProfile").doc("main");
-
-    if (!data) {
-        // User doc deleted — clear mirror and claims.
-        await Promise.all([
-            publicRef.delete().catch(() => null),
-            admin.auth().setCustomUserClaims(uid, null).catch((e) => {
-                console.warn(`[syncUserMirrors] clear claims failed for ${uid}: ${e?.message}`);
-            }),
-        ]);
-        return;
-    }
-
-    const publicProfile = buildPublicProfile(data);
-    const claims = buildClaims(data);
-
-    await Promise.all([
-        publicRef.set(publicProfile, { merge: false }),
-        admin.auth().setCustomUserClaims(uid, claims).catch((e) => {
-            // Setting claims for a uid without an Auth account fails — log,
-            // don't crash the trigger.
-            console.warn(`[syncUserMirrors] set claims failed for ${uid}: ${e?.message}`);
-        }),
-    ]);
-}
-
-exports.onUserDocWrite = onDocumentWritten("users/{uid}", async (event) => {
-    const uid = event.params.uid;
-    const after = event.data?.after?.data() || null;
-    const before = event.data?.before?.data() || null;
-
-    // Skip if neither publicProfile fields nor claim-driving fields changed.
-    if (after && before) {
-        const fieldsToWatch = [...PUBLIC_PROFILE_FIELDS];
-        const changed = fieldsToWatch.some((f) => before[f] !== after[f]);
-        if (!changed) return;
-    }
-
-    try {
-        await syncUserMirrors(uid, after);
-    } catch (err) {
-        console.error(`[onUserDocWrite] sync failed for ${uid}:`, err);
-    }
-});
-
-exports.adminBackfillUserMirrors = onCall(async (request) => {
-    await assertAdmin(request);
-
-    const db = admin.firestore();
-    const snap = await db.collection("users").get();
-
-    let processed = 0;
-    let claimsFailed = 0;
-    const errors = [];
-
-    for (const doc of snap.docs) {
-        try {
-            await syncUserMirrors(doc.id, doc.data() || {});
-            processed++;
-        } catch (e) {
-            errors.push({ uid: doc.id, error: String(e?.message || e) });
-            // setCustomUserClaims errors are swallowed inside syncUserMirrors;
-            // only Firestore writes can throw here.
-        }
-    }
-
-    return {
-        ok: true,
-        total: snap.size,
-        processed,
-        claimsFailed,
-        errors: errors.slice(0, 20),
-    };
 });
