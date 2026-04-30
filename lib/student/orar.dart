@@ -102,6 +102,12 @@ class _OrarScreenState extends State<OrarScreen> {
                       .doc(classId)
                       .snapshots()
                 : null;
+            final timetableStream = classId.isNotEmpty
+                ? FirebaseFirestore.instance
+                      .collection('timetables')
+                      .doc(classId)
+                      .snapshots()
+                : null;
 
             return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: classStream,
@@ -109,7 +115,14 @@ class _OrarScreenState extends State<OrarScreen> {
                 final classData =
                     classSnapshot.data?.data() ?? const <String, dynamic>{};
 
-                final scheduleRows = _buildScheduleRows(classData);
+                return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                  stream: timetableStream,
+                  builder: (context, timetableSnapshot) {
+                    final timetableData =
+                        timetableSnapshot.data?.data() ??
+                            const <String, dynamic>{};
+                    final scheduleRows =
+                        _buildScheduleRows(classData, timetableData);
                 final teacherUid = (classData['teacherUid'] ?? '')
                     .toString()
                     .trim();
@@ -212,6 +225,8 @@ class _OrarScreenState extends State<OrarScreen> {
                       ),
                     ),
                   ],
+                );
+                  },
                 );
               },
             );
@@ -2061,19 +2076,25 @@ class _ScheduleRowData {
   });
 }
 
-List<_ScheduleRowData> _buildScheduleRows(Map<String, dynamic> classData) {
+List<_ScheduleRowData> _buildScheduleRows(
+  Map<String, dynamic> classData,
+  Map<String, dynamic> timetableData,
+) {
+  const dayMap = {
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+  };
+
+  final fromTimetable = _scheduleRowsFromTimetable(timetableData, dayMap);
+  if (fromTimetable.isNotEmpty) return fromTimetable;
+
   final result = <_ScheduleRowData>[];
   final schedule = classData['schedule'];
 
   if (schedule is Map) {
-    const dayMap = {
-      1: 'Monday',
-      2: 'Tuesday',
-      3: 'Wednesday',
-      4: 'Thursday',
-      5: 'Friday',
-    };
-
     final dayKeys = <int>[];
     for (final key in schedule.keys) {
       final day = int.tryParse(key.toString());
@@ -2113,14 +2134,6 @@ List<_ScheduleRowData> _buildScheduleRows(Map<String, dynamic> classData) {
     return const [];
   }
 
-  const dayMap = {
-    1: 'Monday',
-    2: 'Tuesday',
-    3: 'Wednesday',
-    4: 'Thursday',
-    5: 'Friday',
-  };
-
   final normalizedDays = oldDays.whereType<int>().toList()..sort();
   return normalizedDays
       .where((day) => day >= 1 && day <= 5)
@@ -2132,6 +2145,75 @@ List<_ScheduleRowData> _buildScheduleRows(Map<String, dynamic> classData) {
         ),
       )
       .toList();
+}
+
+List<_ScheduleRowData> _scheduleRowsFromTimetable(
+  Map<String, dynamic> timetableData,
+  Map<int, String> dayMap,
+) {
+  final days = (timetableData['days'] as Map?)?.cast<String, dynamic>();
+  final startStr = (timetableData['startTime'] as String?)?.trim();
+  final rawSlots = (timetableData['slots'] as List?) ?? const [];
+  if (days == null || startStr == null || startStr.isEmpty || rawSlots.isEmpty) {
+    return const [];
+  }
+
+  final parts = startStr.split(':');
+  if (parts.length < 2) return const [];
+  final h = int.tryParse(parts[0]);
+  final m = int.tryParse(parts[1]);
+  if (h == null || m == null) return const [];
+  final baseMin = h * 60 + m;
+
+  final lessonStarts = <int>[];
+  final lessonEnds = <int>[];
+  var cur = baseMin;
+  for (final raw in rawSlots) {
+    if (raw is! Map) continue;
+    final slot = raw.cast<String, dynamic>();
+    final type = (slot['type'] as String?) ?? 'lesson';
+    final duration = (slot['duration'] as num?)?.toInt() ?? 0;
+    final end = cur + duration;
+    if (type == 'lesson') {
+      lessonStarts.add(cur);
+      lessonEnds.add(end);
+    }
+    cur = end;
+  }
+  if (lessonStarts.isEmpty) return const [];
+
+  final result = <_ScheduleRowData>[];
+  for (final day in const [1, 2, 3, 4, 5]) {
+    final dayData = days[day.toString()] as Map?;
+    if (dayData == null || dayData.isEmpty) continue;
+
+    int firstIdx = -1;
+    int lastIdx = -1;
+    for (var i = 0; i < lessonStarts.length; i++) {
+      final entry = dayData['$i'];
+      if (entry is Map && entry.isNotEmpty) {
+        if (firstIdx < 0) firstIdx = i;
+        lastIdx = i;
+      }
+    }
+    if (firstIdx < 0) continue;
+
+    result.add(
+      _ScheduleRowData(
+        dayName: dayMap[day] ?? 'Day $day',
+        intervalText:
+            '${_formatHHMM(lessonStarts[firstIdx])} - ${_formatHHMM(lessonEnds[lastIdx])}',
+        dayNumber: day,
+      ),
+    );
+  }
+  return result;
+}
+
+String _formatHHMM(int totalMinutes) {
+  final h = (totalMinutes ~/ 60).toString().padLeft(2, '0');
+  final m = (totalMinutes % 60).toString().padLeft(2, '0');
+  return '$h:$m';
 }
 
 class _ScheduleRow extends StatelessWidget {

@@ -40,21 +40,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
 
   String role = "student";
 
-  // schedule
-  String selectedScheduleClassId = "";
-  TimeOfDay noExitStart = const TimeOfDay(hour: 7, minute: 30);
-  TimeOfDay noExitEnd = const TimeOfDay(hour: 12, minute: 30);
-  final List<String> weekDays = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-  ];
-  late Map<String, bool> selectedDays;
-  late Map<String, Map<String, TimeOfDay>>
-  dayTimes; // {day: {start: TimeOfDay, end: TimeOfDay}}
-
   // actions
   final targetUserC = TextEditingController();
   final targetUserFullNameC = TextEditingController();
@@ -116,10 +101,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
         return 'The user could not be deleted.';
       case 'rename-user':
         return 'The user\'s name could not be updated.';
-      case 'save-schedule':
-        return 'The schedule could not be saved.';
-      case 'delete-schedule':
-        return 'The schedule could not be deleted.';
       case 'assign-parent':
         return 'The parent could not be assigned to the student.';
       case 'remove-parent':
@@ -440,36 +421,6 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
   @override
   void initState() {
     super.initState();
-    selectedDays = {
-      'Monday': true,
-      'Tuesday': true,
-      'Wednesday': true,
-      'Thursday': true,
-      'Friday': true,
-    };
-    // Initialize dayTimes for each day with default hours
-    dayTimes = {
-      'Monday': {
-        'start': const TimeOfDay(hour: 7, minute: 30),
-        'end': const TimeOfDay(hour: 13, minute: 0),
-      },
-      'Tuesday': {
-        'start': const TimeOfDay(hour: 7, minute: 30),
-        'end': const TimeOfDay(hour: 13, minute: 0),
-      },
-      'Wednesday': {
-        'start': const TimeOfDay(hour: 7, minute: 30),
-        'end': const TimeOfDay(hour: 13, minute: 0),
-      },
-      'Thursday': {
-        'start': const TimeOfDay(hour: 7, minute: 30),
-        'end': const TimeOfDay(hour: 13, minute: 0),
-      },
-      'Friday': {
-        'start': const TimeOfDay(hour: 7, minute: 30),
-        'end': const TimeOfDay(hour: 13, minute: 0),
-      },
-    };
     _ensureRecentAdminActivityDoc();
     _topSearchFocus.addListener(_handleTopSearchFocusChange);
   }

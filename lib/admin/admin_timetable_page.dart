@@ -796,12 +796,16 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
     int day,
     int lessonIdx,
     String subjectId,
-    String teacherUsername,
-  ) =>
+    String teacherUsername, {
+    required String subjectName,
+    required String teacherFullName,
+  }) =>
       _db.collection('timetables').doc(classId).update({
         'days.$day.$lessonIdx': {
           'subjectId': subjectId,
           'teacherUsername': teacherUsername,
+          'subjectName': subjectName,
+          'teacherFullName': teacherFullName,
         },
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -814,6 +818,73 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
 
   Future<void> _deleteTimetable(String classId) =>
       _db.collection('timetables').doc(classId).delete();
+
+  // One-shot migration: backfill `subjectName` and `teacherFullName` into
+  // every lesson entry across all timetables, by looking them up in the
+  // `subjects` and `users` collections. Idempotent — safe to re-run.
+  Future<int> _migrateLessonNames() async {
+    final subjectsSnap = await _db.collection('subjects').get();
+    final subjectNames = <String, String>{
+      for (final d in subjectsSnap.docs)
+        d.id: ((d.data())['name'] as String?)?.trim() ?? '',
+    };
+
+    final teachersSnap = await _db
+        .collection('users')
+        .where('role', isEqualTo: 'teacher')
+        .get();
+    final teacherFullNames = <String, String>{};
+    for (final d in teachersSnap.docs) {
+      final m = d.data();
+      final username = (m['username'] as String?) ?? d.id;
+      final fullName = (m['fullName'] as String?)?.trim() ?? '';
+      teacherFullNames[username] = fullName;
+    }
+
+    final timetablesSnap = await _db.collection('timetables').get();
+    int updatedDocs = 0;
+
+    for (final ttDoc in timetablesSnap.docs) {
+      final data = ttDoc.data();
+      final days = (data['days'] as Map<String, dynamic>?) ?? {};
+      final updates = <String, dynamic>{};
+
+      days.forEach((dayKey, dayValue) {
+        if (dayValue is! Map) return;
+        final dayMap = Map<String, dynamic>.from(dayValue);
+        dayMap.forEach((lessonIdx, lessonValue) {
+          if (lessonValue is! Map) return;
+          final lesson = Map<String, dynamic>.from(lessonValue);
+          final sid = (lesson['subjectId'] as String?) ?? '';
+          final tu = (lesson['teacherUsername'] as String?) ?? '';
+          final currentSubject =
+              (lesson['subjectName'] as String?)?.trim() ?? '';
+          final currentTeacher =
+              (lesson['teacherFullName'] as String?)?.trim() ?? '';
+          final lookedUpSubject = subjectNames[sid] ?? '';
+          final lookedUpTeacher = teacherFullNames[tu] ?? '';
+
+          if (lookedUpSubject.isNotEmpty &&
+              lookedUpSubject != currentSubject) {
+            updates['days.$dayKey.$lessonIdx.subjectName'] = lookedUpSubject;
+          }
+          if (lookedUpTeacher.isNotEmpty &&
+              lookedUpTeacher != currentTeacher) {
+            updates['days.$dayKey.$lessonIdx.teacherFullName'] =
+                lookedUpTeacher;
+          }
+        });
+      });
+
+      if (updates.isNotEmpty) {
+        updates['updatedAt'] = FieldValue.serverTimestamp();
+        await ttDoc.reference.update(updates);
+        updatedDocs++;
+      }
+    }
+
+    return updatedDocs;
+  }
 
   // Build
 
@@ -1098,6 +1169,36 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                       label: const Text('Subjects', style: TextStyle(color: Color(0xFF2848B0))),
                       style: _headerButtonStyle(),
                       onPressed: () => _showSubjectsPanel(subjectDocs),
+                    ),
+                    const SizedBox(width: 10),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.refresh, size: 15, color: Color(0xFF2848B0)),
+                      label: const Text('Sync names', style: TextStyle(color: Color(0xFF2848B0))),
+                      style: _headerButtonStyle(),
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        messenger.showSnackBar(
+                          const SnackBar(content: Text('Syncing names…')),
+                        );
+                        try {
+                          final n = await _migrateLessonNames();
+                          messenger.hideCurrentSnackBar();
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                n == 0
+                                    ? 'All timetables already up to date.'
+                                    : 'Synced $n timetable doc(s).',
+                              ),
+                            ),
+                          );
+                        } catch (e) {
+                          messenger.hideCurrentSnackBar();
+                          messenger.showSnackBar(
+                            SnackBar(content: Text('Sync failed: $e')),
+                          );
+                        }
+                      },
                     ),
                     if (_selectedClassId != null &&
                         timetableIds.contains(_selectedClassId)) ...[
@@ -2019,12 +2120,33 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                               ? null
                               : () async {
                                   Navigator.pop(ctx);
+                                  final subjDoc = subjectDocs.firstWhere(
+                                    (d) => d.id == selSubject,
+                                  );
+                                  final subjData =
+                                      subjDoc.data() as Map<String, dynamic>;
+                                  final teachDoc = teacherDocs.firstWhere(
+                                    (d) =>
+                                        ((d.data() as Map<String, dynamic>)
+                                                ['username']
+                                            as String?) ==
+                                        selTeacher,
+                                  );
+                                  final teachData =
+                                      teachDoc.data() as Map<String, dynamic>;
                                   await _assignLesson(
                                     classId,
                                     day,
                                     lessonIdx,
                                     selSubject!,
                                     selTeacher!,
+                                    subjectName:
+                                        (subjData['name'] as String?)?.trim() ??
+                                            '',
+                                    teacherFullName:
+                                        (teachData['fullName'] as String?)
+                                                ?.trim() ??
+                                            '',
                                   );
                                 },
                           child: const Text('Save'),

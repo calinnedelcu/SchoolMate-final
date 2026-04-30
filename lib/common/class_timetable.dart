@@ -55,12 +55,7 @@ class ClassTimetable extends StatelessWidget {
   }
 
   ({List<TimetableSlot> slots, List<List<TimetableLesson?>> schedule})
-  _build({
-    required Map<String, dynamic> timetableData,
-    required Map<String, String> subjectNames,
-    required Map<String, String> teacherNames,
-    required bool teachersLoaded,
-  }) {
+  _build(Map<String, dynamic> timetableData) {
     final startTime = timetableData['startTime'] as String? ?? '08:00';
     final rawSlots =
         (timetableData['slots'] as List?)?.cast<dynamic>() ?? const [];
@@ -92,11 +87,14 @@ class ClassTimetable extends StatelessWidget {
         if (entry is Map) {
           final sid = (entry['subjectId'] ?? '').toString();
           final tu = (entry['teacherUsername'] ?? '').toString();
-          if (teachersLoaded && tu.isNotEmpty && !teacherNames.containsKey(tu)) {
-            return null;
-          }
-          final subject = subjectNames[sid] ?? sid;
-          final teacher = teacherNames[tu] ?? tu;
+          final storedSubjectName =
+              (entry['subjectName'] as String?)?.trim() ?? '';
+          final storedTeacherName =
+              (entry['teacherFullName'] as String?)?.trim() ?? '';
+          final subject = storedSubjectName.isNotEmpty ? storedSubjectName : sid;
+          final teacher = storedTeacherName.isNotEmpty
+              ? _shortTeacher(storedTeacherName)
+              : tu;
           if (subject.isEmpty && teacher.isEmpty) return null;
           return TimetableLesson(
             subject,
@@ -132,50 +130,17 @@ class ClassTimetable extends StatelessWidget {
           );
         }
         final ttData = ttSnap.data!.data() ?? const <String, dynamic>{};
+        final built = _build(ttData);
 
-        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: db.collection('subjects').snapshots(),
-          builder: (context, subSnap) {
-            final subjectNames = <String, String>{
-              for (final d in subSnap.data?.docs ?? const [])
-                d.id: (d.data()['name'] as String?)?.trim() ?? d.id,
-            };
+        if (built.slots.isEmpty) {
+          return const _TimetableEmptyState(
+            message: 'Timetable structure is empty.',
+          );
+        }
 
-            return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: db.collectionGroup('publicProfile').snapshots(),
-              builder: (context, teachSnap) {
-                final teacherNames = <String, String>{};
-                for (final d in teachSnap.data?.docs ?? const []) {
-                  final m = d.data();
-                  if ((m['role'] as String?) != 'teacher') continue;
-                  final ownerUid = d.reference.parent.parent?.id ?? '';
-                  final username = (m['username'] as String?) ?? ownerUid;
-                  final fullName = (m['fullName'] as String?)?.trim() ?? '';
-                  teacherNames[username] = _shortTeacher(
-                    fullName.isEmpty ? username : fullName,
-                  );
-                }
-
-                final built = _build(
-                  timetableData: ttData,
-                  subjectNames: subjectNames,
-                  teacherNames: teacherNames,
-                  teachersLoaded: teachSnap.hasData,
-                );
-
-                if (built.slots.isEmpty) {
-                  return const _TimetableEmptyState(
-                    message: 'Timetable structure is empty.',
-                  );
-                }
-
-                return TimetableGrid(
-                  slots: built.slots,
-                  schedule: built.schedule,
-                );
-              },
-            );
-          },
+        return TimetableGrid(
+          slots: built.slots,
+          schedule: built.schedule,
         );
       },
     );
