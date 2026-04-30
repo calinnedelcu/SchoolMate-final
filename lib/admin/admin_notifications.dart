@@ -30,6 +30,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
   Future<void> _openNotificationsMenu() async {
     final buttonContext = _buttonKey.currentContext;
     if (buttonContext == null) return;
+    final cs = Theme.of(context).colorScheme;
 
     final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final button = buttonContext.findRenderObject() as RenderBox;
@@ -61,7 +62,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
           child: Builder(
             builder: (menuContext) {
               return Material(
-                color: Colors.white,
+                color: cs.surface,
                 elevation: 10,
                 borderRadius: BorderRadius.circular(16),
                 child: SizedBox(
@@ -72,12 +73,12 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Notifications',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF2848B0),
+                            color: cs.primary,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -85,16 +86,16 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF2F4F8),
+                            color: cs.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE8EAF2)),
+                            border: Border.all(color: cs.outlineVariant),
                           ),
-                          child: const Text(
+                          child: Text(
                             'First version is ready!',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF7A7E9A),
+                              color: cs.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -105,7 +106,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                             onPressed: () =>
                                 Navigator.of(menuContext).pop('all'),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF2848B0),
+                              foregroundColor: cs.primary,
                               side: const BorderSide(color: Color(0xFFB7CBDC)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
@@ -136,6 +137,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
   }
 
   Future<void> _openNotificationsDialog() async {
+    final cs = Theme.of(context).colorScheme;
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => Dialog(
@@ -144,7 +146,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 560, maxHeight: 520),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(24),
           ),
           child: Column(
@@ -155,13 +157,13 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                 padding: const EdgeInsets.fromLTRB(20, 18, 14, 12),
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Notifications',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF2848B0),
+                          color: cs.primary,
                         ),
                       ),
                     ),
@@ -195,7 +197,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                             width: 38,
                             height: 38,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF2848B0),
+                              color: cs.primary,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(
@@ -241,7 +243,7 @@ class _AdminNotificationBellState extends State<AdminNotificationBell> {
                 child: FilledButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF2848B0),
+                    backgroundColor: cs.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(

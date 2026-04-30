@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../student/widgets/maniubara.dart';
+import '../common/widgets/maniubara.dart';
 import 'parent_home_page.dart';
 import 'parent_students_page.dart';
 

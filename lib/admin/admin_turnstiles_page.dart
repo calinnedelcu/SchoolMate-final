@@ -9,7 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../core/session.dart';
-import 'services/admin_api.dart';
+import '../services/admin_api.dart';
 import 'admin_classes_page.dart' show AdminClassesPage;
 import 'admin_notifications.dart';
 import 'admin_parents_page.dart';
@@ -289,9 +289,9 @@ class _AdminTurnstilesPageState extends State<AdminTurnstilesPage> {
                   onPersonalTap: () => _replacePage(const AdminTeachersPage()),
                   onTurnichetiTap: () {},
                   onClaseTap: () =>
-                      _replacePage(const AdminClassesPage() as Widget),
+                      _replacePage(const AdminClassesPage()),
                   onVacanteTap: () =>
-                      _replacePage(const admin_vacante.AdminClassesPage()),
+                      _replacePage(const admin_vacante.AdminVacantePage()),
                   onParintiTap: () => _replacePage(const AdminParentsPage()),
                   onLogoutTap: _showLogoutDialog,
                 ),
@@ -936,6 +936,9 @@ class _GateCardState extends State<_GateCard> {
       BuildContext dialogContext,
       StateSetter setDialogState,
     ) async {
+      // Capture navigator before any async gaps so it stays valid
+      // even after the Firestore stream triggers a rebuild.
+      final nav = Navigator.of(context);
       final confirmed = await _showBlurDialog<bool>(
         context: dialogContext,
         barrierDismissible: true,
@@ -1117,14 +1120,12 @@ class _GateCardState extends State<_GateCard> {
         busy = true;
         msg = null;
       });
-      // Capture navigator before the async gap so it stays valid
-      // even after the Firestore stream triggers a rebuild.
-      final nav = Navigator.of(context);
       setState(() => _actionBusy = true);
       try {
         await _api.deleteUser(username: username);
-        nav.pop();
         if (!mounted) return;
+        nav.pop();
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Turnstile $username has been deleted.')),
         );
@@ -2359,65 +2360,6 @@ class _TrafficEntry extends StatelessWidget {
 //  _DailyScansCard
 // -----------------------------------------------------------------------
 
-class _SmallStatCard extends StatelessWidget {
-  final String label;
-  final int value;
-  final Color color;
-  final IconData icon;
-
-  const _SmallStatCard({
-    required this.label,
-    required this.value,
-    required this.color,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE8EAF2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF7A7E9A),
-                    letterSpacing: 0.4,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '$value',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _DailyScansCard extends StatelessWidget {
   final int todayCount;
   final int yesterdayCount;
@@ -2728,7 +2670,7 @@ void _showAllLogsDialog(
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                     itemCount: docs.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (_, i) {
                       final d = docs[i].data() as Map<String, dynamic>;
                       final gateUid = (d['gateUid'] ?? '').toString();

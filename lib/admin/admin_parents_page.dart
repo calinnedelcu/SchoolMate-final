@@ -5,8 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart' as xls;
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
+import '../common/state_views.dart';
 import '../core/session.dart';
-import 'services/admin_api.dart';
+import '../services/admin_api.dart';
 import 'services/admin_store.dart';
 import 'utils/admin_ui.dart';
 import 'widgets/admin_create_user_dialog.dart';
@@ -22,10 +23,23 @@ class AdminParentsPage extends StatefulWidget {
 class _AdminParentsPageState extends State<AdminParentsPage> {
   final store = AdminStore();
   final TextEditingController _searchController = TextEditingController();
-  int _currentPage = 0;
-  static const int _pageSize = 7;
   String _searchQuery = '';
   final String _sortBy = 'name';
+
+  // --- Cursor-based pagination state ---
+  // We fetch parents in chunks of [_pageSize] from Firestore, ordered by
+  // 'fullName', and use the last document of each chunk as the cursor for
+  // the next .startAfterDocument() call. This avoids loading 1000+ docs
+  // into memory on first paint and keeps Firestore reads bounded.
+  static const int _pageSize = 50;
+  final List<QueryDocumentSnapshot<Map<String, dynamic>>> _loadedDocs = [];
+  DocumentSnapshot<Map<String, dynamic>>? _cursor;
+  bool _isLoadingPage = false;
+  bool _hasMore = true;
+  bool _initialLoadDone = false;
+  Object? _loadError;
+
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -34,6 +48,8 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
       _searchQuery = widget.searchQuery!.toLowerCase();
       _searchController.text = widget.searchQuery!;
     }
+    _scrollController.addListener(_onScroll);
+    _loadNextPage();
   }
 
   @override
@@ -44,7 +60,6 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
       setState(() {
         _searchQuery = q.trim().toLowerCase();
         _searchController.text = q;
-        _currentPage = 0;
       });
     }
   }
@@ -52,11 +67,67 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  Query<Map<String, dynamic>> _baseQuery() {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'parent')
+        .orderBy('fullName')
+        .withConverter<Map<String, dynamic>>(
+          fromFirestore: (snap, _) => snap.data() ?? <String, dynamic>{},
+          toFirestore: (data, _) => data,
+        );
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 300) {
+      _loadNextPage();
+    }
+  }
+
+  Future<void> _loadNextPage() async {
+    if (_isLoadingPage || !_hasMore) return;
+    _isLoadingPage = true;
+    if (mounted) setState(() {});
+    try {
+      var q = _baseQuery().limit(_pageSize);
+      if (_cursor != null) q = q.startAfterDocument(_cursor!);
+      final snap = await q.get();
+      _loadedDocs.addAll(snap.docs);
+      if (snap.docs.length < _pageSize) {
+        _hasMore = false;
+      } else {
+        _cursor = snap.docs.last;
+      }
+      _loadError = null;
+    } catch (e) {
+      _loadError = e;
+    } finally {
+      _isLoadingPage = false;
+      _initialLoadDone = true;
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _refresh() async {
+    _loadedDocs.clear();
+    _cursor = null;
+    _hasMore = true;
+    _initialLoadDone = false;
+    _loadError = null;
+    if (mounted) setState(() {});
+    await _loadNextPage();
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (!AppSession.isAdmin) {
       return const Scaffold(
         body: Center(child: Text("Access denied (admin only)")),
@@ -64,19 +135,19 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: cs.surfaceContainerHighest,
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            _buildParentStats(),
+            _buildParentStats(context),
             const SizedBox(height: 16),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cs.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE8EAF2), width: 1),
+                  border: Border.all(color: cs.outlineVariant, width: 1),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.04),
@@ -93,7 +164,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Column(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -101,49 +172,53 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
-                                  color: Colors.black,
+                                  color: cs.onSurface,
                                 ),
                               ),
-                              SizedBox(height: 2),
+                              const SizedBox(height: 2),
                               Text(
                                 'Invite new parents, link children, revoke access',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Color(0xFF7A7E9A),
+                                  color: cs.onSurfaceVariant,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
                           ),
-                          const Spacer(),
-                          SizedBox(
-                            width: 260,
-                            height: 40,
-                            child: TextField(
-                              controller: _searchController,
-                              onChanged: (val) => setState(() {
-                                _searchQuery = val.trim().toLowerCase();
-                                _currentPage = 0;
-                              }),
-                              decoration: InputDecoration(
-                                hintText: 'Search...',
-                                hintStyle: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFFB0B8C8),
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.search_rounded,
-                                  size: 18,
-                                  color: Color(0xFFB0B8C8),
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFFF2F4F8),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 0,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide.none,
+                          const SizedBox(width: 16),
+                          Flexible(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 260),
+                              child: SizedBox(
+                                height: 40,
+                                child: TextField(
+                                  controller: _searchController,
+                                  onChanged: (val) => setState(() {
+                                    _searchQuery = val.trim().toLowerCase();
+                                  }),
+                                  decoration: InputDecoration(
+                                    hintText: 'Search...',
+                                    hintStyle: const TextStyle(
+                                      fontSize: 13,
+                                      color: Color(0xFFB0B8C8),
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.search_rounded,
+                                      size: 18,
+                                      color: Color(0xFFB0B8C8),
+                                    ),
+                                    filled: true,
+                                    fillColor: cs.surfaceContainerHighest,
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                      vertical: 0,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -155,7 +230,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                               lockedRole: 'parent',
                             ),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF2848B0),
+                              foregroundColor: cs.primary,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 12,
@@ -173,7 +248,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                    Divider(height: 1, color: cs.outlineVariant),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(32, 14, 32, 14),
                       child: Row(
@@ -185,29 +260,26 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                         ],
                       ),
                     ),
-                    const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                    Divider(height: 1, color: cs.outlineVariant),
                     Expanded(
-                      child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('users')
-                            .where('role', isEqualTo: 'parent')
-                            .snapshots(),
-                        builder: (context, snap) {
-                          if (snap.hasError) {
-                            return Center(
-                              child: SelectableText("Error:\n${snap.error}"),
+                      child: Builder(
+                        builder: (context) {
+                          if (_loadError != null && _loadedDocs.isEmpty) {
+                            return ErrorRetryView(
+                              message: _loadError.toString(),
+                              onRetry: _refresh,
                             );
                           }
-                          if (!snap.hasData) {
+                          if (!_initialLoadDone && _loadedDocs.isEmpty) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           }
 
-                          final docs = [...snap.data!.docs];
+                          final docs = [..._loadedDocs];
                           docs.sort((a, b) {
-                            final ad = a.data() as Map;
-                            final bd = b.data() as Map;
+                            final ad = a.data();
+                            final bd = b.data();
                             if (_sortBy == 'children') {
                               final ac = (ad['children'] as List?)?.length ?? 0;
                               final bc = (bd['children'] as List?)?.length ?? 0;
@@ -227,7 +299,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                           final filtered = _searchQuery.isEmpty
                               ? docs
                               : docs.where((d) {
-                                  final data = d.data() as Map;
+                                  final data = d.data();
                                   final name = (data['fullName'] ?? '')
                                       .toString()
                                       .toLowerCase();
@@ -244,35 +316,71 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                 _searchQuery.isEmpty
                                     ? 'No parents found'
                                     : 'No results for "$_searchQuery"',
-                                style: const TextStyle(
-                                  color: Color(0xFF7A7E9A),
+                                style: TextStyle(
+                                  color: cs.onSurfaceVariant,
                                   fontSize: 14,
                                 ),
                               ),
                             );
                           }
 
-                          final visibleDocs = filtered
-                              .skip(_currentPage * _pageSize)
-                              .take(_pageSize)
-                              .toList();
-                          final totalPages = (filtered.length / _pageSize)
-                              .ceil();
+                          final visibleDocs = filtered;
+                          // Footer slots: loading indicator while fetching the
+                          // next page, or an "end of list" hint when exhausted.
+                          final showLoadingFooter = _isLoadingPage;
+                          final showEndFooter =
+                              !_hasMore &&
+                              _searchQuery.isEmpty &&
+                              visibleDocs.isNotEmpty;
+                          final extraFooter =
+                              (showLoadingFooter || showEndFooter) ? 1 : 0;
 
-                          return Column(
-                            children: [
-                              Expanded(
-                                child: ListView.separated(
-                                  padding: EdgeInsets.zero,
-                                  itemCount: visibleDocs.length,
-                                  separatorBuilder: (_, _) => const Divider(
-                                    height: 1,
-                                    color: Color(0xFFE8EAF2),
-                                  ),
-                                  itemBuilder: (_, i) {
-                                    final d = visibleDocs[i];
-                                    final data =
-                                        d.data() as Map<String, dynamic>;
+                          return RefreshIndicator(
+                            onRefresh: _refresh,
+                            child: ListView.separated(
+                              controller: _scrollController,
+                              padding: EdgeInsets.zero,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemCount: visibleDocs.length + extraFooter,
+                              separatorBuilder: (_, _) => Divider(
+                                height: 1,
+                                color: cs.outlineVariant,
+                              ),
+                              itemBuilder: (_, i) {
+                                if (i >= visibleDocs.length) {
+                                  if (showLoadingFooter) {
+                                    return const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 18,
+                                      ),
+                                      child: Center(
+                                        child: SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'No more parents',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF8FABC1),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                final d = visibleDocs[i];
+                                final data = d.data();
                                     final uid = d.id;
                                     final username = (data['username'] ?? uid)
                                         .toString();
@@ -338,10 +446,8 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                         avatarColor(fullName),
                                                     child: Text(
                                                       initials(fullName),
-                                                      style: const TextStyle(
-                                                        color: Color(
-                                                          0xFF1A2050,
-                                                        ),
+                                                      style: TextStyle(
+                                                        color: cs.onSurface,
                                                         fontWeight:
                                                             FontWeight.w800,
                                                         fontSize: 13,
@@ -403,11 +509,9 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                       phone.length > 18
                                                           ? '${phone.substring(0, 16)}...'
                                                           : phone,
-                                                      style: const TextStyle(
+                                                      style: TextStyle(
                                                         fontSize: 12,
-                                                        color: Color(
-                                                          0xFF7A7E9A,
-                                                        ),
+                                                        color: cs.onSurfaceVariant,
                                                       ),
                                                     ),
                                                 ],
@@ -503,49 +607,8 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                         ),
                                       ),
                                     );
-                                  },
-                                ),
-                              ),
-                              if (totalPages > 1)
-                                Container(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    40,
-                                    14,
-                                    40,
-                                    14,
-                                  ),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF2F4F8),
-                                    border: Border(
-                                      top: BorderSide(color: Color(0xFFE8EAF2)),
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(20),
-                                      bottomRight: Radius.circular(20),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      _PaginationButton(
-                                        icon: Icons.chevron_left_rounded,
-                                        enabled: _currentPage > 0,
-                                        onTap: () =>
-                                            setState(() => _currentPage--),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      ..._buildPageButtons(totalPages),
-                                      const SizedBox(width: 4),
-                                      _PaginationButton(
-                                        icon: Icons.chevron_right_rounded,
-                                        enabled: _currentPage < totalPages - 1,
-                                        onTap: () =>
-                                            setState(() => _currentPage++),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
+                              },
+                            ),
                           );
                         },
                       ),
@@ -572,7 +635,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
     );
   }
 
-  Widget _buildParentStats() {
+  Widget _buildParentStats(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('users')
@@ -601,9 +664,10 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
           children: [
             Expanded(
               child: _statCard(
+                context: context,
                 icon: Icons.people_rounded,
                 iconBg: const Color(0xFFEEF1FB),
-                iconColor: const Color(0xFF2848B0),
+                iconColor: Theme.of(context).colorScheme.primary,
                 label: 'TOTAL PARENTS',
                 value: loaded ? '$total' : '—',
                 subtitle: 'Registered this year',
@@ -612,6 +676,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
             const SizedBox(width: 14),
             Expanded(
               child: _statCard(
+                context: context,
                 icon: Icons.family_restroom_rounded,
                 iconBg: const Color(0xFFEDF7F0),
                 iconColor: const Color(0xFF2E8B57),
@@ -625,6 +690,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
             const SizedBox(width: 14),
             Expanded(
               child: _statCard(
+                context: context,
                 icon: Icons.warning_amber_rounded,
                 iconBg: const Color(0xFFFFF8E8),
                 iconColor: const Color(0xFFF5A623),
@@ -636,6 +702,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
             const SizedBox(width: 14),
             Expanded(
               child: _statCard(
+                context: context,
                 icon: Icons.verified_user_rounded,
                 iconBg: const Color(0xFFF3EDFB),
                 iconColor: const Color(0xFF7B4FCC),
@@ -653,6 +720,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
   }
 
   Widget _statCard({
+    required BuildContext context,
     required IconData icon,
     required Color iconBg,
     required Color iconColor,
@@ -660,15 +728,16 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
     required String value,
     required String subtitle,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8EAF2)),
+        border: Border.all(color: cs.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2848B0).withValues(alpha: 0.05),
+            color: cs.primary.withValues(alpha: 0.05),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -739,6 +808,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
     required String? email,
     required List<String> childrenIds,
   }) async {
+    final cs = Theme.of(context).colorScheme;
     final addChildC = TextEditingController();
     final renameC = TextEditingController(text: fullName);
 
@@ -800,7 +870,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ── HEADER ──────────────────────────────────────────────
+                      // HEADER
                       Container(
                         padding: const EdgeInsets.fromLTRB(32, 22, 36, 22),
                         decoration: BoxDecoration(
@@ -817,19 +887,19 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                         ),
                         child: Row(
                           children: [
-                            const Text(
+                            Text(
                               'User Settings',
                               style: TextStyle(
                                 fontSize: 27,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF2848B0),
+                                color: cs.primary,
                               ),
                             ),
                             const Spacer(),
                             TextButton(
                               onPressed: busy ? null : () => Navigator.pop(ctx),
                               style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFF7A7E9A),
+                                foregroundColor: cs.onSurfaceVariant,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20,
                                   vertical: 14,
@@ -888,7 +958,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                       if (ctx.mounted) Navigator.pop(ctx);
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2848B0),
+                                backgroundColor: cs.primary,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(
@@ -910,7 +980,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                           ],
                         ),
                       ),
-                      // ── SCROLLABLE BODY ──────────────────────────────────────
+                      // SCROLLABLE BODY
                       Flexible(
                         child: SingleChildScrollView(
                           padding: const EdgeInsets.fromLTRB(32, 36, 16, 24),
@@ -944,7 +1014,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                 decoration: BoxDecoration(
                                                   color: msgIsError
                                                       ? const Color(0xFFF0D0D8)
-                                                      : const Color(0xFFE8EAF2),
+                                                      : cs.outlineVariant,
                                                   borderRadius:
                                                       BorderRadius.circular(10),
                                                   border: Border.all(
@@ -952,9 +1022,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                         ? const Color(
                                                             0xFFB03040,
                                                           )
-                                                        : const Color(
-                                                            0xFF2848B0,
-                                                          ),
+                                                        : cs.primary,
                                                   ),
                                                 ),
                                                 child: Row(
@@ -985,9 +1053,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                               ? const Color(
                                                                   0xFFB71C1C,
                                                                 )
-                                                              : const Color(
-                                                                  0xFF2848B0,
-                                                                ),
+                                                              : cs.primary,
                                                         ),
                                                       ),
                                                     ),
@@ -1000,12 +1066,12 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                           // title + badge
                                           Row(
                                             children: [
-                                              const Text(
+                                              Text(
                                                 'Parent Details',
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w800,
-                                                  color: Color(0xFF2848B0),
+                                                  color: cs.primary,
                                                 ),
                                               ),
                                               const Spacer(),
@@ -1017,7 +1083,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: onboardingComplete
-                                                      ? const Color(0xFFE8EAF2)
+                                                      ? cs.outlineVariant
                                                       : const Color(0xFFF0D0D8),
                                                   border: Border.all(
                                                     color: onboardingComplete
@@ -1081,13 +1147,13 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                           ),
                                           const SizedBox(height: 20),
                                           // FULL NAME
-                                          const Text(
+                                          Text(
                                             'FULL NAME',
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF2848B0),
+                                              color: cs.primary,
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -1099,7 +1165,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                             ),
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFE8EAF2),
+                                              color: cs.outlineVariant,
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -1182,16 +1248,14 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
-                                                    const Text(
+                                                    Text(
                                                       'USERNAME',
                                                       style: TextStyle(
                                                         fontSize: 11,
                                                         fontWeight:
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
-                                                        color: Color(
-                                                          0xFF2848B0,
-                                                        ),
+                                                        color: cs.primary,
                                                       ),
                                                     ),
                                                     const SizedBox(height: 6),
@@ -1204,9 +1268,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                             vertical: 12,
                                                           ),
                                                       decoration: BoxDecoration(
-                                                        color: const Color(
-                                                          0xFFF2F4F8,
-                                                        ),
+                                                        color: cs.surfaceContainerHighest,
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                               10,
@@ -1214,11 +1276,9 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                       ),
                                                       child: Text(
                                                         username,
-                                                        style: const TextStyle(
+                                                        style: TextStyle(
                                                           fontSize: 16,
-                                                          color: Color(
-                                                            0xFF1A2050,
-                                                          ),
+                                                          color: cs.onSurface,
                                                         ),
                                                       ),
                                                     ),
@@ -1231,16 +1291,14 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
-                                                    const Text(
+                                                    Text(
                                                       'EMAIL',
                                                       style: TextStyle(
                                                         fontSize: 11,
                                                         fontWeight:
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
-                                                        color: Color(
-                                                          0xFF2848B0,
-                                                        ),
+                                                        color: cs.primary,
                                                       ),
                                                     ),
                                                     const SizedBox(height: 6),
@@ -1253,9 +1311,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                             vertical: 12,
                                                           ),
                                                       decoration: BoxDecoration(
-                                                        color: const Color(
-                                                          0xFFF2F4F8,
-                                                        ),
+                                                        color: cs.surfaceContainerHighest,
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                               10,
@@ -1263,11 +1319,9 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                       ),
                                                       child: Text(
                                                         email ?? '-',
-                                                        style: const TextStyle(
+                                                        style: TextStyle(
                                                           fontSize: 16,
-                                                          color: Color(
-                                                            0xFF1A2050,
-                                                          ),
+                                                          color: cs.onSurface,
                                                         ),
                                                       ),
                                                     ),
@@ -1278,13 +1332,13 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                           ),
                                           const SizedBox(height: 16),
                                           // REGISTERED CHILDREN
-                                          const Text(
+                                          Text(
                                             'REGISTERED CHILDREN',
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF2848B0),
+                                              color: cs.primary,
                                             ),
                                           ),
                                           const SizedBox(height: 6),
@@ -1564,14 +1618,12 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                 labelFor(
                                                                   childUid,
                                                                 ),
-                                                                style: const TextStyle(
+                                                                style: TextStyle(
                                                                   fontSize: 15,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w700,
-                                                                  color: Color(
-                                                                    0xFF2848B0,
-                                                                  ),
+                                                                  color: cs.primary,
                                                                 ),
                                                               ),
                                                               const SizedBox(
@@ -1583,12 +1635,10 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                     : () => removeChild(
                                                                         childUid,
                                                                       ),
-                                                                child: const Icon(
+                                                                child: Icon(
                                                                   Icons.close,
                                                                   size: 17,
-                                                                  color: Color(
-                                                                    0xFF2848B0,
-                                                                  ),
+                                                                  color: cs.primary,
                                                                 ),
                                                               ),
                                                             ],
@@ -1606,9 +1656,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                           horizontal: 12,
                                                         ),
                                                     decoration: BoxDecoration(
-                                                      color: const Color(
-                                                        0xFFE8EAF2,
-                                                      ),
+                                                      color: cs.outlineVariant,
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                             12,
@@ -1691,17 +1739,13 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                             maxHeight: 140,
                                                           ),
                                                       decoration: BoxDecoration(
-                                                        color: const Color(
-                                                          0xFFF2F4F8,
-                                                        ),
+                                                        color: cs.surfaceContainerHighest,
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                               10,
                                                             ),
                                                         border: Border.all(
-                                                          color: const Color(
-                                                            0xFFE8EAF2,
-                                                          ),
+                                                          color: cs.outlineVariant,
                                                         ),
                                                       ),
                                                       child: ListView.separated(
@@ -1747,15 +1791,13 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                   Expanded(
                                                                     child: Text(
                                                                       '${student['fullName']} (${student['username']})',
-                                                                      style: const TextStyle(
+                                                                      style: TextStyle(
                                                                         fontSize:
                                                                             14,
                                                                         fontWeight:
                                                                             FontWeight
                                                                                 .w600,
-                                                                        color: Color(
-                                                                          0xFF2848B0,
-                                                                        ),
+                                                                        color: cs.primary,
                                                                       ),
                                                                     ),
                                                                   ),
@@ -1769,9 +1811,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                     ),
                                                                     decoration:
                                                                         BoxDecoration(
-                                                                      color: const Color(
-                                                                        0xFFE8EAF2,
-                                                                      ),
+                                                                      color: cs.outlineVariant,
                                                                       borderRadius:
                                                                           BorderRadius
                                                                               .circular(
@@ -1780,15 +1820,13 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                     ),
                                                                     child: Text(
                                                                       '${student['parentsCount'] ?? '0'}/2 parents',
-                                                                      style: const TextStyle(
+                                                                      style: TextStyle(
                                                                         fontSize:
                                                                             11,
                                                                         fontWeight:
                                                                             FontWeight
                                                                                 .w700,
-                                                                        color: Color(
-                                                                          0xFF7A7E9A,
-                                                                        ),
+                                                                        color: cs.onSurfaceVariant,
                                                                       ),
                                                                     ),
                                                                   ),
@@ -1820,8 +1858,8 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                         ),
                                         child: Text(
                                           initials(currentFullName),
-                                          style: const TextStyle(
-                                            color: Color(0xFF1A2050),
+                                          style: TextStyle(
+                                            color: cs.onSurface,
                                             fontWeight: FontWeight.w800,
                                             fontSize: 32,
                                           ),
@@ -1943,9 +1981,9 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                 ),
                               ),
                               const SizedBox(height: 44),
-                              const Divider(
+                              Divider(
                                 height: 1,
-                                color: Color(0xFFE8EAF2),
+                                color: cs.outlineVariant,
                               ),
                               const SizedBox(height: 28),
                               // Delete button
@@ -2177,7 +2215,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                           width:
                                                                               14,
                                                                         ),
-                                                                        const Expanded(
+                                                                        Expanded(
                                                                           child: Column(
                                                                             crossAxisAlignment:
                                                                                 CrossAxisAlignment.start,
@@ -2187,12 +2225,10 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                                 style: TextStyle(
                                                                                   fontSize: 24,
                                                                                   fontWeight: FontWeight.w800,
-                                                                                  color: Color(
-                                                                                    0xFF2848B0,
-                                                                                  ),
+                                                                                  color: cs.primary,
                                                                                 ),
                                                                               ),
-                                                                              SizedBox(
+                                                                              const SizedBox(
                                                                                 height: 6,
                                                                               ),
                                                                               Text(
@@ -2200,9 +2236,7 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                                 style: TextStyle(
                                                                                   fontSize: 13,
                                                                                   height: 1.4,
-                                                                                  color: Color(
-                                                                                    0xFF7A7E9A,
-                                                                                  ),
+                                                                                  color: cs.onSurfaceVariant,
                                                                                 ),
                                                                               ),
                                                                             ],
@@ -2222,32 +2256,26 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                             16,
                                                                           ),
                                                                       decoration: BoxDecoration(
-                                                                        color: const Color(
-                                                                          0xFFF2F4F8,
-                                                                        ),
+                                                                        color: cs.surfaceContainerHighest,
                                                                         borderRadius:
                                                                             BorderRadius.circular(
                                                                               18,
                                                                             ),
                                                                         border: Border.all(
-                                                                          color: const Color(
-                                                                            0xFFE8EAF2,
-                                                                          ),
+                                                                          color: cs.outlineVariant,
                                                                         ),
                                                                       ),
                                                                       child: Column(
                                                                         crossAxisAlignment:
                                                                             CrossAxisAlignment.start,
                                                                         children: [
-                                                                          const Text(
+                                                                          Text(
                                                                             'Selected parent',
                                                                             style: TextStyle(
                                                                               fontSize: 11,
                                                                               fontWeight: FontWeight.w700,
                                                                               letterSpacing: 1,
-                                                                              color: Color(
-                                                                                0xFF7A7E9A,
-                                                                              ),
+                                                                              color: cs.onSurfaceVariant,
                                                                             ),
                                                                           ),
                                                                           const SizedBox(
@@ -2284,11 +2312,9 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                           ),
                                                                           Text(
                                                                             username,
-                                                                            style: const TextStyle(
+                                                                            style: TextStyle(
                                                                               fontSize: 12,
-                                                                              color: Color(
-                                                                                0xFF7A7E9A,
-                                                                              ),
+                                                                              color: cs.onSurfaceVariant,
                                                                               height: 1.4,
                                                                             ),
                                                                           ),
@@ -2313,10 +2339,8 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                               padding: const EdgeInsets.symmetric(
                                                                                 vertical: 16,
                                                                               ),
-                                                                              side: const BorderSide(
-                                                                                color: Color(
-                                                                                  0xFFE8EAF2,
-                                                                                ),
+                                                                              side: BorderSide(
+                                                                                color: cs.outlineVariant,
                                                                               ),
                                                                               shape: RoundedRectangleBorder(
                                                                                 borderRadius: BorderRadius.circular(
@@ -2412,119 +2436,6 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
 
     addChildC.dispose();
     renameC.dispose();
-  }
-
-  List<Widget> _buildPageButtons(int totalPages) {
-    final pages = <Widget>[];
-    const maxVisible = 5;
-
-    void addPage(int index) {
-      pages.add(
-        GestureDetector(
-          onTap: () => setState(() => _currentPage = index),
-          child: Container(
-            width: 36,
-            height: 36,
-            margin: const EdgeInsets.symmetric(horizontal: 2),
-            decoration: BoxDecoration(
-              color: _currentPage == index
-                  ? const Color(0xFF1A2050)
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: _currentPage == index
-                    ? const Color(0xFF1A2050)
-                    : const Color(0xFFE8EAF2),
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              '${index + 1}',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: _currentPage == index
-                    ? Colors.white
-                    : const Color(0xFF1A2050),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    void addEllipsis() {
-      pages.add(
-        Container(
-          width: 36,
-          height: 36,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          alignment: Alignment.center,
-          child: const Text(
-            '...',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF7A7E9A),
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (totalPages <= maxVisible) {
-      for (int i = 0; i < totalPages; i++) {
-        addPage(i);
-      }
-    } else {
-      addPage(0);
-      if (_currentPage > 2) addEllipsis();
-      final start = (_currentPage - 1).clamp(1, totalPages - 2);
-      final end = (_currentPage + 1).clamp(1, totalPages - 2);
-      for (int i = start; i <= end; i++) {
-        addPage(i);
-      }
-      if (_currentPage < totalPages - 3) addEllipsis();
-      addPage(totalPages - 1);
-    }
-
-    return pages;
-  }
-}
-
-class _PaginationButton extends StatelessWidget {
-  const _PaginationButton({
-    required this.icon,
-    required this.enabled,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: enabled ? const Color(0xFFE8EAF2) : const Color(0xFFE8EAF2),
-          ),
-        ),
-        alignment: Alignment.center,
-        child: Icon(
-          icon,
-          size: 20,
-          color: enabled ? const Color(0xFF1A2050) : const Color(0xFFC0C4D8),
-        ),
-      ),
-    );
   }
 }
 

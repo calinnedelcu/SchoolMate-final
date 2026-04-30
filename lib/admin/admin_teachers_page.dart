@@ -5,11 +5,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart' as xls;
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
+import '../common/state_views.dart';
 import '../core/session.dart';
-import 'services/admin_api.dart';
+import '../services/admin_api.dart';
 import 'services/admin_store.dart';
 import 'utils/admin_ui.dart';
 import 'widgets/admin_create_user_dialog.dart';
+
+/// Snapshot of the counts shown in the teacher stats panel. Filled by a
+/// small set of Firestore count() aggregate queries.
+class _TeacherStats {
+  const _TeacherStats({
+    required this.total,
+    required this.configured,
+    required this.withClass,
+    required this.notConfigured,
+  });
+  final int total;
+  final int configured;
+  final int withClass;
+  final int notConfigured;
+}
 
 class AdminTeachersPage extends StatefulWidget {
   const AdminTeachersPage({super.key, this.searchQuery});
@@ -21,10 +37,28 @@ class AdminTeachersPage extends StatefulWidget {
 
 class _AdminTeachersPageState extends State<AdminTeachersPage> {
   final store = AdminStore();
-  int _currentPage = 0;
-  static const int _pageSize = 7;
   String _searchQuery = '';
-  String _sortBy = 'name';
+  final String _sortBy = 'name';
+
+  // --- Cursor-based pagination state ---
+  // Loads teachers in chunks of [_pageSize] ordered by 'fullName' and uses
+  // .startAfterDocument() to fetch the next chunk, keeping memory and
+  // Firestore reads bounded.
+  static const int _pageSize = 50;
+  final List<QueryDocumentSnapshot<Map<String, dynamic>>> _loadedDocs = [];
+  DocumentSnapshot<Map<String, dynamic>>? _cursor;
+  bool _isLoadingPage = false;
+  bool _hasMore = true;
+  bool _initialLoadDone = false;
+  Object? _loadError;
+
+  // --- Stats panel state ---
+  // The header stats are computed via Firestore count() aggregates so the
+  // server returns counts without transferring documents. _statsFuture is
+  // recomputed in [_refresh] (and on first build via [initState]).
+  Future<_TeacherStats>? _statsFuture;
+
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -32,6 +66,41 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
       _searchQuery = widget.searchQuery!.trim().toLowerCase();
     }
+    _scrollController.addListener(_onScroll);
+    _statsFuture = _loadTeacherStats();
+    _loadNextPage();
+  }
+
+  Future<_TeacherStats> _loadTeacherStats() async {
+    final teachersBase = FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'teacher');
+
+    final totalAgg = await teachersBase.count().get();
+    final total = totalAgg.count ?? 0;
+
+    final configuredAgg = await teachersBase
+        .where('onboardingComplete', isEqualTo: true)
+        .count()
+        .get();
+    final configured = configuredAgg.count ?? 0;
+
+    // `isGreaterThan: ''` matches non-empty strings and excludes both missing
+    // fields and empty strings without needing a separate index beyond the
+    // composite (role asc, classId asc) Firestore creates on
+    // demand if missing.
+    final withClassAgg = await teachersBase
+        .where('classId', isGreaterThan: '')
+        .count()
+        .get();
+    final withClass = withClassAgg.count ?? 0;
+
+    return _TeacherStats(
+      total: total,
+      configured: configured,
+      withClass: withClass,
+      notConfigured: total - configured,
+    );
   }
 
   @override
@@ -41,13 +110,74 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     if (q != (old.searchQuery ?? '')) {
       setState(() {
         _searchQuery = q.trim().toLowerCase();
-        _currentPage = 0;
       });
     }
   }
 
   @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Query<Map<String, dynamic>> _baseQuery() {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'teacher')
+        .orderBy('fullName')
+        .withConverter<Map<String, dynamic>>(
+          fromFirestore: (snap, _) => snap.data() ?? <String, dynamic>{},
+          toFirestore: (data, _) => data,
+        );
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 300) {
+      _loadNextPage();
+    }
+  }
+
+  Future<void> _loadNextPage() async {
+    if (_isLoadingPage || !_hasMore) return;
+    _isLoadingPage = true;
+    if (mounted) setState(() {});
+    try {
+      var q = _baseQuery().limit(_pageSize);
+      if (_cursor != null) q = q.startAfterDocument(_cursor!);
+      final snap = await q.get();
+      _loadedDocs.addAll(snap.docs);
+      if (snap.docs.length < _pageSize) {
+        _hasMore = false;
+      } else {
+        _cursor = snap.docs.last;
+      }
+      _loadError = null;
+    } catch (e) {
+      _loadError = e;
+    } finally {
+      _isLoadingPage = false;
+      _initialLoadDone = true;
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _refresh() async {
+    _loadedDocs.clear();
+    _cursor = null;
+    _hasMore = true;
+    _initialLoadDone = false;
+    _loadError = null;
+    _statsFuture = _loadTeacherStats();
+    if (mounted) setState(() {});
+    await _loadNextPage();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (!AppSession.isAdmin) {
       return const Scaffold(
         body: Center(child: Text("Access denied (admin only)")),
@@ -55,20 +185,20 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: cs.surfaceContainerHighest,
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTeacherStats(),
+            _buildTeacherStats(context),
             const SizedBox(height: 16),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cs.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE8EAF2), width: 1),
+                  border: Border.all(color: cs.outlineVariant, width: 1),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.04),
@@ -85,7 +215,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Column(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -93,48 +223,52 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
-                                  color: Colors.black,
+                                  color: cs.onSurface,
                                 ),
                               ),
-                              SizedBox(height: 2),
+                              const SizedBox(height: 2),
                               Text(
                                 'Manage teacher accounts, classes and contact details.',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Color(0xFF7A7E9A),
+                                  color: cs.onSurfaceVariant,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
                           ),
-                          const Spacer(),
-                          SizedBox(
-                            width: 260,
-                            height: 40,
-                            child: TextField(
-                              onChanged: (v) => setState(() {
-                                _searchQuery = v.trim().toLowerCase();
-                                _currentPage = 0;
-                              }),
-                              decoration: InputDecoration(
-                                hintText: 'Search...',
-                                hintStyle: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFFB0B8C8),
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.search_rounded,
-                                  size: 18,
-                                  color: Color(0xFFB0B8C8),
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFFF2F4F8),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 0,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide.none,
+                          const SizedBox(width: 16),
+                          Flexible(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 260),
+                              child: SizedBox(
+                                height: 40,
+                                child: TextField(
+                                  onChanged: (v) => setState(() {
+                                    _searchQuery = v.trim().toLowerCase();
+                                  }),
+                                  decoration: InputDecoration(
+                                    hintText: 'Search...',
+                                    hintStyle: const TextStyle(
+                                      fontSize: 13,
+                                      color: Color(0xFFB0B8C8),
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.search_rounded,
+                                      size: 18,
+                                      color: Color(0xFFB0B8C8),
+                                    ),
+                                    filled: true,
+                                    fillColor: cs.surfaceContainerHighest,
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                      vertical: 0,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -146,7 +280,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                               lockedRole: 'teacher',
                             ),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF2848B0),
+                              foregroundColor: cs.primary,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 12,
@@ -164,7 +298,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                    Divider(height: 1, color: cs.outlineVariant),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(32, 14, 32, 14),
                       child: Row(
@@ -185,29 +319,26 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                         ],
                       ),
                     ),
-                    const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                    Divider(height: 1, color: cs.outlineVariant),
                     Expanded(
-                      child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('users')
-                            .where('role', isEqualTo: 'teacher')
-                            .snapshots(),
-                        builder: (context, snap) {
-                          if (snap.hasError) {
-                            return Center(
-                              child: SelectableText("Error:\n${snap.error}"),
+                      child: Builder(
+                        builder: (context) {
+                          if (_loadError != null && _loadedDocs.isEmpty) {
+                            return ErrorRetryView(
+                              message: _loadError.toString(),
+                              onRetry: _refresh,
                             );
                           }
-                          if (!snap.hasData) {
+                          if (!_initialLoadDone && _loadedDocs.isEmpty) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           }
 
-                          final docs = [...snap.data!.docs];
+                          final docs = [..._loadedDocs];
                           docs.sort((a, b) {
-                            final ad = a.data() as Map;
-                            final bd = b.data() as Map;
+                            final ad = a.data();
+                            final bd = b.data();
                             if (_sortBy == 'class') {
                               final ac = (ad['classId'] ?? '')
                                   .toString()
@@ -231,7 +362,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                           final filtered = _searchQuery.isEmpty
                               ? docs
                               : docs.where((d) {
-                                  final data = d.data() as Map;
+                                  final data = d.data();
                                   final name = (data['fullName'] ?? '')
                                       .toString()
                                       .toLowerCase();
@@ -252,35 +383,72 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                 _searchQuery.isEmpty
                                     ? 'No homeroom teachers'
                                     : 'No results for "$_searchQuery"',
-                                style: const TextStyle(
-                                  color: Color(0xFF7A7E9A),
+                                style: TextStyle(
+                                  color: cs.onSurfaceVariant,
                                   fontSize: 14,
                                 ),
                               ),
                             );
                           }
 
-                          final visibleDocs = filtered
-                              .skip(_currentPage * _pageSize)
-                              .take(_pageSize)
-                              .toList();
-                          final totalPages = (filtered.length / _pageSize)
-                              .ceil();
+                          final visibleDocs = filtered;
+                          // Footer slots: loading indicator while fetching the
+                          // next page, or an "end of list" hint when exhausted.
+                          final showLoadingFooter = _isLoadingPage;
+                          final showEndFooter =
+                              !_hasMore &&
+                              _searchQuery.isEmpty &&
+                              visibleDocs.isNotEmpty;
+                          final extraFooter =
+                              (showLoadingFooter || showEndFooter) ? 1 : 0;
 
-                          return Column(
-                            children: [
-                              Expanded(
-                                child: ListView.separated(
-                                  padding: EdgeInsets.zero,
-                                  itemCount: visibleDocs.length,
-                                  separatorBuilder: (_, __) => const Divider(
-                                    height: 1,
-                                    color: Color(0xFFE8EAF2),
-                                  ),
-                                  itemBuilder: (_, i) {
-                                    final d = visibleDocs[i];
-                                    final data =
-                                        d.data() as Map<String, dynamic>;
+                          return RefreshIndicator(
+                            onRefresh: _refresh,
+                            child: ListView.separated(
+                              controller: _scrollController,
+                              padding: EdgeInsets.zero,
+                              physics:
+                                  const AlwaysScrollableScrollPhysics(),
+                              itemCount: visibleDocs.length + extraFooter,
+                              separatorBuilder: (_, _) => Divider(
+                                height: 1,
+                                color: cs.outlineVariant,
+                              ),
+                              itemBuilder: (_, i) {
+                                if (i >= visibleDocs.length) {
+                                  if (showLoadingFooter) {
+                                    return const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 18,
+                                      ),
+                                      child: Center(
+                                        child: SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'No more teachers',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF8FABC1),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                final d = visibleDocs[i];
+                                final data = d.data();
                                     final uid = d.id;
                                     final username = (data['username'] ?? uid)
                                         .toString();
@@ -336,10 +504,8 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                         avatarColor(fullName),
                                                     child: Text(
                                                       initials(fullName),
-                                                      style: const TextStyle(
-                                                        color: Color(
-                                                          0xFF1A2050,
-                                                        ),
+                                                      style: TextStyle(
+                                                        color: cs.onSurface,
                                                         fontWeight:
                                                             FontWeight.w800,
                                                         fontSize: 13,
@@ -369,11 +535,9 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                         Text(
                                                           'Username: $username',
                                                           style:
-                                                              const TextStyle(
+                                                              TextStyle(
                                                                 fontSize: 12,
-                                                                color: Color(
-                                                                  0xFF7A7E9A,
-                                                                ),
+                                                                color: cs.onSurfaceVariant,
                                                               ),
                                                         ),
                                                       ],
@@ -394,9 +558,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                               vertical: 7,
                                                             ),
                                                         decoration: BoxDecoration(
-                                                          color: const Color(
-                                                            0xFFE8EAF2,
-                                                          ),
+                                                          color: cs.outlineVariant,
                                                           borderRadius:
                                                               BorderRadius.circular(
                                                                 20,
@@ -407,14 +569,12 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                             classId,
                                                           ),
                                                           style:
-                                                              const TextStyle(
+                                                              TextStyle(
                                                                 fontSize: 12,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w700,
-                                                                color: Color(
-                                                                  0xFF2848B0,
-                                                                ),
+                                                                color: cs.primary,
                                                               ),
                                                         ),
                                                       )
@@ -429,9 +589,9 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                     ? email
                                                     : '-',
                                                 textAlign: TextAlign.center,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 13,
-                                                  color: Color(0xFF2848B0),
+                                                  color: cs.primary,
                                                 ),
                                               ),
                                             ),
@@ -449,47 +609,6 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                     );
                                   },
                                 ),
-                              ),
-                              if (totalPages > 1)
-                                Container(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    40,
-                                    14,
-                                    40,
-                                    14,
-                                  ),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF2F4F8),
-                                    border: Border(
-                                      top: BorderSide(color: Color(0xFFE8EAF2)),
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(20),
-                                      bottomRight: Radius.circular(20),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      _PaginationButton(
-                                        icon: Icons.chevron_left_rounded,
-                                        enabled: _currentPage > 0,
-                                        onTap: () =>
-                                            setState(() => _currentPage--),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      ..._buildPageButtons(totalPages),
-                                      const SizedBox(width: 4),
-                                      _PaginationButton(
-                                        icon: Icons.chevron_right_rounded,
-                                        enabled: _currentPage < totalPages - 1,
-                                        onTap: () =>
-                                            setState(() => _currentPage++),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
                           );
                         },
                       ),
@@ -504,40 +623,25 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     );
   }
 
-  Widget _buildTeacherStats() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .where('role', isEqualTo: 'teacher')
-          .snapshots(),
+  Widget _buildTeacherStats(BuildContext context) {
+    return FutureBuilder<_TeacherStats>(
+      future: _statsFuture,
       builder: (context, snap) {
-        final teachers = snap.data?.docs ?? [];
         final loaded = snap.hasData;
-
-        final total = teachers.length;
-        final configured = teachers
-            .where(
-              (d) =>
-                  (d.data() as Map<String, dynamic>)['onboardingComplete'] ==
-                  true,
-            )
-            .length;
-        final withClass = teachers
-            .where(
-              (d) => ((d.data() as Map<String, dynamic>)['classId'] ?? '')
-                  .toString()
-                  .isNotEmpty,
-            )
-            .length;
-        final notConfigured = total - configured;
+        final stats = snap.data;
+        final total = stats?.total ?? 0;
+        final configured = stats?.configured ?? 0;
+        final withClass = stats?.withClass ?? 0;
+        final notConfigured = stats?.notConfigured ?? 0;
 
         return Row(
           children: [
             Expanded(
               child: _statCard(
+                context: context,
                 icon: Icons.school_rounded,
                 iconBg: const Color(0xFFEEF1FB),
-                iconColor: const Color(0xFF2848B0),
+                iconColor: Theme.of(context).colorScheme.primary,
                 label: 'TOTAL TEACHERS',
                 value: loaded ? '$total' : '—',
                 subtitle: 'Registered this year',
@@ -546,6 +650,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
             const SizedBox(width: 14),
             Expanded(
               child: _statCard(
+                context: context,
                 icon: Icons.verified_user_rounded,
                 iconBg: const Color(0xFFEDF7F0),
                 iconColor: const Color(0xFF2E8B57),
@@ -559,6 +664,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
             const SizedBox(width: 14),
             Expanded(
               child: _statCard(
+                context: context,
                 icon: Icons.class_rounded,
                 iconBg: const Color(0xFFF3EDFB),
                 iconColor: const Color(0xFF7B4FCC),
@@ -572,12 +678,15 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
             const SizedBox(width: 14),
             Expanded(
               child: _statCard(
+                context: context,
                 icon: Icons.warning_amber_rounded,
                 iconBg: const Color(0xFFFFF8E8),
                 iconColor: const Color(0xFFF5A623),
                 label: 'NOT CONFIGURED',
                 value: loaded ? '$notConfigured' : '—',
-                subtitle: notConfigured == 0 ? 'All set up' : 'Pending setup',
+                subtitle: loaded && notConfigured == 0
+                    ? 'All set up'
+                    : 'Pending setup',
               ),
             ),
           ],
@@ -587,6 +696,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
   }
 
   Widget _statCard({
+    required BuildContext context,
     required IconData icon,
     required Color iconBg,
     required Color iconColor,
@@ -594,15 +704,16 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     required String value,
     required String subtitle,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8EAF2)),
+        border: Border.all(color: cs.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2848B0).withValues(alpha: 0.05),
+            color: cs.primary.withValues(alpha: 0.05),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -672,83 +783,6 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     );
   }
 
-  List<Widget> _buildPageButtons(int totalPages) {
-    final pages = <Widget>[];
-    const maxVisible = 5;
-
-    void addPage(int index) {
-      pages.add(
-        GestureDetector(
-          onTap: () => setState(() => _currentPage = index),
-          child: Container(
-            width: 36,
-            height: 36,
-            margin: const EdgeInsets.symmetric(horizontal: 2),
-            decoration: BoxDecoration(
-              color: _currentPage == index
-                  ? const Color(0xFF1A2050)
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: _currentPage == index
-                    ? const Color(0xFF1A2050)
-                    : const Color(0xFFE8EAF2),
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              '${index + 1}',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: _currentPage == index
-                    ? Colors.white
-                    : const Color(0xFF1A2050),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    void addEllipsis() {
-      pages.add(
-        Container(
-          width: 36,
-          height: 36,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          alignment: Alignment.center,
-          child: const Text(
-            '...',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF7A7E9A),
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (totalPages <= maxVisible) {
-      for (int i = 0; i < totalPages; i++) {
-        addPage(i);
-      }
-    } else {
-      addPage(0);
-      if (_currentPage > 2) addEllipsis();
-      final start = (_currentPage - 1).clamp(1, totalPages - 2);
-      final end = (_currentPage + 1).clamp(1, totalPages - 2);
-      for (int i = start; i <= end; i++) {
-        addPage(i);
-      }
-      if (_currentPage < totalPages - 3) addEllipsis();
-      addPage(totalPages - 1);
-    }
-
-    return pages;
-  }
-
   Future<void> _openTeacherDialog(
     BuildContext context, {
     required String uid,
@@ -760,6 +794,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     required String? email,
     required String photoUrl,
   }) async {
+    final cs = Theme.of(context).colorScheme;
     final renameC = TextEditingController(text: fullName);
 
     await showGeneralDialog(
@@ -831,19 +866,19 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                       ),
                       child: Row(
                         children: [
-                          const Text(
+                          Text(
                             'User Settings',
                             style: TextStyle(
                               fontSize: 27,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF2848B0),
+                              color: cs.primary,
                             ),
                           ),
                           const Spacer(),
                           TextButton(
                             onPressed: busy ? null : () => Navigator.pop(ctx),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF7A7E9A),
+                              foregroundColor: cs.onSurfaceVariant,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
                                 vertical: 14,
@@ -901,7 +936,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                     if (ctx.mounted) Navigator.pop(ctx);
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2848B0),
+                              backgroundColor: cs.primary,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
@@ -1362,8 +1397,9 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                     : (val) async {
                                                         if (val == null ||
                                                             val ==
-                                                                dropdownValue)
+                                                                dropdownValue) {
                                                           return;
+                                                        }
                                                         final newClassId =
                                                             val == '__NONE__'
                                                             ? ''
@@ -1638,7 +1674,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                               ),
                             ),
                             const SizedBox(height: 44),
-                            const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                            Divider(height: 1, color: cs.outlineVariant),
                             const SizedBox(height: 28),
                             SizedBox(
                               width: double.infinity,
@@ -2095,42 +2131,6 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     );
 
     renameC.dispose();
-  }
-}
-
-class _PaginationButton extends StatelessWidget {
-  const _PaginationButton({
-    required this.icon,
-    required this.enabled,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: enabled ? const Color(0xFFE8EAF2) : const Color(0xFFE8EAF2),
-          ),
-        ),
-        alignment: Alignment.center,
-        child: Icon(
-          icon,
-          size: 20,
-          color: enabled ? const Color(0xFF1A2050) : const Color(0xFFC0C4D8),
-        ),
-      ),
-    );
   }
 }
 

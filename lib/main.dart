@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:school_mate/Auth/login_page_firestore.dart';
-import 'package:school_mate/Auth/two_factor_verify_page.dart';
+import 'package:school_mate/auth/login_page_firestore.dart';
+import 'package:school_mate/auth/two_factor_verify_page.dart';
 import 'package:school_mate/student/mainnavigation.dart';
 import 'package:school_mate/admin/secretariat_raw_page.dart'
     show SecretariatRawPage;
@@ -13,7 +13,7 @@ import 'package:school_mate/parent/parent_shell.dart';
 import 'package:school_mate/services/security_flags_service.dart';
 import 'package:school_mate/core/session.dart';
 import 'package:school_mate/auth/onboarding_page.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -36,7 +36,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseAuth.instance.signOut(); // TEMP: force logout
   if (kIsWeb) {
     FirebaseFirestore.instance.settings = const Settings(
       persistenceEnabled: false,
@@ -93,6 +92,9 @@ Future<void> _saveFcmToken(String uid) async {
     await FirebaseMessaging.instance.requestPermission();
     final token = await FirebaseMessaging.instance.getToken();
     if (token == null) return;
+    // The user may have signed out (or switched) while the async work above
+    // was in flight; in that case skip the writes for the now-stale uid.
+    if (FirebaseAuth.instance.currentUser?.uid != uid) return;
     await FirebaseFirestore.instance.collection('users').doc(uid).set({
       'fcmToken': token,
     }, SetOptions(merge: true));
@@ -100,12 +102,17 @@ Future<void> _saveFcmToken(String uid) async {
     _tokenRefreshSub = FirebaseMessaging.instance.onTokenRefresh.listen((
       newToken,
     ) {
+      // Guard against late refreshes after sign-out / user switch: the
+      // current-user check below short-circuits writes destined for a uid
+      // that is no longer authenticated on this device.
+      if (FirebaseAuth.instance.currentUser?.uid != uid) return;
       FirebaseFirestore.instance.collection('users').doc(uid).set({
         'fcmToken': newToken,
       }, SetOptions(merge: true));
     });
     _tokenBoundUid = uid;
-  } catch (_) {
+  } catch (e, st) {
+    debugPrint('main.dart: _saveFcmToken failed: $e\n$st');
   } finally {
     if (_tokenInitUid == uid) {
       _tokenInitUid = null;
@@ -114,14 +121,15 @@ Future<void> _saveFcmToken(String uid) async {
 }
 
 Future<void> _cleanupAuthState({bool clearPersistedTwoFactor = true}) async {
-  final uidToClear = AppSession.uid;
   await _tokenRefreshSub?.cancel();
   _tokenRefreshSub = null;
   _tokenBoundUid = null;
   _tokenInitUid = null;
   if (clearPersistedTwoFactor) {
     // Clear the persisted 2FA verified flag so the next login (or a different
-    // user on the same machine) must verify again.
+    // user on the same machine) must verify again. twoFactorVerifiedUntil on
+    // the user doc is server-only (rules deny client writes) and expires
+    // after TWO_FA_SESSION_DURATION_MS.
     try {
       final prefs = await SharedPreferences.getInstance();
       final keysToRemove = prefs
@@ -131,17 +139,8 @@ Future<void> _cleanupAuthState({bool clearPersistedTwoFactor = true}) async {
       for (final k in keysToRemove) {
         await prefs.remove(k);
       }
-    } catch (_) {}
-
-    if (uidToClear != null && uidToClear.isNotEmpty) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uidToClear)
-            .set({
-              'twoFactorVerifiedUntil': FieldValue.delete(),
-            }, SetOptions(merge: true));
-      } catch (_) {}
+    } catch (e, st) {
+      debugPrint('main.dart: clearing tf_verified_* prefs failed: $e\n$st');
     }
   }
   AppSession.clear();
@@ -155,10 +154,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // Cached streams — created once, never recreated on rebuilds.
-  // Recreating streams inside builder functions creates new Firestore
-  // listeners on every rebuild, leading to rapid widget-type swaps and
-  // the "Cannot hit test a render box that has never been laid out" loop.
+  // Streams cached so rebuilds do not recreate Firestore listeners.
+  // Recreating in build() caused rapid widget-type swaps and the
+  // "Cannot hit test a render box that has never been laid out" loop.
   late final Stream<SecurityFlags> _flagsStream;
   String? _cachedUid;
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _userDocStream;
@@ -195,7 +193,9 @@ class _MyAppState extends State<MyApp> {
       if (expiry != null) {
         await prefs.remove(key);
       }
-    } catch (_) {}
+    } catch (e, st) {
+      debugPrint('main.dart: _loadPersistedTwoFactorState failed: $e\n$st');
+    }
 
     return false;
   }
@@ -226,6 +226,13 @@ class _MyAppState extends State<MyApp> {
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFF84B0D2),
+            ).copyWith(
+              primary: const Color(0xFF2848B0),
+              outlineVariant: const Color(0xFFE8EAF2),
+              onSurface: const Color(0xFF1A2050),
+              onSurfaceVariant: const Color(0xFF7A7E9A),
+              surface: Colors.white,
+              surfaceContainerHighest: const Color(0xFFF2F4F8),
             ),
           ),
           routes: {
@@ -300,9 +307,8 @@ class _MyAppState extends State<MyApp> {
                 return const LoginPageFirestore();
               }
 
-              // personalEmail, passwordChanged, emailVerified read but
-              // not currently consumed — kept as data[] access only.
-              final onboardingComplete = data['onboardingComplete'] == true;
+              final effectivelyOnboarded =
+                  data['onboardingComplete'] == true;
               final role = (data['role'] ?? '').toString();
               final twoFactorVerifiedUntil =
                   (data['twoFactorVerifiedUntil'] as Timestamp?)?.toDate();
@@ -313,17 +319,8 @@ class _MyAppState extends State<MyApp> {
                 AppSession.twoFactorVerified = true;
               }
 
-              // Backward compatibility: for old documents that already satisfy
-              // onboarding conditions, persist onboardingComplete once.
-              // Do NOT auto-complete onboarding — only _markCompleteAfterPhoto
-              // in onboarding_page.dart should set onboardingComplete.
-              final effectivelyOnboarded = onboardingComplete;
-              if (effectivelyOnboarded && !onboardingComplete) {
-                // Already onboarded, no-op now.
-              }
-
-              // Keep auth email mirrored in Firestore user profile.
-              // Only attempt once per uid to avoid write-loops on rebuilds.
+              // Mirror auth email into the Firestore user profile once per uid
+              // to avoid write loops on rebuilds.
               if (!_authEmailMirroredUids.contains(user.uid) &&
                   (data['authEmail'] ?? '').toString().trim().isEmpty &&
                   (user.email ?? '').trim().isNotEmpty) {

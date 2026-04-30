@@ -40,8 +40,28 @@ class GateScanResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as GateScanResultPageArguments;
+    final rawArgs = ModalRoute.of(context)?.settings.arguments;
+    if (rawArgs is! GateScanResultPageArguments) {
+      return Scaffold(
+        backgroundColor: _surface,
+        appBar: AppBar(
+          backgroundColor: _primary,
+          foregroundColor: Colors.white,
+          title: const Text('Scan result'),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Scan data is missing. Please scan again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _onSurface),
+            ),
+          ),
+        ),
+      );
+    }
+    final args = rawArgs;
 
     final initials = (args.fullName ?? '??')
         .trim()
@@ -131,9 +151,7 @@ class _GatePill extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // STUDENT CARD
-// ─────────────────────────────────────────────────────────────────────────────
 class _StudentCard extends StatelessWidget {
   final String initials;
   final String? fullName;
@@ -251,9 +269,7 @@ class _StudentCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // LEAVE REQUEST CARD
-// ─────────────────────────────────────────────────────────────────────────────
 class _LeaveRequestCard extends StatelessWidget {
   final bool hasActiveLeave;
   const _LeaveRequestCard({required this.hasActiveLeave});
@@ -335,9 +351,7 @@ class _LeaveRequestCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCHEDULE CARD (placeholder mock — wired to real schedule when available)
-// ─────────────────────────────────────────────────────────────────────────────
+// SCHEDULE CARD (placeholder mock; wired to real schedule when available)
 class _ScheduleCard extends StatelessWidget {
   final String? classId;
   const _ScheduleCard({this.classId});
@@ -346,10 +360,10 @@ class _ScheduleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return _ThemedCard(
       variant: 4,
-      child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>?>(
         future: (classId != null && classId!.isNotEmpty)
             ? FirebaseFirestore.instance.collection('timetables').doc(classId).get()
-            : Future.value(null),
+            : Future<DocumentSnapshot<Map<String, dynamic>>?>.value(null),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -362,7 +376,7 @@ class _ScheduleCard extends StatelessWidget {
           if (snapshot.hasError) {
             return const Text('Error loading schedule', style: TextStyle(color: _statusRed));
           }
-          if (!snapshot.hasData || !snapshot.data!.exists) {
+          if (!snapshot.hasData || !(snapshot.data?.exists ?? false)) {
             return const Text('No schedule available', style: TextStyle(color: _labelColor));
           }
 
@@ -545,9 +559,7 @@ class _DottedLinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RESULT FOOTER — banner + back button
-// ─────────────────────────────────────────────────────────────────────────────
+// RESULT FOOTER: banner + back button
 class _ResultFooter extends StatelessWidget {
   final GateScanResultPageArguments args;
   const _ResultFooter({required this.args});
@@ -687,9 +699,7 @@ class _StatusBanner extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SHARED — themed card with sparkles
-// ─────────────────────────────────────────────────────────────────────────────
+// SHARED: themed card with sparkles
 class _ThemedCard extends StatelessWidget {
   final Widget child;
   final int variant;

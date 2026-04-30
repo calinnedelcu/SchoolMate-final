@@ -3,7 +3,7 @@ import 'package:school_mate/core/session.dart';
 import 'package:school_mate/student/meniu.dart';
 import 'package:school_mate/student/profile_page.dart';
 import 'package:school_mate/student/schedule_page.dart';
-import 'package:school_mate/student/widgets/maniubara.dart';
+import 'package:school_mate/common/widgets/maniubara.dart';
 import 'package:school_mate/student/leave_requests_overview.dart';
 import 'package:school_mate/student/inbox.dart';
 import 'package:flutter/material.dart';

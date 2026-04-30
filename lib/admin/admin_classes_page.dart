@@ -8,7 +8,7 @@ import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 
 import '../core/session.dart';
-import 'services/admin_api.dart';
+import '../services/admin_api.dart';
 import 'services/admin_store.dart';
 import 'utils/admin_ui.dart';
 
@@ -44,16 +44,21 @@ Future<T?> _showBlurDialog<T>({
   );
 }
 
-Widget _buildDialogStatusBanner(String message, bool isError) {
+Widget _buildDialogStatusBanner(
+  BuildContext context,
+  String message,
+  bool isError,
+) {
+  final cs = Theme.of(context).colorScheme;
   return ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 560),
+    constraints: BoxConstraints(maxWidth: 560),
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: isError ? const Color(0xFFF0D0D8) : const Color(0xFFE8EAF2),
+        color: isError ? Color(0xFFF0D0D8) : cs.outlineVariant,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: isError ? const Color(0xFFB03040) : const Color(0xFF2848B0),
+          color: isError ? Color(0xFFB03040) : cs.primary,
         ),
       ),
       child: Row(
@@ -61,9 +66,9 @@ Widget _buildDialogStatusBanner(String message, bool isError) {
           Icon(
             isError ? Icons.error_outline : Icons.check_circle_outline,
             size: 16,
-            color: isError ? const Color(0xFFB03040) : const Color(0xFF5F9CCF),
+            color: isError ? Color(0xFFB03040) : Color(0xFF5F9CCF),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             child: SelectableText(
               message,
@@ -72,7 +77,7 @@ Widget _buildDialogStatusBanner(String message, bool isError) {
                 fontWeight: FontWeight.w600,
                 color: isError
                     ? const Color(0xFFB71C1C)
-                    : const Color(0xFF2848B0),
+                    : cs.primary,
               ),
             ),
           ),
@@ -97,7 +102,7 @@ Future<bool?> _showDeleteUserConfirmationDialog({
     barrierDismissible: true,
     barrierLabel: barrierLabel,
     barrierColor: Colors.transparent,
-    transitionDuration: const Duration(milliseconds: 220),
+    transitionDuration: Duration(milliseconds: 220),
     transitionBuilder: (context, animation, secondaryAnimation, child) {
       return BackdropFilter(
         filter: ImageFilter.blur(
@@ -121,15 +126,15 @@ Future<bool?> _showDeleteUserConfirmationDialog({
             insetPadding: EdgeInsets.zero,
             backgroundColor: Colors.transparent,
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 500),
+              constraints: BoxConstraints(maxWidth: 500),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.12),
                     blurRadius: 28,
-                    offset: const Offset(0, 12),
+                    offset: Offset(0, 12),
                   ),
                 ],
               ),
@@ -146,35 +151,35 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                           width: 52,
                           height: 52,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF0D0D8),
+                            color: Color(0xFFF0D0D8),
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.delete_outline_rounded,
                             color: Color(0xFFB03040),
                             size: 26,
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 title,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF2848B0),
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6),
                               Text(
                                 description,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   height: 1.4,
-                                  color: Color(0xFF7A7E9A),
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -182,28 +187,30 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                         ),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF2F4F8),
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: const Color(0xFFE8EAF2)),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             selectedLabel,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1,
-                              color: Color(0xFF7A7E9A),
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          SizedBox(height: 10),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -222,12 +229,12 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                               ),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           Text(
                             selectedSubtitle,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF7A7E9A),
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               height: 1.4,
                             ),
                           ),
@@ -242,7 +249,9 @@ Future<bool?> _showDeleteUserConfirmationDialog({
                             onPressed: () => Navigator.of(context).pop(false),
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              side: const BorderSide(color: Color(0xFFE8EAF2)),
+                              side: BorderSide(
+                                color: Theme.of(context).colorScheme.outlineVariant,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
@@ -514,15 +523,15 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
               ),
               backgroundColor: Colors.transparent,
               child: Container(
-                constraints: const BoxConstraints(maxWidth: 520),
+                constraints: BoxConstraints(maxWidth: 520),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(ctx).colorScheme.surface,
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.12),
                       blurRadius: 28,
-                      offset: const Offset(0, 12),
+                      offset: Offset(0, 12),
                     ),
                   ],
                 ),
@@ -539,17 +548,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             width: 52,
                             height: 52,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE8EAF2),
+                              color: Theme.of(ctx).colorScheme.outlineVariant,
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.add_business_rounded,
-                              color: Color(0xFF2848B0),
+                              color: Theme.of(ctx).colorScheme.primary,
                               size: 26,
                             ),
                           ),
-                          const SizedBox(width: 14),
-                          const Expanded(
+                          SizedBox(width: 14),
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -558,7 +567,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF2848B0),
+                                    color: Theme.of(ctx).colorScheme.primary,
                                   ),
                                 ),
                                 SizedBox(height: 6),
@@ -567,7 +576,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   style: TextStyle(
                                     fontSize: 13,
                                     height: 1.4,
-                                    color: Color(0xFF7A7E9A),
+                                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -575,7 +584,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 22),
+                      SizedBox(height: 22),
                       TextField(
                         controller: controller,
                         autofocus: true,
@@ -585,27 +594,27 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           hintText: 'Ex: 9A, 10B, 11 INFO',
                           errorText: errorText,
                           filled: true,
-                          fillColor: const Color(0xFFF2F4F8),
-                          prefixIcon: const Icon(
+                          fillColor: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                          prefixIcon: Icon(
                             Icons.class_outlined,
                             color: Color(0xFF85A7C2),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(
+                            borderSide: BorderSide(
                               color: Color(0xFFCFDFEB),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(
+                            borderSide: BorderSide(
                               color: Color(0xFFCFDFEB),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(
-                              color: Color(0xFF7A7E9A),
+                            borderSide: BorderSide(
+                              color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                               width: 1.5,
                             ),
                           ),
@@ -618,7 +627,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           });
                         },
                       ),
-                      const SizedBox(height: 22),
+                      SizedBox(height: 22),
                       Row(
                         children: [
                           Expanded(
@@ -630,17 +639,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
                                 ),
-                                side: const BorderSide(
-                                  color: Color(0xFFE8EAF2),
+                                side: BorderSide(
+                                  color: Theme.of(ctx).colorScheme.outlineVariant,
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
-                              child: const Text('Cancel'),
+                              child: Text('Cancel'),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12),
                           Expanded(
                             child: FilledButton(
                               onPressed: busy
@@ -680,7 +689,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       }
                                     },
                               style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFF2848B0),
+                                backgroundColor: Theme.of(ctx).colorScheme.primary,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
@@ -690,12 +699,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 ),
                               ),
                               child: busy
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       width: 18,
                                       height: 18,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: Colors.white,
+                                        color: Theme.of(ctx).colorScheme.surface,
                                       ),
                                     )
                                   : const Text('Create class'),
@@ -766,12 +775,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                   vertical: 16,
                 ),
                 child: Container(
-                  constraints: const BoxConstraints(
+                  constraints: BoxConstraints(
                     maxWidth: 860,
                     minHeight: 760,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(ctx).colorScheme.surface,
                     borderRadius: BorderRadius.circular(28),
                   ),
                   child: Column(
@@ -781,7 +790,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       Container(
                         padding: const EdgeInsets.fromLTRB(32, 22, 36, 22),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(ctx).colorScheme.surface,
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(28),
                           ),
@@ -794,25 +803,25 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                         ),
                         child: Row(
                           children: [
-                            const Text(
+                            Text(
                               'User Settings',
                               style: TextStyle(
                                 fontSize: 27,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF2848B0),
+                                color: Theme.of(ctx).colorScheme.primary,
                               ),
                             ),
-                            const Spacer(),
+                            Spacer(),
                             TextButton(
                               onPressed: busy ? null : () => Navigator.pop(ctx),
                               style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFF7A7E9A),
+                                foregroundColor: Theme.of(ctx).colorScheme.onSurfaceVariant,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20,
                                   vertical: 14,
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Cancel',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -820,7 +829,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 20),
+                            SizedBox(width: 20),
                             ElevatedButton(
                               onPressed: busy
                                   ? null
@@ -865,7 +874,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       if (ctx.mounted) Navigator.pop(ctx);
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2848B0),
+                                backgroundColor: Theme.of(ctx).colorScheme.primary,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(
@@ -876,7 +885,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Save changes',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -892,7 +901,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           padding: const EdgeInsets.fromLTRB(32, 16, 32, 0),
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: _buildDialogStatusBanner(msg!, msgIsError),
+                            child: _buildDialogStatusBanner(ctx, msg!, msgIsError),
                           ),
                         ),
                       Flexible(
@@ -914,12 +923,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         children: [
                                           Row(
                                             children: [
-                                              const Text(
+                                              Text(
                                                 'Student Details',
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w800,
-                                                  color: Color(0xFF2848B0),
+                                                  color: Theme.of(ctx).colorScheme.primary,
                                                 ),
                                               ),
                                               const Spacer(),
@@ -931,7 +940,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: onboardingComplete
-                                                      ? const Color(0xFFE8EAF2)
+                                                      ? Theme.of(ctx).colorScheme.outlineVariant
                                                       : const Color(0xFFF0D0D8),
                                                   border: Border.all(
                                                     color: onboardingComplete
@@ -993,17 +1002,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 20),
-                                          const Text(
+                                          SizedBox(height: 20),
+                                          Text(
                                             'FULL NAME',
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF2848B0),
+                                              color: Theme.of(ctx).colorScheme.primary,
                                             ),
                                           ),
-                                          const SizedBox(height: 6),
+                                          SizedBox(height: 6),
                                           Container(
                                             width: double.infinity,
                                             height: 48,
@@ -1012,7 +1021,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFE8EAF2),
+                                              color: Theme.of(ctx).colorScheme.outlineVariant,
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -1023,17 +1032,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   TextCapitalization.words,
                                               textAlignVertical:
                                                   TextAlignVertical.center,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
-                                                color: Color(0xFF000000),
+                                                color: Theme.of(ctx).colorScheme.onSurface,
                                               ),
                                               decoration: InputDecoration(
                                                 hintText: currentFullName,
-                                                hintStyle: const TextStyle(
+                                                hintStyle: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
-                                                  color: Color(0xFF000000),
+                                                  color: Theme.of(ctx).colorScheme.onSurface,
                                                 ),
                                                 border: InputBorder.none,
                                                 isDense: true,
@@ -1094,16 +1103,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
-                                                    const Text(
+                                                    Text(
                                                       'USERNAME',
                                                       style: TextStyle(
                                                         fontSize: 11,
                                                         fontWeight:
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
-                                                        color: Color(
-                                                          0xFF2848B0,
-                                                        ),
+                                                        color: Theme.of(ctx).colorScheme.primary,
                                                       ),
                                                     ),
                                                     const SizedBox(height: 6),
@@ -1126,11 +1133,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       ),
                                                       child: Text(
                                                         username,
-                                                        style: const TextStyle(
+                                                        style: TextStyle(
                                                           fontSize: 16,
-                                                          color: Color(
-                                                            0xFF1A2050,
-                                                          ),
+                                                          color: Theme.of(ctx).colorScheme.onSurface,
                                                         ),
                                                       ),
                                                     ),
@@ -1143,16 +1148,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
-                                                    const Text(
+                                                    Text(
                                                       'EMAIL',
                                                       style: TextStyle(
                                                         fontSize: 11,
                                                         fontWeight:
                                                             FontWeight.w700,
                                                         letterSpacing: 1,
-                                                        color: Color(
-                                                          0xFF2848B0,
-                                                        ),
+                                                        color: Theme.of(ctx).colorScheme.primary,
                                                       ),
                                                     ),
                                                     const SizedBox(height: 6),
@@ -1175,11 +1178,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       ),
                                                       child: Text(
                                                         email ?? '-',
-                                                        style: const TextStyle(
+                                                        style: TextStyle(
                                                           fontSize: 16,
-                                                          color: Color(
-                                                            0xFF1A2050,
-                                                          ),
+                                                          color: Theme.of(ctx).colorScheme.onSurface,
                                                         ),
                                                       ),
                                                     ),
@@ -1381,9 +1382,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                               vertical: 10,
                                                             ),
                                                         decoration: BoxDecoration(
-                                                          color: const Color(
-                                                            0xFFE8EAF2,
-                                                          ),
+                                                          color: Theme.of(ctx).colorScheme.outlineVariant,
                                                           borderRadius:
                                                               BorderRadius.circular(
                                                                 10,
@@ -1413,14 +1412,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                         )['fullName'] ??
                                                                         currentUid)
                                                                   : 'No parent',
-                                                              style: const TextStyle(
+                                                              style: TextStyle(
                                                                 fontSize: 16,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w600,
-                                                                color: Color(
-                                                                  0xFF000000,
-                                                                ),
+                                                                color: Theme.of(ctx).colorScheme.onSurface,
                                                               ),
                                                             ),
                                                             icon: const Icon(
@@ -1462,14 +1459,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                                           e['uid'],
                                                                       child: Text(
                                                                         e['fullName']!,
-                                                                        style: const TextStyle(
+                                                                        style: TextStyle(
                                                                           fontSize:
                                                                               16,
                                                                           fontWeight:
                                                                               FontWeight.w600,
-                                                                          color: Color(
-                                                                            0xFF000000,
-                                                                          ),
+                                                                          color: Theme.of(ctx).colorScheme.onSurface,
                                                                         ),
                                                                       ),
                                                                     ),
@@ -1498,16 +1493,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        const Text(
+                                                        Text(
                                                           'PARENTS',
                                                           style: TextStyle(
                                                             fontSize: 11,
                                                             fontWeight:
                                                                 FontWeight.w700,
                                                             letterSpacing: 1,
-                                                            color: Color(
-                                                              0xFF2848B0,
-                                                            ),
+                                                            color: Theme.of(ctx).colorScheme.primary,
                                                           ),
                                                         ),
                                                         const SizedBox(
@@ -1602,16 +1595,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        const Text(
+                                                        Text(
                                                           'HOMEROOM TEACHER',
                                                           style: TextStyle(
                                                             fontSize: 11,
                                                             fontWeight:
                                                                 FontWeight.w700,
                                                             letterSpacing: 1,
-                                                            color: Color(
-                                                              0xFF2848B0,
-                                                            ),
+                                                            color: Theme.of(ctx).colorScheme.primary,
                                                           ),
                                                         ),
                                                         const SizedBox(
@@ -1640,12 +1631,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                               Expanded(
                                                                 child: Text(
                                                                   homeroomTeacher,
-                                                                  style: const TextStyle(
+                                                                  style: TextStyle(
                                                                     fontSize:
                                                                         16,
-                                                                    color: Color(
-                                                                      0xFF1A2050,
-                                                                    ),
+                                                                    color: Theme.of(ctx).colorScheme.onSurface,
                                                                   ),
                                                                 ),
                                                               ),
@@ -1663,15 +1652,13 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                         const SizedBox(
                                                           height: 4,
                                                         ),
-                                                        const Text(
+                                                        Text(
                                                           '* Updates automatically based on the class',
                                                           style: TextStyle(
                                                             fontSize: 11,
                                                             fontStyle: FontStyle
                                                                 .italic,
-                                                            color: Color(
-                                                              0xFF1A2050,
-                                                            ),
+                                                            color: Theme.of(ctx).colorScheme.onSurface,
                                                           ),
                                                         ),
                                                       ],
@@ -1681,17 +1668,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 16),
-                                          const Text(
+                                          SizedBox(height: 16),
+                                          Text(
                                             'CLASS',
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
-                                              color: Color(0xFF2848B0),
+                                              color: Theme.of(ctx).colorScheme.primary,
                                             ),
                                           ),
-                                          const SizedBox(height: 6),
+                                          SizedBox(height: 6),
                                           FutureBuilder<QuerySnapshot>(
                                             future: allClassesLoaded
                                                 ? null
@@ -1719,9 +1706,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                       vertical: 10,
                                                     ),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(
-                                                    0xFFE8EAF2,
-                                                  ),
+                                                  color: Theme.of(ctx).colorScheme.outlineVariant,
                                                   borderRadius:
                                                       BorderRadius.circular(10),
                                                 ),
@@ -1740,20 +1725,18 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                               currentClassId,
                                                             )
                                                           : 'Select class...',
-                                                      style: const TextStyle(
+                                                      style: TextStyle(
                                                         fontSize: 16,
                                                         fontWeight:
                                                             FontWeight.w600,
-                                                        color: Color(
-                                                          0xFF000000,
-                                                        ),
+                                                        color: Theme.of(ctx).colorScheme.onSurface,
                                                       ),
                                                     ),
-                                                    icon: const Icon(
+                                                    icon: Icon(
                                                       Icons
                                                           .keyboard_arrow_down_rounded,
                                                       size: 20,
-                                                      color: Color(0xFF7A7E9A),
+                                                      color: Theme.of(ctx2).colorScheme.onSurfaceVariant,
                                                     ),
                                                     items: allClassesList
                                                         .map(
@@ -1765,14 +1748,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                               formatClassName(
                                                                 c,
                                                               ),
-                                                              style: const TextStyle(
+                                                              style: TextStyle(
                                                                 fontSize: 16,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w600,
-                                                                color: Color(
-                                                                  0xFF000000,
-                                                                ),
+                                                                color: Theme.of(ctx).colorScheme.onSurface,
                                                               ),
                                                             ),
                                                           ),
@@ -1834,7 +1815,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       child: Container(
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: Colors.white,
+                                          color: Theme.of(ctx).colorScheme.surface,
                                           boxShadow: [
                                             BoxShadow(
                                               color: Colors.black.withValues(
@@ -1857,8 +1838,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           child: photoUrl.isEmpty
                                               ? Text(
                                                   initials(currentFullName),
-                                                  style: const TextStyle(
-                                                    color: Color(0xFF1A2050),
+                                                  style: TextStyle(
+                                                    color: Theme.of(ctx).colorScheme.onSurface,
                                                     fontWeight: FontWeight.w800,
                                                     fontSize: 34,
                                                   ),
@@ -1870,18 +1851,18 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 72),
+                              SizedBox(height: 72),
                               SizedBox(
                                 width: double.infinity,
                                 child: Center(
                                   child: ElevatedButton.icon(
                                     icon: busy
-                                        ? const SizedBox(
+                                        ? SizedBox(
                                             width: 16,
                                             height: 16,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              color: Colors.white,
+                                              color: Theme.of(ctx).colorScheme.surface,
                                             ),
                                           )
                                         : const Icon(
@@ -1982,9 +1963,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 ),
                               ),
                               const SizedBox(height: 44),
-                              const Divider(
+                              Divider(
                                 height: 1,
-                                color: Color(0xFFE8EAF2),
+                                color: Theme.of(ctx).colorScheme.outlineVariant,
                               ),
                               const SizedBox(height: 28),
                               SizedBox(
@@ -2118,7 +2099,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                     ],
                   ),
                 ),
@@ -2166,12 +2147,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                 vertical: 16,
               ),
               child: Container(
-                constraints: const BoxConstraints(
+                constraints: BoxConstraints(
                   maxWidth: 860,
                   minHeight: 760,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(ctx).colorScheme.surface,
                   borderRadius: BorderRadius.circular(28),
                 ),
                 child: Column(
@@ -2181,7 +2162,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                     Container(
                       padding: const EdgeInsets.fromLTRB(32, 22, 36, 22),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(ctx).colorScheme.surface,
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(28),
                         ),
@@ -2194,25 +2175,25 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       ),
                       child: Row(
                         children: [
-                          const Text(
+                          Text(
                             'User Settings',
                             style: TextStyle(
                               fontSize: 27,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF2848B0),
+                              color: Theme.of(ctx).colorScheme.primary,
                             ),
                           ),
-                          const Spacer(),
+                          Spacer(),
                           TextButton(
                             onPressed: busy ? null : () => Navigator.pop(ctx),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF7A7E9A),
+                              foregroundColor: Theme.of(ctx).colorScheme.onSurfaceVariant,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
                                 vertical: 14,
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Cancel',
                               style: TextStyle(
                                 fontSize: 16,
@@ -2220,7 +2201,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 20),
+                          SizedBox(width: 20),
                           ElevatedButton(
                             onPressed: busy
                                 ? null
@@ -2265,7 +2246,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     if (ctx.mounted) Navigator.pop(ctx);
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2848B0),
+                              backgroundColor: Theme.of(ctx).colorScheme.primary,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
@@ -2276,7 +2257,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Save changes',
                               style: TextStyle(
                                 fontSize: 16,
@@ -2292,7 +2273,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                         padding: const EdgeInsets.fromLTRB(32, 16, 32, 0),
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: _buildDialogStatusBanner(msg!, msgIsError),
+                          child: _buildDialogStatusBanner(ctx, msg!, msgIsError),
                         ),
                       ),
                     Flexible(
@@ -2312,12 +2293,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     children: [
                                       Row(
                                         children: [
-                                          const Text(
+                                          Text(
                                             'Teacher Details',
                                             style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.w800,
-                                              color: Color(0xFF2848B0),
+                                              color: Theme.of(ctx).colorScheme.primary,
                                             ),
                                           ),
                                           const Spacer(),
@@ -2328,7 +2309,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: onboardingComplete
-                                                  ? const Color(0xFFE8EAF2)
+                                                  ? Theme.of(ctx).colorScheme.outlineVariant
                                                   : const Color(0xFFF0D0D8),
                                               border: Border.all(
                                                 color: onboardingComplete
@@ -2383,17 +2364,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 20),
-                                      const Text(
+                                      SizedBox(height: 20),
+                                      Text(
                                         'FULL NAME',
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: 1,
-                                          color: Color(0xFF2848B0),
+                                          color: Theme.of(ctx).colorScheme.primary,
                                         ),
                                       ),
-                                      const SizedBox(height: 6),
+                                      SizedBox(height: 6),
                                       Container(
                                         width: double.infinity,
                                         height: 48,
@@ -2402,7 +2383,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         ),
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFE8EAF2),
+                                          color: Theme.of(ctx).colorScheme.outlineVariant,
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -2414,17 +2395,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               TextCapitalization.words,
                                           textAlignVertical:
                                               TextAlignVertical.center,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600,
-                                            color: Color(0xFF000000),
+                                            color: Theme.of(ctx).colorScheme.onSurface,
                                           ),
                                           decoration: InputDecoration(
                                             hintText: currentFullName,
-                                            hintStyle: const TextStyle(
+                                            hintStyle: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF000000),
+                                              color: Theme.of(ctx).colorScheme.onSurface,
                                             ),
                                             border: InputBorder.none,
                                             isDense: true,
@@ -2473,7 +2454,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           },
                                         ),
                                       ),
-                                      const SizedBox(height: 16),
+                                      SizedBox(height: 16),
                                       Row(
                                         children: [
                                           Expanded(
@@ -2481,16 +2462,16 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                const Text(
+                                                Text(
                                                   'USERNAME',
                                                   style: TextStyle(
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.w700,
                                                     letterSpacing: 1,
-                                                    color: Color(0xFF2848B0),
+                                                    color: Theme.of(ctx).colorScheme.primary,
                                                   ),
                                                 ),
-                                                const SizedBox(height: 6),
+                                                SizedBox(height: 6),
                                                 Container(
                                                   width: double.infinity,
                                                   height: 48,
@@ -2510,28 +2491,28 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   ),
                                                   child: Text(
                                                     username,
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       fontSize: 16,
-                                                      color: Color(0xFF1A2050),
+                                                      color: Theme.of(ctx).colorScheme.onSurface,
                                                     ),
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          const SizedBox(width: 14),
+                                          SizedBox(width: 14),
                                           Expanded(
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                const Text(
+                                                Text(
                                                   'EMAIL',
                                                   style: TextStyle(
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.w700,
                                                     letterSpacing: 1,
-                                                    color: Color(0xFF2848B0),
+                                                    color: Theme.of(ctx).colorScheme.primary,
                                                   ),
                                                 ),
                                                 const SizedBox(height: 6),
@@ -2554,9 +2535,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   ),
                                                   child: Text(
                                                     email ?? '-',
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       fontSize: 16,
-                                                      color: Color(0xFF1A2050),
+                                                      color: Theme.of(ctx).colorScheme.onSurface,
                                                     ),
                                                   ),
                                                 ),
@@ -2565,17 +2546,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 16),
-                                      const Text(
+                                      SizedBox(height: 16),
+                                      Text(
                                         'CLASS',
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: 1,
-                                          color: Color(0xFF2848B0),
+                                          color: Theme.of(ctx).colorScheme.primary,
                                         ),
                                       ),
-                                      const SizedBox(height: 6),
+                                      SizedBox(height: 6),
                                       StreamBuilder<QuerySnapshot>(
                                         stream: FirebaseFirestore.instance
                                             .collection('classes')
@@ -2623,7 +2604,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               vertical: 10,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFE8EAF2),
+                                              color: Theme.of(ctx).colorScheme.outlineVariant,
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -2631,11 +2612,11 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                               child: DropdownButton<String>(
                                                 value: dropdownValue,
                                                 isExpanded: true,
-                                                icon: const Icon(
+                                                icon: Icon(
                                                   Icons
                                                       .keyboard_arrow_down_rounded,
                                                   size: 20,
-                                                  color: Color(0xFF7A7E9A),
+                                                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                                                 ),
                                                 items:
                                                     <DropdownMenuItem<String>>[
@@ -2661,14 +2642,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                           child: Text(
                                                             formatClassName(c),
                                                             style:
-                                                                const TextStyle(
+                                                                TextStyle(
                                                                   fontSize: 16,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600,
-                                                                  color: Color(
-                                                                    0xFF000000,
-                                                                  ),
+                                                                  color: Theme.of(ctx).colorScheme.onSurface,
                                                                 ),
                                                           ),
                                                         ),
@@ -2679,8 +2658,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                     : (val) async {
                                                         if (val == null ||
                                                             val ==
-                                                                dropdownValue)
+                                                                dropdownValue) {
                                                           return;
+                                                        }
                                                         final newClassId =
                                                             val == '__NONE__'
                                                             ? ''
@@ -2814,10 +2794,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 24),
+                                SizedBox(width: 24),
                                 Column(
                                   children: [
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: 8),
                                     CircleAvatar(
                                       radius: 63,
                                       backgroundColor: avatarColor(
@@ -2829,8 +2809,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       child: photoUrl.isEmpty
                                           ? Text(
                                               initials(currentFullName),
-                                              style: const TextStyle(
-                                                color: Color(0xFF1A2050),
+                                              style: TextStyle(
+                                                color: Theme.of(ctx).colorScheme.onSurface,
                                                 fontWeight: FontWeight.w800,
                                                 fontSize: 32,
                                               ),
@@ -2841,18 +2821,18 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 72),
+                            SizedBox(height: 72),
                             SizedBox(
                               width: double.infinity,
                               child: Center(
                                 child: ElevatedButton.icon(
                                   icon: busy
-                                      ? const SizedBox(
+                                      ? SizedBox(
                                           width: 16,
                                           height: 16,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            color: Colors.white,
+                                            color: Theme.of(ctx).colorScheme.surface,
                                           ),
                                         )
                                       : const Icon(
@@ -2954,7 +2934,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               ),
                             ),
                             const SizedBox(height: 44),
-                            const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                            Divider(
+                              height: 1,
+                              color: Theme.of(ctx).colorScheme.outlineVariant,
+                            ),
                             const SizedBox(height: 18),
                             SizedBox(
                               width: double.infinity,
@@ -3115,15 +3098,15 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
               vertical: 40,
             ),
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 560, maxHeight: 580),
+              constraints: BoxConstraints(maxWidth: 560, maxHeight: 580),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(ctx).colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.14),
                     blurRadius: 32,
-                    offset: const Offset(0, 12),
+                    offset: Offset(0, 12),
                   ),
                 ],
               ),
@@ -3133,41 +3116,41 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                     padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
                     child: Row(
                       children: [
-                        const Text(
+                        Text(
                           'Change Homeroom Teacher',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF2848B0),
+                            color: Theme.of(ctx).colorScheme.primary,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Tooltip(
                           message:
                               'Selecting a teacher will assign them as the homeroom teacher of this class.\n'
                               'The current homeroom teacher will be unassigned from this class.\n'
                               'If the selected teacher already has a class, that class will be left without a homeroom teacher.',
                           preferBelow: true,
-                          textStyle: const TextStyle(
+                          textStyle: TextStyle(
                             fontSize: 12,
-                            color: Colors.white,
+                            color: Theme.of(ctx).colorScheme.surface,
                             height: 1.5,
                           ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 8,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.info_outline_rounded,
                             size: 18,
-                            color: Color(0xFF7A7E9A),
+                            color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        const Spacer(),
+                        Spacer(),
                         IconButton(
                           onPressed: busy ? null : () => Navigator.pop(ctx),
-                          icon: const Icon(Icons.close_rounded),
-                          color: const Color(0xFF7A7E9A),
+                          icon: Icon(Icons.close_rounded),
+                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                         ),
                       ],
                     ),
@@ -3179,10 +3162,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       onChanged: (v) =>
                           setS(() => searchQuery = v.toLowerCase().trim()),
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search),
+                        prefixIcon: Icon(Icons.search),
                         hintText: 'Search teacher by name…',
                         filled: true,
-                        fillColor: const Color(0xFFF2F4F8),
+                        fillColor: Theme.of(ctx).colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -3194,13 +3177,13 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   if (msg != null) ...[
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: _buildDialogStatusBanner(msg!, msgIsError),
+                      child: _buildDialogStatusBanner(ctx, msg!, msgIsError),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                   ],
                   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
@@ -3210,7 +3193,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           .snapshots(),
                       builder: (_, snap) {
                         if (!snap.hasData) {
-                          return const Center(
+                          return Center(
                             child: CircularProgressIndicator(),
                           );
                         }
@@ -3251,20 +3234,20 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   height: 40,
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF2F4F8),
+                                    color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.person_off_outlined,
-                                    color: Color(0xFF7A7E9A),
+                                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                                     size: 20,
                                   ),
                                 ),
-                                title: const Text(
+                                title: Text(
                                   'No teacher',
                                   style: TextStyle(
                                     fontStyle: FontStyle.italic,
-                                    color: Color(0xFF7A7E9A),
+                                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -3347,7 +3330,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             });
                                           }
                                         },
-                                  child: const Text('Remove'),
+                                  child: Text('Remove'),
                                 ),
                               ),
                             ...allTeachers.map((d) {
@@ -3370,8 +3353,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   backgroundColor: avatarColor(fullName),
                                   child: Text(
                                     initials(fullName),
-                                    style: const TextStyle(
-                                      color: Color(0xFF1A2050),
+                                    style: TextStyle(
+                                      color: Theme.of(ctx).colorScheme.onSurface,
                                       fontWeight: FontWeight.w800,
                                       fontSize: 11,
                                     ),
@@ -3379,7 +3362,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 ),
                                 title: Text(
                                   fullName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
@@ -3393,8 +3376,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: isCurrentTeacher
-                                        ? const Color(0xFF4CAF50)
-                                        : const Color(0xFF7A7E9A),
+                                        ? Color(0xFF4CAF50)
+                                        : Theme.of(ctx).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 trailing: isCurrentTeacher
@@ -3408,9 +3391,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                       )
                                     : FilledButton(
                                         style: FilledButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFF2848B0,
-                                          ),
+                                          backgroundColor: Theme.of(ctx).colorScheme.primary,
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 12,
                                             vertical: 8,
@@ -3526,7 +3507,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                 ],
               ),
             ),
@@ -3561,15 +3542,15 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
               vertical: 40,
             ),
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 560, maxHeight: 580),
+              constraints: BoxConstraints(maxWidth: 560, maxHeight: 580),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(ctx).colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.14),
                     blurRadius: 32,
-                    offset: const Offset(0, 12),
+                    offset: Offset(0, 12),
                   ),
                 ],
               ),
@@ -3582,17 +3563,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                         Expanded(
                           child: Text(
                             'Add Student to $className',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF2848B0),
+                              color: Theme.of(ctx).colorScheme.primary,
                             ),
                           ),
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(Icons.close_rounded),
-                          color: const Color(0xFF7A7E9A),
+                          icon: Icon(Icons.close_rounded),
+                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                         ),
                       ],
                     ),
@@ -3604,10 +3585,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       onChanged: (v) =>
                           setS(() => searchQuery = v.toLowerCase().trim()),
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search),
+                        prefixIcon: Icon(Icons.search),
                         hintText: 'Search student by name…',
                         filled: true,
-                        fillColor: const Color(0xFFF2F4F8),
+                        fillColor: Theme.of(ctx).colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -3619,13 +3600,13 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   if (msg != null) ...[
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: _buildDialogStatusBanner(msg!, msgIsError),
+                      child: _buildDialogStatusBanner(ctx, msg!, msgIsError),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                   ],
                   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
@@ -3635,7 +3616,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           .snapshots(),
                       builder: (_, snap) {
                         if (!snap.hasData) {
-                          return const Center(
+                          return Center(
                             child: CircularProgressIndicator(),
                           );
                         }
@@ -3665,10 +3646,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             });
 
                         if (allStudents.isEmpty) {
-                          return const Center(
+                          return Center(
                             child: Text(
                               'No students found.',
-                              style: TextStyle(color: Color(0xFF7A7E9A)),
+                              style: TextStyle(color: Theme.of(ctx).colorScheme.onSurfaceVariant),
                             ),
                           );
                         }
@@ -3692,8 +3673,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 backgroundColor: avatarColor(fullName),
                                 child: Text(
                                   initials(fullName),
-                                  style: const TextStyle(
-                                    color: Color(0xFF1A2050),
+                                  style: TextStyle(
+                                    color: Theme.of(ctx).colorScheme.onSurface,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 11,
                                   ),
@@ -3701,7 +3682,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               ),
                               title: Text(
                                 fullName,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
                                 ),
@@ -3713,8 +3694,8 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: isAlreadyHere
-                                      ? const Color(0xFF4CAF50)
-                                      : const Color(0xFF7A7E9A),
+                                      ? Color(0xFF4CAF50)
+                                      : Theme.of(ctx).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                               trailing: isAlreadyHere
@@ -3728,9 +3709,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     )
                                   : FilledButton(
                                       style: FilledButton.styleFrom(
-                                        backgroundColor: const Color(
-                                          0xFF2848B0,
-                                        ),
+                                        backgroundColor: Theme.of(ctx).colorScheme.primary,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,
                                           vertical: 8,
@@ -3779,7 +3758,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                 ],
               ),
             ),
@@ -3801,15 +3780,15 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
         insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
         backgroundColor: Colors.transparent,
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: BoxConstraints(maxWidth: 500),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(ctx).colorScheme.surface,
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.12),
                 blurRadius: 28,
-                offset: const Offset(0, 12),
+                offset: Offset(0, 12),
               ),
             ],
           ),
@@ -3826,17 +3805,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF0D0D8),
+                        color: Color(0xFFF0D0D8),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.delete_outline_rounded,
                         color: Color(0xFFB03040),
                         size: 26,
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    const Expanded(
+                    SizedBox(width: 14),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -3845,7 +3824,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF2848B0),
+                              color: Theme.of(ctx).colorScheme.primary,
                             ),
                           ),
                           SizedBox(height: 6),
@@ -3854,7 +3833,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             style: TextStyle(
                               fontSize: 13,
                               height: 1.4,
-                              color: Color(0xFF7A7E9A),
+                              color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -3862,28 +3841,30 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF2F4F8),
+                    color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFE8EAF2)),
+                    border: Border.all(
+                      color: Theme.of(ctx).colorScheme.outlineVariant,
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Selected class',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1,
-                          color: Color(0xFF7A7E9A),
+                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -3902,12 +3883,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      const Text(
+                      SizedBox(height: 12),
+                      Text(
                         'This action will remove the class from the list and delete the data associated with it.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF7A7E9A),
+                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                           height: 1.4,
                         ),
                       ),
@@ -3922,7 +3903,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                         onPressed: () => Navigator.of(ctx).pop(false),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Color(0xFFE8EAF2)),
+                          side: BorderSide(
+                            color: Theme.of(ctx).colorScheme.outlineVariant,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -4006,30 +3989,32 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
   @override
   Widget build(BuildContext context) {
     if (!AppSession.isAdmin) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(child: Text('Access denied (admin only).')),
       );
     }
 
     return Scaffold(
       body: Container(
-        color: const Color(0xFFF2F4F8),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         child: Column(
           children: [
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Color(0xFFE8EAF2)),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        offset: Offset(0, 4),
                       ),
                     ],
                   ),
@@ -4043,13 +4028,13 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           children: [
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text(
                                   'Classes',
                                   style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w800,
-                                    color: Colors.black,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                                 SizedBox(height: 2),
@@ -4057,47 +4042,50 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   'Create, rename, assign form masters',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Color(0xFF7A7E9A),
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
                             ),
-                            const Spacer(),
+                            Spacer(),
                             TextButton(
                               onPressed: _showCreateClassDialog,
                               style: TextButton.styleFrom(
-                                foregroundColor: Color(0xFF2848B0),
+                                foregroundColor: Theme.of(context).colorScheme.primary,
                                 backgroundColor: Colors.transparent,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 22,
                                   vertical: 16,
                                 ),
-                                textStyle: const TextStyle(
+                                textStyle: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 15,
                                 ),
                                 elevation: 0,
                                 shadowColor: Colors.transparent,
                               ),
-                              child: const Text(
+                              child: Text(
                                 '+ Create new class',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 15,
-                                  color: Color(0xFF2848B0),
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                      SizedBox(height: 18),
+                      Divider(
+                        height: 1,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
                       Container(
                         padding: const EdgeInsets.fromLTRB(32, 18, 32, 12),
                         child: Row(
-                          children: const [
+                          children: [
                             Expanded(
                               flex: 2,
                               child: Text(
@@ -4105,7 +4093,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 13,
-                                  color: Color(0xFF7A7E9A),
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ),
@@ -4116,7 +4104,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 13,
-                                  color: Color(0xFF7A7E9A),
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ),
@@ -4127,7 +4115,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 13,
-                                  color: Color(0xFF7A7E9A),
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -4136,7 +4124,10 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           ],
                         ),
                       ),
-                      const Divider(height: 1, color: Color(0xFFE8EAF2)),
+                      Divider(
+                        height: 1,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
                       Expanded(
                         child: StreamBuilder<QuerySnapshot>(
                           stream: FirebaseFirestore.instance
@@ -4144,14 +4135,18 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               .snapshots(),
                           builder: (context, snap) {
                             if (snap.hasError) {
-                              return Center(
-                                child: SelectableText(
-                                  'Classes error:\n${snap.error}',
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Text(
+                                    'Could not load classes. Please try again.',
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
                               );
                             }
                             if (!snap.hasData) {
-                              return const Center(
+                              return Center(
                                 child: CircularProgressIndicator(),
                               );
                             }
@@ -4180,12 +4175,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 .toList();
 
                             if (visibleDocs.isEmpty) {
-                              return const Center(
+                              return Center(
                                 child: Text(
                                   'No classes configured.',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFF7A7E9A),
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               );
@@ -4194,9 +4189,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             return ListView.separated(
                               padding: const EdgeInsets.fromLTRB(32, 4, 32, 16),
                               itemCount: visibleDocs.length,
-                              separatorBuilder: (_, __) => const Divider(
+                              separatorBuilder: (_, _) => Divider(
                                 height: 1,
-                                color: Color(0xFFE8EAF2),
+                                color: Theme.of(context).colorScheme.outlineVariant,
                               ),
                               itemBuilder: (_, i) {
                                 final doc = visibleDocs[i];
@@ -4233,15 +4228,18 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     );
   }
 
-  Widget _colHeader(String text) => Text(
-    text,
-    style: const TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.w700,
-      color: Colors.black,
-      letterSpacing: 1.2,
-    ),
-  );
+  Widget _colHeader(BuildContext context, String text) {
+    final cs = Theme.of(context).colorScheme;
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        color: cs.onSurface,
+        letterSpacing: 1.2,
+      ),
+    );
+  }
 
   Future<void> _openClassDetailDialog(
     BuildContext context, {
@@ -4266,29 +4264,29 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                 vertical: 20,
               ),
               child: Container(
-                constraints: const BoxConstraints(
+                constraints: BoxConstraints(
                   maxWidth: 1000,
                   maxHeight: 720,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(ctx).colorScheme.surface,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.14),
                       blurRadius: 32,
-                      offset: const Offset(0, 12),
+                      offset: Offset(0, 12),
                     ),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // ── HEADER ───────────────────────────────────────────
+                    // HEADER
                     Container(
                       padding: const EdgeInsets.fromLTRB(28, 20, 20, 20),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(ctx).colorScheme.surface,
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(24),
                         ),
@@ -4310,7 +4308,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     vertical: 9,
                                   ),
                                   decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
+                                    gradient: LinearGradient(
                                       colors: [
                                         Color(0xFF2848B0),
                                         Color(0xFF4070E0),
@@ -4320,15 +4318,15 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   ),
                                   child: Text(
                                     className,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w900,
-                                      color: Colors.white,
+                                      color: Theme.of(ctx).colorScheme.surface,
                                       letterSpacing: 0.5,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 10),
+                                SizedBox(height: 10),
                                 StreamBuilder<DocumentSnapshot>(
                                   stream: FirebaseFirestore.instance
                                       .collection('classes')
@@ -4388,38 +4386,36 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   CrossAxisAlignment.start,
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                const Text(
+                                                Text(
                                                   'HOMEROOM TEACHER',
                                                   style: TextStyle(
                                                     fontSize: 10,
                                                     fontWeight: FontWeight.w700,
-                                                    color: Color(0xFF7A7E9A),
+                                                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                                                     letterSpacing: 1,
                                                   ),
                                                 ),
                                                 Text(
                                                   teacherName,
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.w700,
-                                                    color: Color(0xFF1A2050),
+                                                    color: Theme.of(ctx).colorScheme.onSurface,
                                                   ),
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(width: 8),
+                                            SizedBox(width: 8),
                                             IconButton(
                                               tooltip:
                                                   'Change homeroom teacher',
-                                              icon: const Icon(
+                                              icon: Icon(
                                                 Icons.edit_outlined,
-                                                color: Color(0xFF2848B0),
+                                                color: Theme.of(ctx).colorScheme.primary,
                                                 size: 18,
                                               ),
                                               style: IconButton.styleFrom(
-                                                backgroundColor: const Color(
-                                                  0xFFE8EAF2,
-                                                ),
+                                                backgroundColor: Theme.of(ctx).colorScheme.outlineVariant,
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(8),
@@ -4443,9 +4439,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             if (td != null) ...[
                                               const SizedBox(width: 4),
                                               IconButton(
-                                                icon: const Icon(
+                                                icon: Icon(
                                                   Icons.settings_outlined,
-                                                  color: Color(0xFF1A2050),
+                                                  color: Theme.of(ctx).colorScheme.onSurface,
                                                   size: 18,
                                                 ),
                                                 style: IconButton.styleFrom(
@@ -4584,17 +4580,17 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 }
                               },
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                           ],
                           IconButton(
                             tooltip: 'Add existing student',
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.group_add_outlined,
                               size: 18,
-                              color: Color(0xFF2848B0),
+                              color: Theme.of(ctx).colorScheme.primary,
                             ),
                             style: IconButton.styleFrom(
-                              backgroundColor: const Color(0xFFE8EAF2),
+                              backgroundColor: Theme.of(ctx).colorScheme.outlineVariant,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -4605,16 +4601,16 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               className: className,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           IconButton(
                             tooltip: 'Export full class report',
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.download_for_offline_outlined,
                               size: 18,
-                              color: Color(0xFF2848B0),
+                              color: Theme.of(ctx).colorScheme.primary,
                             ),
                             style: IconButton.styleFrom(
-                              backgroundColor: const Color(0xFFE8EAF2),
+                              backgroundColor: Theme.of(ctx).colorScheme.outlineVariant,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -4646,16 +4642,16 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               }
                             },
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           IconButton(
                             tooltip: 'Delete class',
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.delete_outline_rounded,
                               size: 18,
                               color: Color(0xFFD32F2F),
                             ),
                             style: IconButton.styleFrom(
-                              backgroundColor: const Color(0xFFFFEEEE),
+                              backgroundColor: Color(0xFFFFEEEE),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -4668,15 +4664,15 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               );
                             },
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           IconButton(
                             onPressed: () => Navigator.pop(ctx),
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.close_rounded,
-                              color: Color(0xFF7A7E9A),
+                              color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                             ),
                             style: IconButton.styleFrom(
-                              backgroundColor: const Color(0xFFF2F4F8),
+                              backgroundColor: Theme.of(ctx).colorScheme.surfaceContainerHighest,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -4686,7 +4682,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                       ),
                     ),
 
-                    // ── STUDENT TABLE ─────────────────────────────────────
+                    // STUDENT TABLE
                     Expanded(
                       child: StreamBuilder<QuerySnapshot>(
                         stream: FirebaseFirestore.instance
@@ -4696,12 +4692,18 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                             .snapshots(),
                         builder: (ctx2, snap) {
                           if (snap.hasError) {
-                            return Center(
-                              child: SelectableText('Error: ${snap.error}'),
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Text(
+                                  'Could not load students.',
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
                             );
                           }
                           if (!snap.hasData) {
-                            return const Center(
+                            return Center(
                               child: CircularProgressIndicator(),
                             );
                           }
@@ -4721,11 +4723,11 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                           });
 
                           if (docs.isEmpty) {
-                            return const Center(
+                            return Center(
                               child: Text(
                                 'There are no students in this class.',
                                 style: TextStyle(
-                                  color: Color(0xFF7A7E9A),
+                                  color: Theme.of(ctx2).colorScheme.onSurfaceVariant,
                                   fontSize: 14,
                                 ),
                               ),
@@ -4748,24 +4750,29 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   36,
                                   12,
                                 ),
-                                color: Colors.white,
+                                color: Theme.of(ctx2).colorScheme.surface,
                                 child: Row(
                                   children: [
                                     Expanded(
                                       flex: 5,
-                                      child: _colHeader('STUDENT NAME'),
+                                      child: _colHeader(ctx2, 'STUDENT NAME'),
                                     ),
                                     Expanded(
                                       flex: 4,
-                                      child: Center(child: _colHeader('EMAIL')),
+                                      child: Center(
+                                        child: _colHeader(ctx2, 'EMAIL'),
+                                      ),
                                     ),
                                     Expanded(
                                       flex: 3,
                                       child: Center(
-                                        child: _colHeader('PRIMARY PARENT'),
+                                        child: _colHeader(
+                                          ctx2,
+                                          'PRIMARY PARENT',
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(
+                                    SizedBox(
                                       width: 72,
                                       child: Center(
                                         child: Text(
@@ -4773,7 +4780,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                           style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w700,
-                                            color: Colors.black,
+                                            color: Theme.of(ctx2).colorScheme.onSurface,
                                             letterSpacing: 1.2,
                                           ),
                                         ),
@@ -4782,9 +4789,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                   ],
                                 ),
                               ),
-                              const Divider(
+                              Divider(
                                 height: 1,
-                                color: Color(0xFFE8EAF2),
+                                color: Theme.of(ctx2).colorScheme.outlineVariant,
                               ),
                               Expanded(
                                 child: ListView.separated(
@@ -4878,16 +4885,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   child: photoUrl.isEmpty
                                                       ? Text(
                                                           ini(fullName),
-                                                          style:
-                                                              const TextStyle(
-                                                                color: Color(
-                                                                  0xFF1A2050,
-                                                                ),
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w800,
-                                                                fontSize: 11,
-                                                              ),
+                                                          style: TextStyle(
+                                                            color: Theme.of(ctx2).colorScheme.onSurface,
+                                                            fontWeight:
+                                                                FontWeight.w800,
+                                                            fontSize: 11,
+                                                          ),
                                                         )
                                                       : null,
                                                 ),
@@ -4931,9 +4934,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                   ? email!
                                                   : '—',
                                               textAlign: TextAlign.center,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 12,
-                                                color: Color(0xFF2848B0),
+                                                color: Theme.of(ctx2).colorScheme.primary,
                                               ),
                                             ),
                                           ),
@@ -4959,24 +4962,19 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                                             snap.data ?? '…',
                                                             textAlign: TextAlign
                                                                 .center,
-                                                            style:
-                                                                const TextStyle(
-                                                                  fontSize: 12,
-                                                                  color: Color(
-                                                                    0xFF1A2050,
-                                                                  ),
-                                                                ),
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              color: Theme.of(ctx2).colorScheme.onSurface,
+                                                            ),
                                                           ),
                                                     )
-                                                  : const Text(
+                                                  : Text(
                                                       '—',
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
                                                         fontSize: 12,
-                                                        color: Color(
-                                                          0xFF1A2050,
-                                                        ),
+                                                        color: Theme.of(ctx2).colorScheme.onSurface,
                                                       ),
                                                     ),
                                             ),
@@ -4985,9 +4983,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                             width: 72,
                                             child: Center(
                                               child: IconButton(
-                                                icon: const Icon(
+                                                icon: Icon(
                                                   Icons.settings_outlined,
-                                                  color: Color(0xFF1A2050),
+                                                  color: Theme.of(ctx2).colorScheme.onSurface,
                                                   size: 20,
                                                 ),
                                                 onPressed: () =>
@@ -5025,10 +5023,12 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     36,
                                     12,
                                   ),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF2F4F8),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(ctx2).colorScheme.surfaceContainerHighest,
                                     border: Border(
-                                      top: BorderSide(color: Color(0xFFE8EAF2)),
+                                      top: BorderSide(
+                                        color: Theme.of(ctx2).colorScheme.outlineVariant,
+                                      ),
                                     ),
                                     borderRadius: BorderRadius.vertical(
                                       bottom: Radius.circular(24),
@@ -5038,9 +5038,9 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                     children: [
                                       Text(
                                         '${docs.length} students',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 13,
-                                          color: Color(0xFF7A7E9A),
+                                          color: Theme.of(ctx2).colorScheme.onSurfaceVariant,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -5052,15 +5052,15 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         onPressed: currentPage > 0
                                             ? () => setS(() => currentPage--)
                                             : null,
-                                        color: const Color(0xFF1A2050),
+                                        color: Theme.of(ctx2).colorScheme.onSurface,
                                         disabledColor: const Color(0xFFC0C4D8),
                                       ),
                                       Text(
                                         '${currentPage + 1} / $totalPages',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
-                                          color: Color(0xFF1A2050),
+                                          color: Theme.of(ctx2).colorScheme.onSurface,
                                         ),
                                       ),
                                       IconButton(
@@ -5070,7 +5070,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                         onPressed: currentPage < totalPages - 1
                                             ? () => setS(() => currentPage++)
                                             : null,
-                                        color: const Color(0xFF1A2050),
+                                        color: Theme.of(ctx2).colorScheme.onSurface,
                                         disabledColor: const Color(0xFFC0C4D8),
                                       ),
                                     ],
@@ -5098,7 +5098,7 @@ class _ClassListRow extends StatelessWidget {
   final String teacherUsername;
   final VoidCallback onOpen;
 
-  const _ClassListRow({
+  _ClassListRow({
     required this.classId,
     required this.name,
     required this.teacherUsername,
@@ -5124,17 +5124,17 @@ class _ClassListRow extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [Color(0xFF2848B0), Color(0xFF4070E0)],
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       letterSpacing: 0.4,
                     ),
                   ),
@@ -5165,9 +5165,9 @@ class _ClassListRow extends StatelessWidget {
                 builder: (_, snap) {
                   return Text(
                     snap.data ?? '…',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF1A2050),
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                   );
@@ -5190,10 +5190,10 @@ class _ClassListRow extends StatelessWidget {
                 builder: (_, snap) {
                   return Text(
                     snap.data?.toString() ?? '—',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1A2050),
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   );
                 },
@@ -5208,8 +5208,8 @@ class _ClassListRow extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: onOpen,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF2848B0),
-                  side: const BorderSide(color: Color(0xFF2848B0)),
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  side: BorderSide(color: Theme.of(context).colorScheme.primary),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 8,
@@ -5242,7 +5242,6 @@ class _ScheduleCard extends StatefulWidget {
   onSave;
 
   const _ScheduleCard({
-    super.key,
     required this.classId,
     required this.selectedClassData,
     required this.dayNames,
@@ -5366,10 +5365,10 @@ class _ScheduleCardState extends State<_ScheduleCard> {
               return AlertDialog(
                 title: Text(
                   field == 'start' ? 'Start time' : 'End time',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2848B0),
+                    color: Theme.of(ctx).colorScheme.primary,
                   ),
                 ),
                 content: Column(
@@ -5442,11 +5441,11 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text('Cancel'),
+                    child: Text('Cancel'),
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2848B0),
+                      backgroundColor: Theme.of(ctx).colorScheme.primary,
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () {
@@ -5534,7 +5533,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
 
     if (schedule.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Select at least one day for the schedule.'),
         ),
       );
@@ -5564,32 +5563,34 @@ class _ScheduleCardState extends State<_ScheduleCard> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8EAF2)),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
-            offset: const Offset(0, 3),
+            offset: Offset(0, 3),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               'Operating Hours',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF2848B0),
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           if (widget.classId != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -5597,16 +5598,16 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                 hasSchedule
                     ? 'You can modify the days and time intervals, then save.'
                     : 'The class has no schedule. Create one to be able to modify it.',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   color: Color(0xFF87A1B6),
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (widget.classId == null)
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(16, 8, 16, 10),
               child: Text(
                 'First choose a class from the list on the left.',
@@ -5620,10 +5621,10 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
                   onPressed: () => setState(() => _editing = true),
-                  icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-                  label: const Text('Create schedule'),
+                  icon: Icon(Icons.add_circle_outline_rounded, size: 18),
+                  label: Text('Create schedule'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF2848B0),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -5644,9 +5645,9 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   Expanded(
                     child: Text(
                       _editing ? 'Select the days and times' : 'Class schedule',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF7A7E9A),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.5,
                       ),
@@ -5655,13 +5656,17 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   if (!_editing)
                     OutlinedButton.icon(
                       onPressed: () => setState(() => _editing = true),
-                      icon: const Icon(Icons.edit_outlined, size: 16),
-                      label: const Text('Edit'),
+                      icon: Icon(Icons.edit_outlined, size: 16),
+                      label: Text('Edit'),
                     ),
                 ],
               ),
             ),
-            const Divider(height: 16, thickness: 1, color: Color(0xFFE8EAF2)),
+            Divider(
+              height: 16,
+              thickness: 1,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Wrap(
@@ -5675,27 +5680,27 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                     onSelected: _editing
                         ? (value) => _toggleDay(entry.key, value)
                         : null,
-                    selectedColor: const Color(0xFFD2E5F3),
-                    checkmarkColor: const Color(0xFF2848B0),
+                    selectedColor: Color(0xFFD2E5F3),
+                    checkmarkColor: Theme.of(context).colorScheme.primary,
                     labelStyle: TextStyle(
                       color: selected
-                          ? const Color(0xFF2848B0)
-                          : const Color(0xFF7B9AB2),
+                          ? Theme.of(context).colorScheme.primary
+                          : Color(0xFF7B9AB2),
                       fontWeight: FontWeight.w700,
                     ),
-                    side: const BorderSide(color: Color(0xFFC6D7E5)),
+                    side: BorderSide(color: Color(0xFFC6D7E5)),
                   );
                 }).toList(),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             if (_selectedDays.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Text(
                   'Select at least one day for the schedule.',
                   style: TextStyle(
-                    color: Color(0xFF7A7E9A),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -5715,7 +5720,9 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   widgets.add(
                     Container(
                       decoration: isToday
-                          ? const BoxDecoration(color: Color(0xFFE8EAF2))
+                          ? BoxDecoration(
+                              color: Theme.of(context).colorScheme.outlineVariant,
+                            )
                           : null,
                       padding: const EdgeInsets.symmetric(
                         vertical: 16,
@@ -5726,10 +5733,10 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                           SizedBox(
                             width: 18,
                             child: isToday
-                                ? const Icon(
+                                ? Icon(
                                     Icons.play_arrow_rounded,
                                     size: 14,
-                                    color: Color(0xFF2848B0),
+                                    color: Theme.of(context).colorScheme.primary,
                                   )
                                 : null,
                           ),
@@ -5737,10 +5744,10 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                             flex: 5,
                             child: Text(
                               entry.value,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF2848B0),
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                           ),
@@ -5761,7 +5768,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF2F4F8),
+                                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
@@ -5769,17 +5776,17 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                     children: [
                                       Text(
                                         start,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
-                                          color: Color(0xFF1A2050),
+                                          color: Theme.of(context).colorScheme.onSurface,
                                           letterSpacing: 1.5,
                                         ),
                                       ),
                                       const SizedBox(width: 6),
-                                      const Icon(
+                                      Icon(
                                         Icons.access_time_rounded,
                                         size: 14,
-                                        color: Color(0xFF1A2050),
+                                        color: Theme.of(context).colorScheme.onSurface,
                                       ),
                                     ],
                                   ),
@@ -5787,7 +5794,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           Expanded(
                             flex: 4,
                             child: Align(
@@ -5805,7 +5812,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF2F4F8),
+                                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
@@ -5813,17 +5820,17 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                                     children: [
                                       Text(
                                         end,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
-                                          color: Color(0xFF1A2050),
+                                          color: Theme.of(context).colorScheme.onSurface,
                                           letterSpacing: 1.5,
                                         ),
                                       ),
                                       const SizedBox(width: 6),
-                                      const Icon(
+                                      Icon(
                                         Icons.access_time_rounded,
                                         size: 14,
-                                        color: Color(0xFF1A2050),
+                                        color: Theme.of(context).colorScheme.onSurface,
                                       ),
                                     ],
                                   ),
@@ -5837,10 +5844,10 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   );
                   if (i < selectedEntries.length - 1) {
                     widgets.add(
-                      const Divider(
+                      Divider(
                         height: 1,
                         thickness: 1,
-                        color: Color(0xFFE8EAF2),
+                        color: Theme.of(context).colorScheme.outlineVariant,
                       ),
                     );
                   }
@@ -5856,19 +5863,19 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                       onPressed: _saving
                           ? null
                           : () => setState(() => _resetDraft()),
-                      child: const Text('Cancel'),
+                      child: Text('Cancel'),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: _saving ? null : _saveDraft,
                         icon: _saving
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 16,
                                 height: 16,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.surface,
                                 ),
                               )
                             : Icon(
@@ -5885,7 +5892,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                               : 'Create schedule',
                         ),
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF2848B0),
+                          backgroundColor: Theme.of(context).colorScheme.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
@@ -5920,7 +5927,7 @@ class _ClassTeacherCard extends StatelessWidget {
   })
   onOpenTeacherDialog;
 
-  const _ClassTeacherCard({
+  _ClassTeacherCard({
     required this.classId,
     required this.teacherUsername,
     required this.onOpenTeacherDialog,
@@ -5937,25 +5944,27 @@ class _ClassTeacherCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8EAF2)),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
-            offset: const Offset(0, 3),
+            offset: Offset(0, 3),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'CLASS HOMEROOM TEACHER',
             style: TextStyle(
               fontSize: 10,
-              color: Color(0xFF7A7E9A),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w800,
               letterSpacing: 1,
             ),
@@ -6041,9 +6050,9 @@ class _ClassTeacherCard extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.settings_outlined,
-                        color: Color(0xFF1A2050),
+                        color: Theme.of(context).colorScheme.onSurface,
                         size: 22,
                       ),
                       onPressed: teacherDoc == null

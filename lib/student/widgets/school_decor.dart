@@ -237,8 +237,7 @@ class WaveHeaderPainter extends CustomPainter {
 }
 
 /// Standard blue gradient page header used on subpages (lists, details).
-/// Mirrors the look of `WaveHeroHeader` but without the bottom wave — fits
-/// pages that have a flat content area below.
+/// Like `WaveHeroHeader` but without the bottom wave, for flat content areas.
 class PageBlueHeader extends StatelessWidget {
   final String title;
   final String? subtitle;

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../admin/services/admin_api.dart';
+import '../services/admin_api.dart';
 import '../core/session.dart';
 import '../student/logout_dialog.dart';
 
@@ -43,7 +43,9 @@ class _SettingsSheet extends StatelessWidget {
       if (context.mounted) {
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
-    } catch (_) {}
+    } catch (e, st) {
+      debugPrint('account_bottom_sheet: sign out teacher: $e\n$st');
+    }
   }
 
   @override
@@ -132,7 +134,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
   bool _sendingCode = false;
   bool _codeSent = false;
   bool _emailVerified = false;
-  bool _obscurePassword = true;
+  final bool _obscurePassword = true;
 
 
   @override
@@ -239,7 +241,11 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not save changes. Please try again.'),
+          ),
+        );
       }
     } finally {
       if (!closed && mounted) setState(() => _saving = false);
@@ -258,7 +264,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.14),
+              color: Colors.black.withValues(alpha: 0.14),
               blurRadius: 28,
               offset: const Offset(0, 14),
             ),
@@ -398,8 +404,11 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                       icon: Icon(_editingPassword ? Icons.close : Icons.edit_outlined, size: 20),
                       onPressed: () => setState(() {
                         _editingPassword = !_editingPassword;
-                        if (!_editingPassword) _passwordC.text = '••••••••••••';
-                        else _passwordC.clear();
+                        if (!_editingPassword) {
+                          _passwordC.text = '••••••••••••';
+                        } else {
+                          _passwordC.clear();
+                        }
                       }),
                     ),
                   ],
@@ -440,8 +449,10 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
     if (code.isEmpty) return;
     try {
       final res = await _api.verifyEmailCode(uid: FirebaseAuth.instance.currentUser!.uid, code: code);
+      if (!mounted) return;
       if (res['verified'] == true) setState(() => _emailVerified = true);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid code')));
     }
   }
@@ -508,7 +519,7 @@ class _SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = danger ? _danger : _primary;
     return Material(
-      color: danger ? color.withOpacity(0.07) : _surfaceContainerLow,
+      color: danger ? color.withValues(alpha: 0.07) : _surfaceContainerLow,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,

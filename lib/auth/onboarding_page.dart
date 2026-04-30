@@ -1,8 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../admin/services/admin_api.dart';
+import '../services/admin_api.dart';
 import '../core/session.dart';
 import 'login_add_photo.dart';
 
@@ -80,7 +80,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
       Future.microtask(() async {
         try {
           await _api.markPasswordChanged(uid: widget.user.uid);
-        } catch (_) {}
+        } catch (e, st) {
+          debugPrint('onboarding_page: mark password changed: $e\n$st');
+        }
       });
     } else if (existingEmail.trim().isNotEmpty && emailVerified) {
       _step = _stepPassword;
@@ -92,7 +94,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Future<void> _sendCode() async {
     final email = _emailC.text.trim();
     if (email.isEmpty || !email.contains('@')) {
-      setState(() => _errorMsg = 'Email invalid');
+      setState(() => _errorMsg = 'Invalid email');
       return;
     }
     setState(() {
@@ -114,12 +116,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
       }
     } on FirebaseFunctionsException catch (e) {
       setState(() {
-        _errorMsg = e.message ?? 'Nu am putut trimite codul.';
+        _errorMsg = e.message ?? 'Could not send the code.';
         _loading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMsg = 'Eroare: $e';
+        _errorMsg = 'Something went wrong. Please try again.';
         _loading = false;
       });
     }
@@ -127,12 +129,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   Future<void> _verifyEmail() async {
     if (!_codeSent) {
-      setState(() => _errorMsg = 'Trimite mai intai codul pe email.');
+      setState(() => _errorMsg = 'Please send the code to your email first.');
       return;
     }
     final code = _verificationCodeC.text.trim();
     if (code.isEmpty) {
-      setState(() => _errorMsg = 'Introdu codul de verificare');
+      setState(() => _errorMsg = 'Enter the verification code');
       return;
     }
     setState(() {
@@ -144,16 +146,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
         uid: widget.user.uid,
         code: code,
       );
-      if (result['verified'] != true)
-        throw Exception('Cod de verificare invalid');
+      if (result['verified'] != true) {
+        throw Exception('Invalid verification code');
+      }
       _newPasswordC.clear();
       _confirmPasswordC.clear();
-      if (mounted)
+      if (mounted) {
         setState(() {
           _step = _stepPassword;
           _loading = false;
           _errorMsg = null;
         });
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -173,7 +177,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       return;
     }
     if (newPass != confirmPass) {
-      setState(() => _errorMsg = 'Parolele nu se potrivesc');
+      setState(() => _errorMsg = 'Passwords do not match');
       return;
     }
 
@@ -228,7 +232,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMsg = 'Eroare la schimbarea parolei: $e';
+        _errorMsg = 'Could not change password. Please try again.';
         _loading = false;
       });
     }
@@ -414,7 +418,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.07),
+        color: Colors.white.withValues(alpha: 0.07),
         shape: BoxShape.circle,
       ),
     );
@@ -500,12 +504,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
     const SizedBox(height: 8),
     const Text(
-      'Introdu adresa de email personal si codul de verificare.',
+      'Enter your personal email and the verification code.',
       style: TextStyle(fontSize: 13, color: Color(0xFF777777), height: 1.4),
     ),
     const SizedBox(height: 28),
 
-    _label('Email Personal'),
+    _label('Personal Email'),
     const SizedBox(height: 6),
     _field(
       controller: _emailC,
@@ -528,7 +532,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         child: Text(
-          _codeSent ? 'Retrimite codul →' : 'Trimite cod pe email →',
+          _codeSent ? 'Resend code →' : 'Send code to email →',
           style: const TextStyle(
             color: _primaryGreen,
             fontSize: 12.5,
@@ -539,7 +543,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
     const SizedBox(height: 16),
 
-    _label('Cod Verificare (6 cifre)'),
+    _label('Verification Code (6 digits)'),
     const SizedBox(height: 6),
     _field(
       controller: _verificationCodeC,
@@ -553,7 +557,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
     const SizedBox(height: 12),
 
-    _infoBox('Verifica folderul Spam daca nu ai primit codul.'),
+    _infoBox('Check your Spam folder if you did not receive the code.'),
 
     if (_errorMsg != null) ...[
       const SizedBox(height: 12),
@@ -564,7 +568,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _navRow(
       onBack: _loading ? null : _signOut,
       onContinue: _loading ? null : _verifyEmail,
-      continueLabel: 'Continua',
+      continueLabel: 'Continue',
     ),
   ];
 
@@ -585,7 +589,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
     const SizedBox(height: 28),
 
-    _label('Parola noua (min. 8 caractere)'),
+    _label('New password (min. 8 characters)'),
     const SizedBox(height: 6),
     _field(
       controller: _newPasswordC,
@@ -604,7 +608,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
     const SizedBox(height: 16),
 
-    _label('Confirma parola'),
+    _label('Confirm password'),
     const SizedBox(height: 6),
     _field(
       controller: _confirmPasswordC,
@@ -632,7 +636,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _navRow(
       onBack: _loading ? null : _goBackToEmailStep,
       onContinue: _loading ? null : _submitPassword,
-      continueLabel: 'Continua',
+      continueLabel: 'Continue',
     ),
   ];
 
@@ -755,7 +759,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               color: Color(0xFF333333),
             ),
             label: const Text(
-              'Inapoi',
+              'Back',
               style: TextStyle(
                 color: Color(0xFF333333),
                 fontWeight: FontWeight.w500,
@@ -899,7 +903,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 class _OnboardingLeftDotsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.09);
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.09);
     const spacing = 18.0;
     for (double y = 12; y < size.height; y += spacing) {
       for (double x = 12; x < size.width; x += spacing) {

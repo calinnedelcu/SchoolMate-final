@@ -96,8 +96,14 @@ class _CereriAsteptarePageState extends State<CereriAsteptarePage> {
                               .snapshots(),
                           builder: (context, snap) {
                             if (snap.hasError) {
-                              return Center(
-                                child: Text('Error: ${snap.error}'),
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Text(
+                                    'Could not load requests.',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
                               );
                             }
                             if (!snap.hasData) {

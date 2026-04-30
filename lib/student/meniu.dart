@@ -287,9 +287,7 @@ const _homeMonths = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-// ────────────────────────────────────────────────────────────────────────────
 // AZI HERO CARD (gradient, white text, vertical layout)
-// ────────────────────────────────────────────────────────────────────────────
 class _AziHeroCard extends StatelessWidget {
   final ({int startMin, int endMin, String startText, String endText})?
       schedule;
@@ -539,9 +537,7 @@ class _AziCardDecorPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // INBOX PREVIEW CARD
-// ────────────────────────────────────────────────────────────────────────────
 class _InboxPreviewCard extends StatelessWidget {
   final String studentUid;
   final DateTime? inboxLastOpenedAt;
@@ -827,7 +823,6 @@ class _WhiteCardDecorPainter extends CustomPainter {
       Paint()..color = _primary.withValues(alpha: 0.035),
     );
 
-    // Math symbols scattered — yellow symbol varies per card
     final c1 = _primary.withValues(alpha: 0.1);
     final c2 = _primary.withValues(alpha: 0.07);
     final cy = const Color(0xFFF5C518).withValues(alpha: 0.4);
@@ -852,9 +847,7 @@ class _WhiteCardDecorPainter extends CustomPainter {
       oldDelegate.variant != variant;
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // QUICK ACTIONS ROW (2 tiles)
-// ────────────────────────────────────────────────────────────────────────────
 class _QuickActionsRow extends StatelessWidget {
   final VoidCallback onQr;
   final VoidCallback onLeaveRequests;

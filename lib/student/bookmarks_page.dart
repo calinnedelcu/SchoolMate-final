@@ -54,7 +54,15 @@ class _BookmarksPageState extends State<BookmarksPage> {
       stream: BookmarksService.stream(uid),
       builder: (context, snap) {
         if (snap.hasError) {
-          return Center(child: Text('Error: ${snap.error}'));
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Could not load bookmarks.',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
         }
         if (!snap.hasData) {
           return const Center(child: CircularProgressIndicator(color: _primary));
@@ -528,6 +536,7 @@ class _BookmarkDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final size = MediaQuery.sizeOf(context);
     final maxW = size.width < 460 ? size.width - 32 : 420.0;
     final maxH = size.height * 0.82;
@@ -561,15 +570,15 @@ class _BookmarkDetailDialog extends StatelessWidget {
                                 child: StorageImage(
                                   url: item.imageUrl,
                                   fit: BoxFit.cover,
-                                  loadingBuilder: (_) => const SizedBox(
+                                  loadingBuilder: (_) => SizedBox(
                                     width: double.infinity,
                                     height: 200,
-                                    child: ColoredBox(color: Color(0xFFE8EAF2)),
+                                    child: ColoredBox(color: cs.outlineVariant),
                                   ),
-                                  errorBuilder: (_, _) => const SizedBox(
+                                  errorBuilder: (_, _) => SizedBox(
                                     width: double.infinity,
                                     height: 200,
-                                    child: ColoredBox(color: Color(0xFFE8EAF2)),
+                                    child: ColoredBox(color: cs.outlineVariant),
                                   ),
                                 ),
                               ),
@@ -613,7 +622,7 @@ class _BookmarkDetailDialog extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF2F4F8),
+                              color: cs.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Row(
@@ -914,6 +923,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: Column(
@@ -923,7 +933,7 @@ class _EmptyState extends StatelessWidget {
             width: 88,
             height: 88,
             decoration: BoxDecoration(
-              color: const Color(0xFFE8EAF2),
+              color: cs.outlineVariant,
               borderRadius: BorderRadius.circular(28),
             ),
             child: const Icon(

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../common/linked_children_resolver.dart';
 import '../core/session.dart';
 import '../student/widgets/school_decor.dart';
 
@@ -19,6 +20,7 @@ class ParentRequestsPage extends StatefulWidget {
 
 class _ParentRequestsPageState extends State<ParentRequestsPage> {
   bool _loadedOnce = false;
+  String? _busyDocId;
 
   @override
   void initState() {
@@ -34,6 +36,8 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
   void dispose() => super.dispose();
 
   Future<void> _handleRequest(String docId, bool approved) async {
+    if (_busyDocId != null) return;
+    setState(() => _busyDocId = docId);
     final parentName =
         (AppSession.fullName != null && AppSession.fullName!.isNotEmpty)
         ? AppSession.fullName!
@@ -60,7 +64,13 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(
+        const SnackBar(
+          content: Text('Could not process the request. Please try again.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busyDocId = null);
     }
   }
 
@@ -123,10 +133,46 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
           });
 
           if (docs.isEmpty) {
-            return const Center(
-              child: Text(
-                'No new requests.',
-                style: TextStyle(color: _kLabelColor, fontSize: 16),
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 84,
+                      height: 84,
+                      decoration: BoxDecoration(
+                        color: _kPrimary.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.inbox_rounded,
+                        size: 44,
+                        color: _kPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No pending requests',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: _kOnSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'New leave requests from your child will appear here.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: _kLabelColor,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -135,12 +181,16 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.only(top: 2, bottom: 24),
             itemCount: docs.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 14),
+            separatorBuilder: (_, _) => const SizedBox(height: 14),
             itemBuilder: (context, index) {
               final doc = docs[index];
               final data = doc.data();
+              final busy = _busyDocId == doc.id;
+              final disabled = _busyDocId != null && !busy;
               return _RequestCard(
                 data: data,
+                busy: busy,
+                disabled: disabled,
                 onAccept: () => _handleRequest(doc.id, true),
                 onReject: () => _handleRequest(doc.id, false),
               );
@@ -165,28 +215,14 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
             .map((value) => value.toString().trim())
             .where((value) => value.isNotEmpty && value != parentUid)),
       );
-    } catch (_) {}
+    } catch (e, st) {
+      debugPrint('parent_requests_page: load parent doc children list: $e\n$st');
+    }
 
-    try {
-      final byParents = await users
-          .where('parents', arrayContains: parentUid)
-          .get();
-      ids.addAll(byParents.docs.map((doc) => doc.id));
-    } catch (_) {}
-
-    try {
-      final byParentUid = await users
-          .where('parentUid', isEqualTo: parentUid)
-          .get();
-      ids.addAll(byParentUid.docs.map((doc) => doc.id));
-    } catch (_) {}
-
-    try {
-      final byParentId = await users
-          .where('parentId', isEqualTo: parentUid)
-          .get();
-      ids.addAll(byParentId.docs.map((doc) => doc.id));
-    } catch (_) {}
+    ids.addAll(await resolveLinkedChildIds(
+      parentUid,
+      tag: 'parent_requests_page',
+    ));
 
     final sorted = ids.toList()..sort();
     return sorted;
@@ -353,15 +389,20 @@ class _RequestCard extends StatelessWidget {
   final Map<String, dynamic> data;
   final VoidCallback onAccept;
   final VoidCallback onReject;
+  final bool busy;
+  final bool disabled;
 
   const _RequestCard({
     required this.data,
     required this.onAccept,
     required this.onReject,
+    this.busy = false,
+    this.disabled = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final studentName = (data['studentName'] ?? 'Unknown student')
         .toString()
         .trim();
@@ -378,7 +419,7 @@ class _RequestCard extends StatelessWidget {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(22),
         boxShadow: const [
           BoxShadow(
@@ -479,7 +520,7 @@ class _RequestCard extends StatelessWidget {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE8EAF2),
+                              color: cs.outlineVariant,
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Text(
@@ -513,7 +554,7 @@ class _RequestCard extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8EAF2),
+                    color: cs.outlineVariant,
                     borderRadius: BorderRadius.circular(20),
                     border: const Border(
                       left: BorderSide(color: _kPrimary, width: 3),
@@ -567,12 +608,29 @@ class _RequestCard extends StatelessWidget {
                       child: SizedBox(
                         height: 48,
                         child: ElevatedButton.icon(
-                          onPressed: onAccept,
-                          icon: const Icon(Icons.check_rounded, size: 18),
+                          onPressed: (busy || disabled) ? null : onAccept,
+                          icon: busy
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Icon(Icons.check_rounded, size: 18),
                           label: const Text('Approve'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _kPrimary,
                             foregroundColor: Colors.white,
+                            disabledBackgroundColor: _kPrimary.withValues(
+                              alpha: 0.5,
+                            ),
+                            disabledForegroundColor: Colors.white.withValues(
+                              alpha: 0.85,
+                            ),
                             elevation: 2,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             shape: RoundedRectangleBorder(
@@ -591,12 +649,27 @@ class _RequestCard extends StatelessWidget {
                       child: SizedBox(
                         height: 48,
                         child: ElevatedButton.icon(
-                          onPressed: onReject,
-                          icon: const Icon(Icons.close_rounded, size: 18),
+                          onPressed: (busy || disabled) ? null : onReject,
+                          icon: busy
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFFB03040),
+                                    ),
+                                  ),
+                                )
+                              : const Icon(Icons.close_rounded, size: 18),
                           label: const Text('Reject'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFF8E0E5),
                             foregroundColor: const Color(0xFFB03040),
+                            disabledBackgroundColor: const Color(0xFFF8E0E5)
+                                .withValues(alpha: 0.6),
+                            disabledForegroundColor: const Color(0xFFB03040)
+                                .withValues(alpha: 0.7),
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             shape: RoundedRectangleBorder(

@@ -8,8 +8,7 @@ class AppSession {
   static String? classId;
   static Map<String, dynamic>? bootstrapUserData;
 
-  // Reactive flag — ValueListenableBuilder in main.dart listens to this.
-  // Must NOT be reset by calling code except via AppSession.clear().
+  // Must only be reset via AppSession.clear() so listeners stay consistent.
   static final ValueNotifier<bool> twoFactorNotifier = ValueNotifier(false);
   static bool get twoFactorVerified => twoFactorNotifier.value;
   static set twoFactorVerified(bool v) => twoFactorNotifier.value = v;

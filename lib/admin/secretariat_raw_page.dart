@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'services/admin_api.dart';
+import '../services/admin_api.dart';
 import 'services/admin_store.dart';
 import 'admin_classes_page.dart';
 import 'admin_students_page.dart';
@@ -14,7 +14,6 @@ import 'admin_turnstiles_page.dart';
 import 'admin_posts_announcements_page.dart';
 import 'admin_timetable_page.dart';
 import 'widgets/admin_create_user_dialog.dart';
-// import 'secretariat_global_messages_page.dart'; // unused after menu cleanup
 import '../services/security_flags_service.dart';
 import '../core/session.dart';
 
@@ -252,8 +251,8 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                           IconButton(
                             icon: const Icon(Icons.close, size: 22),
                             onPressed: () => Navigator.of(context).pop(),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
+                            visualDensity: VisualDensity.compact,
+                            tooltip: 'Close',
                           ),
                         ],
                       ),
@@ -415,7 +414,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
           'createdAt': Timestamp.now(),
         });
       }
-    } catch (_) {}
+    } catch (e, st) {
+      debugPrint('secretariat_raw_page: seed secretariat activity log: $e\n$st');
+    }
   }
 
   Future<void> _recordSecretariatActivity({
@@ -430,9 +431,9 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
         'detail': detail,
         'createdAt': Timestamp.now(),
       });
-      print('Activity logged: $message');
+      debugPrint('Activity logged: $message');
     } catch (e) {
-      print('Failed to log activity: $e');
+      debugPrint('Failed to log activity: $e');
     }
   }
 
@@ -722,7 +723,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ── White top bar ─────────────────────────────────
+                // White top bar
                 Container(
                   height: 72,
                   decoration: const BoxDecoration(
@@ -896,7 +897,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // ── STATISTICS ──────────────────────────
+                                // STATISTICS
                                 if (activeSidebarLabel == 'Menu') ...[
                                   const SizedBox(height: 12),
                                   _buildStatsRow(),
