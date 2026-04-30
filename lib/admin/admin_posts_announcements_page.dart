@@ -14,7 +14,7 @@ const _textMid = Color(0xFF3A4A80);
 const _textMuted = Color(0xFF7A7E9A);
 const _pinColor = Color(0xFFB07A00);
 
-// ─── Category colors ──────────────────────────────────────────────────────────
+// Category colors
 Color _categoryColor(String cat) {
   switch (cat) {
     case 'competition':
@@ -60,7 +60,7 @@ IconData _categoryIcon(String cat) {
   }
 }
 
-// ─── Unified post item ────────────────────────────────────────────────────────
+// Unified post item
 
 class _PostItem {
   final String docId;
@@ -88,7 +88,7 @@ class _PostItem {
   });
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// Page
 
 class AdminPostsAnnouncementsPage extends StatelessWidget {
   final bool embedded;
@@ -132,7 +132,7 @@ class AdminPostsAnnouncementsPage extends StatelessWidget {
   }
 }
 
-// ─── Stats Row ────────────────────────────────────────────────────────────────
+// Stats Row
 
 class _StatsRow extends StatelessWidget {
   const _StatsRow();
@@ -256,12 +256,13 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
         color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8EAF2)),
+        border: Border.all(color: cs.outlineVariant),
         boxShadow: [
           BoxShadow(
             color: _primary.withValues(alpha: 0.05),
@@ -323,7 +324,7 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// ─── Posts List ───────────────────────────────────────────────────────────────
+// Posts List
 
 const _kFilterAll = 'all';
 
@@ -349,13 +350,14 @@ class _PostsListState extends State<_PostsList> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final cutoff = DateTime.now().subtract(const Duration(days: 30));
 
     return Container(
       decoration: BoxDecoration(
         color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8EAF2)),
+        border: Border.all(color: cs.outlineVariant),
         boxShadow: [
           BoxShadow(
             color: _primary.withValues(alpha: 0.05),
@@ -408,9 +410,9 @@ class _PostsListState extends State<_PostsList> {
           ],
         ),
         const SizedBox(height: 18),
-        const Divider(height: 1, color: Color(0xFFE8EAF2)),
+        Divider(height: 1, color: cs.outlineVariant),
         const SizedBox(height: 14),
-        // ── Filter chips ─────────────────────────────────────────────
+        // Filter chips
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
@@ -577,7 +579,7 @@ class _PostsListState extends State<_PostsList> {
   }
 }
 
-// ─── Post Card ────────────────────────────────────────────────────────────────
+// Post Card
 
 class _PostCard extends StatelessWidget {
   final _PostItem item;
@@ -916,6 +918,7 @@ class _FilterChipWidgetState extends State<_FilterChipWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
@@ -930,12 +933,12 @@ class _FilterChipWidgetState extends State<_FilterChipWidget> {
                 ? widget.chipColor
                 : _hovered
                     ? widget.chipColor.withValues(alpha: 0.10)
-                    : const Color(0xFFF2F4F8),
+                    : cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: widget.selected || _hovered
                   ? widget.chipColor
-                  : const Color(0xFFE8EAF2),
+                  : cs.outlineVariant,
             ),
           ),
           child: Row(
@@ -985,7 +988,7 @@ class _Dot extends StatelessWidget {
   }
 }
 
-// ─── Post Detail / Edit Dialog ────────────────────────────────────────────────
+// Post Detail / Edit Dialog
 
 class _PostDetailDialog extends StatefulWidget {
   final _PostItem item;
@@ -1121,6 +1124,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final catColor = _categoryColor(widget.item.category);
     final catIcon = _categoryIcon(widget.item.category);
     final isVol = widget.item.collection == 'volunteerOpportunities';
@@ -1135,12 +1139,12 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(22),
         child: Container(
-          color: const Color(0xFFF2F4F8),
+          color: cs.surfaceContainerHighest,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Blue gradient header ──────────────────────────────────
+              // Blue gradient header
               Container(
                 padding: const EdgeInsets.fromLTRB(22, 20, 16, 20),
                 decoration: const BoxDecoration(
@@ -1257,7 +1261,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
                 ),
               ),
 
-              // ── Scrollable body ───────────────────────────────────────
+              // Scrollable body
               Flexible(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
@@ -1269,12 +1273,12 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
                           ),
                         )
                       : _editing
-                          ? _buildEditBody(isVol)
-                          : _buildViewBody(isVol, catColor),
+                          ? _buildEditBody(context, isVol)
+                          : _buildViewBody(context, isVol, catColor),
                 ),
               ),
 
-              // ── Footer ────────────────────────────────────────────────
+              // Footer
               if (_editing)
                 Container(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -1344,7 +1348,8 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
     );
   }
 
-  Widget _buildViewBody(bool isVol, Color catColor) {
+  Widget _buildViewBody(BuildContext context, bool isVol, Color catColor) {
+    final cs = Theme.of(context).colorScheme;
     final message = (isVol
             ? _fullDoc!['description']
             : _fullDoc!['message'])
@@ -1375,7 +1380,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
                   loadingBuilder: (_) => Container(
                     width: 280,
                     height: 180,
-                    color: const Color(0xFFE8EAF2),
+                    color: cs.outlineVariant,
                     alignment: Alignment.center,
                     child: const SizedBox(
                       width: 22,
@@ -1385,7 +1390,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
                   ),
                   errorBuilder: (_, error) => Container(
                     width: 320,
-                    color: const Color(0xFFE8EAF2),
+                    color: cs.outlineVariant,
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -1424,7 +1429,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
           ),
           const SizedBox(height: 16),
         ],
-        // ── Meta chips row ────────────────────────────────────────
+        // Meta chips row
         Wrap(
           spacing: 8,
           runSpacing: 6,
@@ -1453,7 +1458,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
 
         const SizedBox(height: 18),
 
-        // ── Message / description ─────────────────────────────────
+        // Message / description
         if (message.isNotEmpty) ...[
           _SectionLabel('Message'),
           const SizedBox(height: 8),
@@ -1461,9 +1466,9 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE8EAF2)),
+              border: Border.all(color: cs.outlineVariant),
             ),
             child: Text(
               message,
@@ -1478,12 +1483,12 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
           const SizedBox(height: 16),
         ],
 
-        // ── Info rows ─────────────────────────────────────────────
+        // Info rows
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE8EAF2)),
+            border: Border.all(color: cs.outlineVariant),
           ),
           child: Column(
             children: [
@@ -1548,7 +1553,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
     );
   }
 
-  Widget _buildEditBody(bool isVol) {
+  Widget _buildEditBody(BuildContext context, bool isVol) {
     final cat = widget.item.category;
     final hasEventDate = cat == 'competition' || cat == 'camp' ||
         cat == 'volunteer' || cat == 'vacation';
@@ -1626,7 +1631,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
   }
 }
 
-// ─── Detail helper widgets ─────────────────────────────────────────────────────
+// Detail helper widgets
 
 class _HeaderBtn extends StatefulWidget {
   final IconData icon;
@@ -1895,6 +1900,7 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1917,7 +1923,7 @@ class _Field extends StatelessWidget {
           style: const TextStyle(color: _textDark, fontSize: 14),
           decoration: InputDecoration(
             filled: true,
-            fillColor: const Color(0xFFE8EAF2),
+            fillColor: cs.outlineVariant,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             border: OutlineInputBorder(
@@ -1949,6 +1955,7 @@ class _EditDateFieldState extends State<_EditDateField> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final hasDate = widget.date != null;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -1962,7 +1969,7 @@ class _EditDateFieldState extends State<_EditDateField> {
           decoration: BoxDecoration(
             color: _hovered
                 ? const Color(0xFFDDE0EE)
-                : const Color(0xFFE8EAF2),
+                : cs.outlineVariant,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: hasDate

@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../Auth/login_page_firestore.dart';
-import '../admin/services/admin_api.dart';
+import '../auth/login_page_firestore.dart';
+import '../services/admin_api.dart';
+import '../common/linked_children_resolver.dart';
 import '../core/session.dart';
 import '../student/widgets/no_anim_route.dart';
 import '../student/widgets/school_decor.dart' as decor;
@@ -28,7 +29,7 @@ const _homeMonths = [
   'December',
 ];
 
-// ── Colour tokens (same palette as student/admin) ────────────────────────────
+// Colour tokens (same palette as student/admin)
 const _primary = Color(0xFF2848B0);
 const _surface = Color(0xFFF2F4F8);
 const _surfaceContainerLow = Color(0xFFE8EAF2);
@@ -110,9 +111,7 @@ class _DampedScrollPhysics extends ScrollPhysics {
       super.applyPhysicsToUserOffset(position, offset) * 0.55;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // MAIN WIDGET
-// ─────────────────────────────────────────────────────────────────────────────
 class ParentHomePage extends StatefulWidget {
   const ParentHomePage({super.key});
 
@@ -123,7 +122,7 @@ class ParentHomePage extends StatefulWidget {
 class _ParentHomePageState extends State<ParentHomePage> {
   DateTime? _localInboxLastOpened;
 
-  // Cached user-doc stream — must not be recreated inside build().
+  // Must not be recreated inside build().
   String? _cachedUserDocUid;
   Stream<DocumentSnapshot<Map<String, dynamic>>>? _userDocStream;
 
@@ -164,28 +163,10 @@ class _ParentHomePageState extends State<ParentHomePage> {
           .where((value) => value.isNotEmpty),
     };
 
-    final users = FirebaseFirestore.instance.collection('users');
-
-    try {
-      final byParents = await users
-          .where('parents', arrayContains: parentUid)
-          .get();
-      ids.addAll(byParents.docs.map((doc) => doc.id));
-    } catch (_) {}
-
-    try {
-      final byParentUid = await users
-          .where('parentUid', isEqualTo: parentUid)
-          .get();
-      ids.addAll(byParentUid.docs.map((doc) => doc.id));
-    } catch (_) {}
-
-    try {
-      final byParentId = await users
-          .where('parentId', isEqualTo: parentUid)
-          .get();
-      ids.addAll(byParentId.docs.map((doc) => doc.id));
-    } catch (_) {}
+    ids.addAll(await resolveLinkedChildIds(
+      parentUid,
+      tag: 'parent_home_page',
+    ));
 
     ids.remove(parentUid);
     final sorted = ids.toList()..sort();
@@ -208,7 +189,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
             final fullName = (data['fullName'] ?? '').toString().trim();
             final displayName = fullName.isNotEmpty
                 ? fullName
-                : (AppSession.username ?? 'Parinte');
+                : (AppSession.username ?? 'Parent');
             final rawChildren = data['children'];
             final directChildrenUids = rawChildren is List
                 ? rawChildren
@@ -342,7 +323,6 @@ class _ParentHomePageState extends State<ParentHomePage> {
 }
 
 // QUICK STATS CARD
-// ─────────────────────────────────────────────────────────────────────────────
 class _QuickStatsCard extends StatelessWidget {
   final List<String> childrenUids;
   final DateTime? inboxLastOpened;
@@ -620,9 +600,7 @@ class _UnreadInboxStat extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // ANNOUNCEMENTS CARD (mirrors student's inbox preview)
-// ─────────────────────────────────────────────────────────────────────────────
 class _ParentAnnouncementsCard extends StatelessWidget {
   final String parentUid;
   final List<String> childrenUids;
@@ -919,9 +897,7 @@ class _ParentAnnouncementsCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // SHORTCUTS ROW (Requests + Schedule)
-// ─────────────────────────────────────────────────────────────────────────────
 class _ShortcutsRow extends StatefulWidget {
   final List<String> childrenUids;
   final VoidCallback onRequestsTap;
@@ -1139,9 +1115,7 @@ class _ShortcutTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // MESAJE CARD (light)
-// ─────────────────────────────────────────────────────────────────────────────
 class _MesajeCard extends StatefulWidget {
   final List<String> childrenUids;
   final DateTime? inboxLastOpened;
@@ -1324,7 +1298,7 @@ class _MesajeCardState extends State<_MesajeCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Single set of StreamBuilders — compute unread count once, use for both badge and text.
+    // Compute unread count once, share between badge and text.
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: _pendingRequestsStream,
       builder: (context, pendingSnap) {
@@ -1504,9 +1478,7 @@ class _MesajeCardState extends State<_MesajeCard> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // PARENT PROFILE PAGE
-// ─────────────────────────────────────────────────────────────────────────────
 class ParentProfilePage extends StatelessWidget {
   final bool showBack;
 
@@ -1715,9 +1687,7 @@ class _ProfileTopHeader extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // PARENT IDENTITY + ACCOUNT TILES (mirrors student profile layout)
-// ─────────────────────────────────────────────────────────────────────────────
 class _ParentIdentityCard extends StatelessWidget {
   final String displayName;
   final String email;
@@ -1965,9 +1935,7 @@ class _ProfileSignOutButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // ACCOUNT SETTINGS DIALOG  (Email · Password)
-// ─────────────────────────────────────────────────────────────────────────────
 class _ParentAccountSettingsDialog extends StatefulWidget {
   const _ParentAccountSettingsDialog();
 
@@ -1990,7 +1958,7 @@ class _ParentAccountSettingsDialogState
   bool _sendingCode = false;
   bool _codeSent = false;
   bool _emailVerified = false;
-  bool _obscurePassword = true;
+  final bool _obscurePassword = true;
   String? _passwordError;
   String? _emailError;
 
@@ -2108,7 +2076,11 @@ class _ParentAccountSettingsDialogState
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(
+          const SnackBar(
+            content: Text('Could not save changes. Please try again.'),
+          ),
+        );
       }
     } finally {
       if (!closed && mounted) setState(() => _saving = false);
@@ -2117,6 +2089,7 @@ class _ParentAccountSettingsDialogState
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 40),
@@ -2146,7 +2119,7 @@ class _ParentAccountSettingsDialogState
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Header ──
+                  // Header
                   Row(
                     children: [
                       const Expanded(
@@ -2212,10 +2185,10 @@ class _ParentAccountSettingsDialogState
                     ],
                   ),
                   const SizedBox(height: 6),
-                  const Divider(color: Color(0xFFE8EAF2)),
+                  Divider(color: cs.outlineVariant),
                   const SizedBox(height: 18),
 
-                  // ── EMAIL ──
+                  // EMAIL
                   const Text(
                     'EMAIL',
                     style: TextStyle(
@@ -2466,7 +2439,7 @@ class _ParentAccountSettingsDialogState
                         Icon(Icons.check_circle, color: _primary, size: 18),
                         SizedBox(width: 6),
                         Text(
-                          'Email verificat cu succes!',
+                          'Email verified successfully!',
                           style: TextStyle(
                             color: _primary,
                             fontSize: 13,
@@ -2489,7 +2462,7 @@ class _ParentAccountSettingsDialogState
                   ],
                   const SizedBox(height: 22),
 
-                  // ── PASSWORD ──
+                  // PASSWORD
                   const Text(
                     'PASSWORD',
                     style: TextStyle(
@@ -2612,9 +2585,7 @@ class _ParentAccountSettingsDialogState
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // REAUTH DIALOG
-// ─────────────────────────────────────────────────────────────────────────────
 class _ParentReauthDialog extends StatefulWidget {
   const _ParentReauthDialog();
 

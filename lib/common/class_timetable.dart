@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../student/widgets/timetable.dart';
+import 'widgets/timetable.dart';
 
 const _primary = Color(0xFF2848B0);
 const _surfaceLowest = Color(0xFFFFFFFF);
@@ -13,8 +13,8 @@ const _onSurface = Color(0xFF1A2050);
 /// `timetables/{classId}` document together with the `subjects` and
 /// teacher `users` collections, and feeding the result into [TimetableGrid].
 ///
-/// Same logic the student schedule page uses — extracted so the parent
-/// schedule page and the teacher schedule sheet stay in sync.
+/// Shared with the student schedule page so the parent schedule page and
+/// the teacher schedule sheet stay in sync.
 class ClassTimetable extends StatelessWidget {
   final String classId;
 

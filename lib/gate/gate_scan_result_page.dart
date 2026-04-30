@@ -86,16 +86,28 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
 
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)?.settings.arguments as GateScanResultPageArguments?;
-
-    if (args == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text('Invalid scan arguments'),
+    final rawArgs = ModalRoute.of(context)?.settings.arguments;
+    if (rawArgs is! GateScanResultPageArguments) {
+      return Scaffold(
+        backgroundColor: _surface,
+        appBar: AppBar(
+          backgroundColor: _primary,
+          foregroundColor: Colors.white,
+          title: const Text('Scan result'),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Scan data is missing. Please scan again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _onSurface),
+            ),
+          ),
         ),
       );
     }
+    final args = rawArgs;
 
     final name = args.fullName ?? '??';
     final initials = name
@@ -239,9 +251,7 @@ class _GatePill extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // STUDENT CARD
-// ─────────────────────────────────────────────────────────────────────────────
 class _StudentCard extends StatelessWidget {
   final String initials;
   final String? fullName;
@@ -359,9 +369,7 @@ class _StudentCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // LEAVE REQUEST CARD
-// ─────────────────────────────────────────────────────────────────────────────
 class _LeaveRequestCard extends StatelessWidget {
   final bool hasActiveLeave;
   const _LeaveRequestCard({required this.hasActiveLeave});
@@ -443,9 +451,7 @@ class _LeaveRequestCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCHEDULE CARD (placeholder mock — wired to real schedule when available)
-// ─────────────────────────────────────────────────────────────────────────────
+// SCHEDULE CARD (placeholder mock; wired to real schedule when available)
 class _ScheduleCard extends StatelessWidget {
   final String? classId;
   final Map<String, dynamic>? timetableData;
@@ -454,17 +460,30 @@ class _ScheduleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    return _ThemedCard(
+      variant: 4,
+      child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>?>(
+        future: (classId != null && classId!.isNotEmpty)
+            ? FirebaseFirestore.instance.collection('timetables').doc(classId).get()
+            : Future<DocumentSnapshot<Map<String, dynamic>>?>.value(null),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
                 child: CircularProgressIndicator(strokeWidth: 2, color: _primary),
               ),
             );
-    }
-    if (timetableData == null) {
-      return const _ThemedCard(variant: 4, child: Text('No schedule available', style: TextStyle(color: _labelColor)));
-    }
+          }
+          if (snapshot.hasError) {
+            return const Text('Error loading schedule', style: TextStyle(color: _statusRed));
+          }
+          if (!snapshot.hasData || !(snapshot.data?.exists ?? false)) {
+            return const Text('No schedule available', style: TextStyle(color: _labelColor));
+          }
+
+          final data = snapshot.data!.data();
+          if (data == null) return const SizedBox.shrink();
 
     return _ThemedCard(
       variant: 4,
@@ -664,9 +683,7 @@ class _DottedLinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RESULT FOOTER — banner + back button
-// ─────────────────────────────────────────────────────────────────────────────
+// RESULT FOOTER: banner + back button
 class _ResultFooter extends StatelessWidget {
   final GateScanResultPageArguments args;
   final bool isDayFinished;
@@ -834,9 +851,7 @@ class _StatusBanner extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SHARED — themed card with sparkles
-// ─────────────────────────────────────────────────────────────────────────────
+// SHARED: themed card with sparkles
 class _ThemedCard extends StatelessWidget {
   final Widget child;
   final int variant;

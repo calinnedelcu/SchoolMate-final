@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../core/session.dart';
 import '../student/widgets/school_decor.dart';
 import 'link_utils.dart';
+import 'linked_children_resolver.dart';
 import 'storage_image.dart';
 
 const _kPrimary = Color(0xFF2848B0);
@@ -130,28 +131,10 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           .where((value) => value.isNotEmpty && value != parentUid)),
     };
 
-    final users = FirebaseFirestore.instance.collection('users');
-
-    try {
-      final byParents = await users
-          .where('parents', arrayContains: parentUid)
-          .get();
-      ids.addAll(byParents.docs.map((doc) => doc.id));
-    } catch (_) {}
-
-    try {
-      final byParentUid = await users
-          .where('parentUid', isEqualTo: parentUid)
-          .get();
-      ids.addAll(byParentUid.docs.map((doc) => doc.id));
-    } catch (_) {}
-
-    try {
-      final byParentId = await users
-          .where('parentId', isEqualTo: parentUid)
-          .get();
-      ids.addAll(byParentId.docs.map((doc) => doc.id));
-    } catch (_) {}
+    ids.addAll(await resolveLinkedChildIds(
+      parentUid,
+      tag: 'unified_messages_page',
+    ));
 
     final sorted = ids.toList()..sort();
     return sorted;
@@ -466,7 +449,15 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           stream: teacherStream,
           builder: (context, snap) {
             if (snap.hasError) {
-              return Center(child: Text('Error: ${snap.error}'));
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'Could not load messages.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
             }
             final decisionDocs =
                 snap.data?.docs ??
@@ -502,7 +493,15 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
         stream: _buildStudentDecisionsStream(uid),
         builder: (context, leaveSnap) {
           if (leaveSnap.hasError) {
-            return Center(child: Text('Error: ${leaveSnap.error}'));
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'Could not load messages.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
           }
 
           final decisionDocs =
@@ -736,6 +735,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
         : items.where((it) => it.category == _filter).toList();
 
     if (filtered.isEmpty) {
+      final cs = Theme.of(context).colorScheme;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -743,7 +743,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 18),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(18),
             ),
             child: Text(
@@ -828,6 +828,7 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -837,7 +838,7 @@ class _Pill extends StatelessWidget {
           duration: const Duration(milliseconds: 160),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
           decoration: BoxDecoration(
-            color: active ? _kPrimary : Colors.white,
+            color: active ? _kPrimary : cs.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: active ? _kPrimary : const Color(0xFFE0E3F0),
@@ -890,6 +891,7 @@ class _MessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final scheme = _cardScheme(item.state);
     final isSystem = item.kind == _MessageKind.system;
     final categoryStyle = _categoryStyleFor(item.category);
@@ -923,7 +925,7 @@ class _MessageCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.only(left: 4),
       child: Material(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,
@@ -1018,7 +1020,7 @@ class _MessageCard extends StatelessWidget {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE8EAF2),
+                                    color: cs.outlineVariant,
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: Text(
@@ -1284,7 +1286,7 @@ class _CreatePostButton extends StatelessWidget {
   }
 }
 
-// ─── Detail dialog (shown on tap) ─────────────────────────────────────────────
+// Detail dialog (shown on tap)
 
 class _UnifiedDetailDialog extends StatelessWidget {
   final _UnifiedMessageItem item;
@@ -1330,6 +1332,7 @@ class _UnifiedDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final accent = _categoryStyleFor(item.category).fg;
     final raw = item.raw;
     final eventDate = (raw['eventDate'] as Timestamp?)?.toDate();
@@ -1353,7 +1356,7 @@ class _UnifiedDetailDialog extends StatelessWidget {
               color: Colors.transparent,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cs.surface,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: const [
                     BoxShadow(
@@ -1395,7 +1398,7 @@ class _UnifiedDetailDialog extends StatelessWidget {
                                       loadingBuilder: (_) => Container(
                                         width: 240,
                                         height: 160,
-                                        color: const Color(0xFFE8EAF2),
+                                        color: cs.outlineVariant,
                                         alignment: Alignment.center,
                                         child: const SizedBox(
                                           width: 22,
@@ -1408,7 +1411,7 @@ class _UnifiedDetailDialog extends StatelessWidget {
                                       errorBuilder: (_, _) => Container(
                                         width: 240,
                                         height: 140,
-                                        color: const Color(0xFFE8EAF2),
+                                        color: cs.outlineVariant,
                                         alignment: Alignment.center,
                                         child: const Icon(
                                           Icons.broken_image_rounded,
@@ -1661,10 +1664,11 @@ class _DetailChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8EAF2),
+        color: cs.outlineVariant,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(

@@ -49,6 +49,11 @@ service cloud.firestore {
     }
 
     function onlyOwnInboxFieldsChanged() {
+      // twoFactorVerifiedUntil is intentionally NOT in this list: it is the
+      // trusted-session marker enforced by rules elsewhere, and must only be
+      // written by the authVerifySecondFactor Cloud Function (Admin SDK
+      // bypasses rules). Allowing client writes here would let a compromised
+      // client extend its 2FA window arbitrarily.
       return request.resource.data.diff(resource.data).changedKeys().hasOnly([
         'unreadCount',
         'inboxLastOpenedAt',
@@ -58,7 +63,6 @@ service cloud.firestore {
         'authEmail',
         'updatedAt',
         'fcmToken',
-        'twoFactorVerifiedUntil',
         'passwordChanged',
       ]);
     }
@@ -171,41 +175,69 @@ service cloud.firestore {
           request.resource.data.createdAt is timestamp;
     }
 
+    // ── secretariatMessages read visibility ─────────────────────────────
+    // Each helper assumes the caller has already been checked to hold the
+    // matching role. Helpers are split per role + per recipientRole so the
+    // logic stays auditable: there is exactly one place to change when
+    // visibility for "X reads Y-targeted message" must be tightened.
+
+    function secretariatStudentReadsStudentMsg() {
+      // Student reads a student-targeted message when it is addressed to
+      // them directly OR is a school-wide student broadcast.
+      return resource.data.recipientUid == request.auth.uid ||
+          resource.data.recipientUid == '';
+    }
+
+    function secretariatParentReadsParentMsg() {
+      // Parent reads a parent-targeted message when it is a school-wide
+      // parent broadcast OR is tied to one of their children.
+      return resource.data.studentUid == '' ||
+          isParentOfStudent(resource.data.studentUid);
+    }
+
+    function secretariatParentReadsStudentMsg() {
+      // Parent also sees student-targeted announcements that touch their
+      // children: school-wide student broadcasts, or messages tied to a
+      // specific student/parent uid that resolves to one of their children.
+      return resource.data.recipientUid == '' ||
+          isParentOfStudent(resource.data.recipientUid) ||
+          isParentOfStudent(resource.data.studentUid);
+    }
+
+    function secretariatTeacherReadsTeacherMsg() {
+      // Teacher reads a teacher-targeted message when it is addressed to
+      // them directly OR is a school-wide teacher broadcast.
+      return resource.data.recipientUid == request.auth.uid ||
+          resource.data.recipientUid == '';
+    }
+
+    function secretariatTeacherReadsStudentMsg() {
+      // Teachers see school-wide student broadcasts so they get the same
+      // announcements as their students. Direct/per-class targeting is not
+      // implemented here intentionally.
+      return resource.data.recipientUid == '';
+    }
+
     function canReadSecretariatMessage() {
       return isAdmin() ||
-          (isStudent() &&
-              resource.data.recipientRole == 'student' &&
-          (resource.data.recipientUid == request.auth.uid ||
-            resource.data.recipientUid == '')) ||
-          (isParent() &&
-              resource.data.recipientRole == 'parent' &&
-          (resource.data.studentUid == '' ||
-            isParentOfStudent(resource.data.studentUid))) ||
-          // Parents can also see student-targeted announcements addressed to
-          // their children, plus school-wide student broadcasts.
-          (isParent() &&
-              resource.data.recipientRole == 'student' &&
-          (resource.data.recipientUid == '' ||
-            isParentOfStudent(resource.data.recipientUid) ||
-            isParentOfStudent(resource.data.studentUid))) ||
-          (isTeacher() &&
-              resource.data.recipientRole == 'teacher' &&
-          (resource.data.recipientUid == request.auth.uid ||
-            resource.data.recipientUid == '')) ||
-          // Teachers can also see student-targeted broadcasts (school-wide or
-          // class-specific posts) so they see the same announcements as their
-          // students.
-          (isTeacher() &&
-              resource.data.recipientRole == 'student' &&
-              resource.data.recipientUid == '');
+          (isStudent() && resource.data.recipientRole == 'student' &&
+              secretariatStudentReadsStudentMsg()) ||
+          (isParent() && resource.data.recipientRole == 'parent' &&
+              secretariatParentReadsParentMsg()) ||
+          (isParent() && resource.data.recipientRole == 'student' &&
+              secretariatParentReadsStudentMsg()) ||
+          (isTeacher() && resource.data.recipientRole == 'teacher' &&
+              secretariatTeacherReadsTeacherMsg()) ||
+          (isTeacher() && resource.data.recipientRole == 'student' &&
+              secretariatTeacherReadsStudentMsg());
     }
 
     match /users/{userId} {
-      // Some legacy accounts may still have inconsistent profile documents
-      // during bootstrap/login. Keep reads available to authenticated users so
-      // the app can resolve and migrate those profiles instead of hanging on a
-      // permission-denied error.
-      allow read: if isSignedIn();
+      // The parent user doc holds sensitive fields (personalEmail, fcmToken,
+      // twoFactorVerifiedUntil, etc.) and must NOT be readable by arbitrary
+      // signed-in users. Other authenticated users should look up directory
+      // data via the publicProfile subcollection below.
+      allow read: if isOwnUser(userId) || isAdmin();
       allow create: if isAdmin();
       allow update: if isAdmin() ||
           (isOwnUser(userId) && onlyOwnInboxFieldsChanged());

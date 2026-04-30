@@ -791,7 +791,7 @@ class _CereriScreenState extends State<CereriScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ── Description ──
+                          // Description
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(16),
@@ -820,7 +820,7 @@ class _CereriScreenState extends State<CereriScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          // ── Recipients ──
+                          // Recipients
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(18),
@@ -871,7 +871,7 @@ class _CereriScreenState extends State<CereriScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          // ── Date & Time row ──
+                          // Date & Time row
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(18),
@@ -941,7 +941,7 @@ class _CereriScreenState extends State<CereriScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          // ── Reason ──
+                          // Reason
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(18),
@@ -1001,7 +1001,7 @@ class _CereriScreenState extends State<CereriScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          // ── Submit ──
+                          // Submit
                           GestureDetector(
                             onTap: _submitting ? null : _submitRequest,
                             child: Container(
@@ -1049,7 +1049,7 @@ class _CereriScreenState extends State<CereriScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          // ── Info banner ──
+                          // Info banner
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(14),

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:school_mate/core/session.dart';
@@ -248,12 +249,19 @@ class _IdentityCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(28),
             child: profilePictureUrl.isNotEmpty
-                ? Image.network(
-                    profilePictureUrl,
+                ? CachedNetworkImage(
+                    imageUrl: profilePictureUrl,
                     width: 64,
                     height: 64,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _initialsAvatar(),
+                    placeholder: (context, url) => const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                    errorWidget: (_, _, _) => _initialsAvatar(),
                   )
                 : _initialsAvatar(),
           ),

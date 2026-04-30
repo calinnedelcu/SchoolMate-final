@@ -1,7 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:school_mate/admin/services/admin_api.dart';
+import 'package:school_mate/services/admin_api.dart';
 import 'package:school_mate/student/logout_dialog.dart';
 import 'package:school_mate/core/session.dart';
 import 'package:school_mate/student/widgets/qr_bottom_sheet.dart';
@@ -436,6 +437,7 @@ class _ProfileIdentityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return ClipRRect(
       borderRadius: BorderRadius.circular(38),
       child: Container(
@@ -481,12 +483,21 @@ class _ProfileIdentityCard extends StatelessWidget {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(18),
                               child: profilePictureUrl.isNotEmpty
-                                  ? Image.network(
-                                      profilePictureUrl,
+                                  ? CachedNetworkImage(
+                                      imageUrl: profilePictureUrl,
                                       width: 64,
                                       height: 64,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
+                                      placeholder: (context, url) =>
+                                          const Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
+                                        ),
+                                      ),
+                                      errorWidget: (_, _, _) => Container(
                                         width: 64,
                                         height: 64,
                                         color: _surfaceContainerHigh,
@@ -572,7 +583,7 @@ class _ProfileIdentityCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 26),
-                  Container(height: 1, color: const Color(0xFFE8EAF2)),
+                  Container(height: 1, color: cs.outlineVariant),
                   const SizedBox(height: 22),
                   _PersonInfoBox(
                     label: 'HOMEROOM TEACHER',
@@ -606,8 +617,8 @@ void _openFullScreenImage(BuildContext context, String url) {
       opaque: false,
       barrierColor: Colors.black.withValues(alpha: 0.92),
       barrierDismissible: true,
-      pageBuilder: (_, __, ___) => _FullScreenImageView(url: url),
-      transitionsBuilder: (_, animation, __, child) {
+      pageBuilder: (_, _, _) => _FullScreenImageView(url: url),
+      transitionsBuilder: (_, animation, _, child) {
         return FadeTransition(opacity: animation, child: child);
       },
     ),
@@ -630,10 +641,17 @@ class _FullScreenImageView extends StatelessWidget {
               child: InteractiveViewer(
                 minScale: 0.5,
                 maxScale: 4.0,
-                child: Image.network(
-                  url,
+                child: CachedNetworkImage(
+                  imageUrl: url,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
+                  placeholder: (context, url) => const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                  errorWidget: (_, _, _) => const Icon(
                     Icons.broken_image_rounded,
                     color: Colors.white54,
                     size: 64,
@@ -745,9 +763,7 @@ void showEditProfileDialog(BuildContext context) {
   );
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // ACCOUNT SETTINGS DIALOG  (Email · Password · Profile Picture)
-// ────────────────────────────────────────────────────────────────────────────
 class _AccountSettingsDialog extends StatefulWidget {
   const _AccountSettingsDialog();
 
@@ -769,7 +785,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
   bool _codeSent = false;
   bool _emailVerified = false;
   String? _profilePictureUrl;
-  bool _obscurePassword = true;
+  final bool _obscurePassword = true;
   String? _passwordError;
   String? _emailError;
 
@@ -935,7 +951,11 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(
+          const SnackBar(
+            content: Text('Could not save changes. Please try again.'),
+          ),
+        );
       }
     } finally {
       if (!closed && mounted) setState(() => _saving = false);
@@ -944,6 +964,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 40),
@@ -973,7 +994,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Header ──
+                  // Header
                   Row(
                     children: [
                       const Expanded(
@@ -1039,10 +1060,10 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  const Divider(color: Color(0xFFE8EAF2)),
+                  Divider(color: cs.outlineVariant),
                   const SizedBox(height: 18),
 
-                  // ── EMAIL ──
+                  // EMAIL
                   const Text(
                     'EMAIL',
                     style: TextStyle(
@@ -1107,7 +1128,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                       ],
                     ),
                   ),
-                  // ── EMAIL VERIFICATION ──
+                  // EMAIL VERIFICATION
                   if (_editingEmail && !_emailVerified) ...[
                     const SizedBox(height: 10),
                     Row(
@@ -1141,18 +1162,20 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                           uid: uid,
                                           email: email,
                                         );
-                                        if (mounted)
+                                        if (mounted) {
                                           setState(() {
                                             _codeSent = true;
                                             _sendingCode = false;
                                           });
+                                        }
                                       } catch (e) {
-                                        if (mounted)
+                                        if (mounted) {
                                           setState(() {
                                             _emailError =
                                                 'Could not send the code.';
                                             _sendingCode = false;
                                           });
+                                        }
                                       }
                                     },
                               icon: _sendingCode
@@ -1260,17 +1283,20 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                   code: code,
                                 );
                                 if (result['verified'] == true) {
-                                  if (mounted)
+                                  if (mounted) {
                                     setState(() => _emailVerified = true);
+                                  }
                                 } else {
-                                  if (mounted)
+                                  if (mounted) {
                                     setState(
                                       () => _emailError = 'Invalid code.',
                                     );
+                                  }
                                 }
                               } catch (e) {
-                                if (mounted)
+                                if (mounted) {
                                   setState(() => _emailError = 'Cod invalid.');
+                                }
                               }
                             },
                             child: Container(
@@ -1326,7 +1352,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                   ],
                   const SizedBox(height: 22),
 
-                  // ── PASSWORD ──
+                  // PASSWORD
                   const Text(
                     'PASSWORD',
                     style: TextStyle(
@@ -1398,7 +1424,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                       ],
                     ),
                   ),
-                  // ── CONFIRM PASSWORD ──
+                  // CONFIRM PASSWORD
                   if (_editingPassword) ...[
                     const SizedBox(height: 10),
                     Container(
@@ -1444,7 +1470,7 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                   ],
                   const SizedBox(height: 22),
 
-                  // ── PROFILE PICTURE ──
+                  // PROFILE PICTURE
                   const Text(
                     'PROFILE PICTURE',
                     style: TextStyle(
@@ -1486,12 +1512,21 @@ class _AccountSettingsDialogState extends State<_AccountSettingsDialog> {
                                   child:
                                       (_profilePictureUrl != null &&
                                           _profilePictureUrl!.isNotEmpty)
-                                      ? Image.network(
-                                          _profilePictureUrl!,
+                                      ? CachedNetworkImage(
+                                          imageUrl: _profilePictureUrl!,
                                           width: 56,
                                           height: 56,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) =>
+                                          placeholder: (context, url) =>
+                                              const Center(
+                                            child: SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2),
+                                            ),
+                                          ),
+                                          errorWidget: (_, _, _) =>
                                               Container(
                                                 width: 56,
                                                 height: 56,

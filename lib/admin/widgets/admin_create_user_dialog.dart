@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../services/admin_api.dart';
+import '../../services/admin_api.dart';
 
 Future<void> showAdminCreateUserDialog(
   BuildContext context, {
@@ -181,7 +181,7 @@ Future<void> showAdminCreateUserDialog(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // ── HEADER ─────────────────────────────────────────
+                        // HEADER
                         Container(
                           padding: const EdgeInsets.fromLTRB(28, 24, 20, 24),
                           decoration: BoxDecoration(
@@ -251,7 +251,7 @@ Future<void> showAdminCreateUserDialog(
                           ),
                         ),
 
-                        // ── BODY ────────────────────────────────────────────
+                        // BODY
                         Flexible(
                           child: SingleChildScrollView(
                             padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),

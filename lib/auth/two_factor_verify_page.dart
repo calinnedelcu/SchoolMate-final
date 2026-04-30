@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -71,7 +70,7 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
       if (mounted) {
         setState(() {
           _sending = false;
-          _error = 'Eroare la initializarea verificarii. Incearca din nou.';
+          _error = 'Could not start verification. Please try again.';
         });
       }
     }
@@ -79,16 +78,14 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
 
   static String _prefKey(String uid) => 'tf_verified_$uid';
 
-  static Future<bool> _isAlreadyVerifiedInBrowser() async {
+  Future<bool> _isAlreadyVerifiedInBrowser() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final keys = prefs.getKeys();
+      final expiry = prefs.getInt(_prefKey(widget.uid));
+      if (expiry == null) return false;
       final now = DateTime.now().millisecondsSinceEpoch;
-      for (final key in keys) {
-        if (!key.startsWith('tf_verified_')) continue;
-        final expiry = prefs.getInt(key);
-        if (expiry != null && now < expiry) return true;
-      }
+      if (now < expiry) return true;
+      await prefs.remove(_prefKey(widget.uid));
       return false;
     } catch (_) {
       return false;
@@ -96,16 +93,19 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
   }
 
   Future<void> _persistVerified() async {
+    // The trusted-session window on the user doc is written server-side by
+    // authVerifySecondFactor; rules deny client writes to that field. Here
+    // we only mirror it into SharedPreferences so a quick relaunch on the
+    // same device skips the remote round-trip.
     try {
       final prefs = await SharedPreferences.getInstance();
       final expiry = DateTime.now()
-          .add(const Duration(hours: 8))
+          .add(const Duration(hours: 2))
           .millisecondsSinceEpoch;
       await prefs.setInt(_prefKey(widget.uid), expiry);
-      await FirebaseFirestore.instance.collection('users').doc(widget.uid).set({
-        'twoFactorVerifiedUntil': Timestamp.fromMillisecondsSinceEpoch(expiry),
-      }, SetOptions(merge: true));
-    } catch (_) {}
+    } catch (e, st) {
+      debugPrint('two_factor_verify_page: persist 2FA verified expiry: $e\n$st');
+    }
   }
 
   @override
@@ -150,12 +150,12 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
     } on FirebaseFunctionsException catch (e) {
       setState(() {
         _sending = false;
-        _error = e.message ?? 'Eroare la trimiterea codului.';
+        _error = e.message ?? 'Could not send the code.';
       });
     } catch (_) {
       setState(() {
         _sending = false;
-        _error = 'Eroare la trimiterea codului. Incearca din nou.';
+        _error = 'Could not send the code. Please try again.';
       });
     }
   }
@@ -169,7 +169,7 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
 
     final code = _codeController.text.trim();
     if (code.length != 6) {
-      setState(() => _error = 'Introdu codul de 6 cifre primit pe email.');
+      setState(() => _error = 'Enter the 6-digit code sent to your email.');
       return;
     }
     setState(() {
@@ -190,7 +190,7 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
     } catch (_) {
       setState(() {
         _loading = false;
-        _error = 'Eroare la verificare. Incearca din nou.';
+        _error = 'Verification failed. Please try again.';
       });
     }
   }
@@ -223,17 +223,17 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
     } on FirebaseFunctionsException catch (e) {
       setState(() {
         _sending = false;
-        _error = e.message ?? 'Eroare la retrimitera codului.';
+        _error = e.message ?? 'Could not resend the code.';
       });
     } catch (_) {
       setState(() {
         _sending = false;
-        _error = 'Eroare. Incearca din nou.';
+        _error = 'Something went wrong. Please try again.';
       });
     }
   }
 
-  // ── build ──────────────────────────────────────────────────────────────────
+  // build
 
   @override
   Widget build(BuildContext context) {
@@ -434,7 +434,7 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
           ],
           const SizedBox(height: 28),
           const Text(
-            'Cod de verificare (6 cifre)',
+            'Verification code (6 digits)',
             style: TextStyle(
               fontSize: 13.5,
               fontWeight: FontWeight.w500,
