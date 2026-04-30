@@ -210,7 +210,8 @@ class _CereriScreenState extends State<CereriScreen> {
       final Map? days = data['days'] as Map?;
       if (startStr == null || slots == null || days == null) return false;
 
-      final dayData = days[weekday.toString()] as Map?;
+      // Robust lookup handling both String ("1") and Integer (1) keys
+      final dayData = (days[weekday.toString()] ?? days[weekday]) as Map?;
       if (dayData == null || dayData.isEmpty) return false;
 
       final startParts = startStr.split(':');
