@@ -142,15 +142,14 @@ class ClassTimetable extends StatelessWidget {
             };
 
             return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: db
-                  .collection('users')
-                  .where('role', isEqualTo: 'teacher')
-                  .snapshots(),
+              stream: db.collectionGroup('publicProfile').snapshots(),
               builder: (context, teachSnap) {
                 final teacherNames = <String, String>{};
                 for (final d in teachSnap.data?.docs ?? const []) {
                   final m = d.data();
-                  final username = (m['username'] as String?) ?? d.id;
+                  if ((m['role'] as String?) != 'teacher') continue;
+                  final ownerUid = d.reference.parent.parent?.id ?? '';
+                  final username = (m['username'] as String?) ?? ownerUid;
                   final fullName = (m['fullName'] as String?)?.trim() ?? '';
                   teacherNames[username] = _shortTeacher(
                     fullName.isEmpty ? username : fullName,

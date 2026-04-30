@@ -1359,6 +1359,7 @@ class _InboxCardDetailDialog extends StatelessWidget {
     final bookmarkCategory = switch (data.category) {
       _InboxFilter.competition => 'competition',
       _InboxFilter.camp => 'camp',
+      _InboxFilter.volunteer => 'volunteer',
       _InboxFilter.announcements => 'announcement',
       _ => '',
     };

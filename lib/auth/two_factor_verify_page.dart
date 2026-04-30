@@ -185,7 +185,7 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
     } on FirebaseFunctionsException catch (e) {
       setState(() {
         _loading = false;
-        _error = e.message ?? 'Cod incorect.';
+        _error = e.message ?? 'Incorrect code.';
       });
     } catch (_) {
       setState(() {
@@ -396,7 +396,7 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
           const SizedBox(height: 20),
           const Center(
             child: Text(
-              'Verificare în doi pași',
+              'Two-factor verification',
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
@@ -409,8 +409,8 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
           Center(
             child: Text(
               _sending
-                  ? 'Pregătim trimiterea codului...'
-                  : 'Am trimis un cod de 6 cifre la\n${_maskedEmail.isNotEmpty ? _maskedEmail : "emailul tău"}.',
+                  ? 'Preparing to send the code...'
+                  : 'We sent a 6-digit code to\n${_maskedEmail.isNotEmpty ? _maskedEmail : "your email"}.',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 13,
@@ -528,7 +528,7 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
                     color: Color(0xFF333333),
                   ),
                   label: const Text(
-                    'Înapoi',
+                    'Back',
                     style: TextStyle(
                       color: Color(0xFF333333),
                       fontWeight: FontWeight.w500,
@@ -571,7 +571,7 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: const [
                             Text(
-                              'Verifică',
+                              'Verify',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
@@ -601,8 +601,8 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
               ),
               child: Text(
                 _resendCooldown > 0
-                    ? 'Retrimite în ${_resendCooldown}s'
-                    : 'Nu ai primit codul? Retrimite →',
+                    ? 'Resend in ${_resendCooldown}s'
+                    : "Didn't get the code? Resend →",
                 style: TextStyle(
                   color: _resendCooldown > 0
                       ? const Color(0xFF999999)
@@ -618,13 +618,13 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
             child: Column(
               children: [
                 const Text(
-                  'Ai nevoie de ajutor?',
+                  'Need help?',
                   style: TextStyle(fontSize: 13, color: Color(0xFF888888)),
                 ),
                 GestureDetector(
                   onTap: () {},
                   child: const Text(
-                    'Contactează suportul IT',
+                    'Contact IT support',
                     style: TextStyle(
                       fontSize: 13,
                       color: _primaryGreen,

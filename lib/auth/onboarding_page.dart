@@ -161,7 +161,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMsg = 'Cod incorect. Verifică și încearcă din nou.';
+        _errorMsg = 'Incorrect code. Check and try again.';
         _loading = false;
       });
     }
@@ -584,7 +584,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
     const SizedBox(height: 8),
     const Text(
-      'Alege o parola securizata pentru contul tau.',
+      'Choose a secure password for your account.',
       style: TextStyle(fontSize: 13, color: Color(0xFF777777), height: 1.4),
     ),
     const SizedBox(height: 28),

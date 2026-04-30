@@ -351,21 +351,17 @@ class _CereriScreenState extends State<CereriScreen> {
         .doc(classId)
         .get();
     final classData = classSnap.data() ?? const <String, dynamic>{};
-    String teacherUid = (classData['teacherUid'] ?? '').toString().trim();
+    final teacherUid = (classData['teacherUid'] ?? '').toString().trim();
     String teacherUsername = (classData['teacherUsername'] ?? '')
         .toString()
         .trim();
     String teacherName = '';
     if (teacherUid.isNotEmpty) {
-      final teacherSnap = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(teacherUid)
-          .get();
-      final teacherData = teacherSnap.data() ?? const <String, dynamic>{};
-      teacherUsername = (teacherData['username'] ?? teacherUsername)
+      final profile = await _readPublicProfile(teacherUid);
+      teacherUsername = (profile['username'] ?? teacherUsername)
           .toString()
           .trim();
-      teacherName = (teacherData['fullName'] ?? teacherUsername)
+      teacherName = (profile['fullName'] ?? teacherUsername)
           .toString()
           .trim();
     }
@@ -383,18 +379,25 @@ class _CereriScreenState extends State<CereriScreen> {
     final parents = List<String>.from(userData['parents'] ?? const <String>[]);
     if (parents.isEmpty) return const <String, String>{};
     final parentUid = parents.first;
-    final parentSnap = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(parentUid)
-        .get();
-    final parentData = parentSnap.data() ?? const <String, dynamic>{};
+    final profile = await _readPublicProfile(parentUid);
     return <String, String>{
       'uid': parentUid,
-      'name': (parentData['fullName'] ?? parentData['username'] ?? '')
+      'name': (profile['fullName'] ?? profile['username'] ?? '')
           .toString()
           .trim(),
-      'username': (parentData['username'] ?? '').toString().trim(),
+      'username': (profile['username'] ?? '').toString().trim(),
     };
+  }
+
+  Future<Map<String, dynamic>> _readPublicProfile(String userUid) async {
+    if (userUid.isEmpty) return const <String, dynamic>{};
+    final snap = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userUid)
+        .collection('publicProfile')
+        .doc('main')
+        .get();
+    return snap.data() ?? const <String, dynamic>{};
   }
 
   Future<void> _submitRequest() async {
