@@ -12,6 +12,11 @@
 -dontwarn com.google.firebase.**
 -dontwarn com.google.android.gms.**
 
+# Play Core: Flutter embedding references these for deferred components,
+# which this app does not use. Tell R8 not to error on the missing classes.
+-dontwarn com.google.android.play.core.**
+-keep class com.google.android.play.core.** { *; }
+
 # Keep Kotlin metadata
 -keep class kotlin.Metadata { *; }
 
