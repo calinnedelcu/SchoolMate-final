@@ -56,8 +56,7 @@ class _GateScanPageState extends State<GateScanPage> {
       final userId = (res['userId'] ?? '-').toString();
       final fullName = (res['fullName'] ?? '').toString();
       final classId = (res['classId'] ?? '').toString();
-      final reason = (res['reason'] ?? '').toString();
-      final scanType = (res['type'] ?? (ok ? 'entry' : 'deny')).toString();
+      final reason = (res['reason'] ?? '').toString(); // Will be null if ok is true
       final hasActiveLeave = (res['hasActiveLeave'] ?? false) as bool;
 
       if (ok) {
@@ -73,8 +72,8 @@ class _GateScanPageState extends State<GateScanPage> {
           fullName: fullName,
           classId: classId,
           reason: reason,
-          scanType: scanType,
           hasActiveLeave: hasActiveLeave,
+          tokenId: tokenId,
         ),
       );
     } catch (e) {
@@ -84,6 +83,11 @@ class _GateScanPageState extends State<GateScanPage> {
         arguments: GateScanResultPageArguments(
           isAllowed: false,
           errorMessage: 'Eroare validare: $e',
+          userId: '-',
+          fullName: 'Eroare sistem',
+          classId: '',
+          reason: 'SCAN_ERROR',
+          tokenId: tokenId,
         ),
       );
     }
@@ -301,12 +305,12 @@ class _CircleIconButton extends StatelessWidget {
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: highlight
-                ? kPencilYellow.withValues(alpha: 0.95)
-                : Colors.black.withValues(alpha: 0.42),
+            color: highlight 
+                ? kPencilYellow.withOpacity(0.95)
+                : Colors.black.withOpacity(0.42),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withOpacity(0.15),
               width: 1,
             ),
           ),
@@ -334,9 +338,9 @@ class _ScannerDimPainter extends CustomPainter {
     final inner = Path()
       ..addRRect(RRect.fromRectAndRadius(rect, const Radius.circular(20)));
     final dim = Path.combine(PathOperation.difference, outer, inner);
-    canvas.drawPath(
+    canvas.drawPath( 
       dim,
-      Paint()..color = Colors.black.withValues(alpha: 0.55),
+      Paint()..color = Colors.black.withOpacity(0.55),
     );
   }
 
