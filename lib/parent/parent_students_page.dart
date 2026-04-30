@@ -39,6 +39,8 @@ class ParentStudentsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final parentUid = (AppSession.uid ?? '').trim();
     final users = FirebaseFirestore.instance.collection('users');
+    DocumentReference<Map<String, dynamic>> publicProfileRef(String uid) =>
+        users.doc(uid).collection('publicProfile').doc('main');
 
     return Scaffold(
       backgroundColor: _kPageBg,
@@ -98,7 +100,7 @@ class ParentStudentsPage extends StatelessWidget {
                             return StreamBuilder<
                               DocumentSnapshot<Map<String, dynamic>>
                             >(
-                              stream: users.doc(uid).snapshots(),
+                              stream: publicProfileRef(uid).snapshots(),
                               builder: (context, studentSnap) {
                                 if (!studentSnap.hasData ||
                                     !studentSnap.data!.exists) {
@@ -107,7 +109,7 @@ class ParentStudentsPage extends StatelessWidget {
 
                                 final data = studentSnap.data!.data()!;
                                 final viewData = _toStudentViewData(
-                                  studentSnap.data!.id,
+                                  uid,
                                   data,
                                 );
                                 final name = viewData.fullName.trim().isNotEmpty
@@ -471,6 +473,24 @@ class _StudentDetailPage extends StatelessWidget {
     required this.photoUrl,
   });
 
+  Future<String> _resolveHomeroomTeacher(String classId) async {
+    if (classId.isEmpty) return '';
+    final db = FirebaseFirestore.instance;
+    final classSnap = await db.collection('classes').doc(classId).get();
+    final teacherUid = (classSnap.data()?['teacherUid'] ?? '').toString().trim();
+    if (teacherUid.isEmpty) {
+      return (classSnap.data()?['teacherUsername'] ?? '').toString().trim();
+    }
+    final profileSnap = await db
+        .collection('users')
+        .doc(teacherUid)
+        .collection('publicProfile')
+        .doc('main')
+        .get();
+    final p = profileSnap.data() ?? const <String, dynamic>{};
+    return ((p['fullName'] ?? p['username']) ?? '').toString().trim();
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -488,24 +508,10 @@ class _StudentDetailPage extends StatelessWidget {
               variant: 3,
             ),
             Expanded(
-              child: FutureBuilder<QuerySnapshot<Map<String, dynamic>>?>(
-                future: classId.isEmpty
-                    ? Future.value(null)
-                    : FirebaseFirestore.instance
-                        .collection('users')
-                        .where('classId', isEqualTo: classId)
-                        .where('role', isEqualTo: 'teacher')
-                        .limit(1)
-                        .get(),
+              child: FutureBuilder<String>(
+                future: _resolveHomeroomTeacher(classId),
                 builder: (context, snap) {
-                  String diriginte = '';
-                  final teacherSnap = snap.data;
-                  if (teacherSnap != null && teacherSnap.docs.isNotEmpty) {
-                    final td = teacherSnap.docs.first.data();
-                    diriginte = (td['fullName'] ?? td['username'] ?? '')
-                        .toString()
-                        .trim();
-                  }
+                  final diriginte = (snap.data ?? '').trim();
 
                   return SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),

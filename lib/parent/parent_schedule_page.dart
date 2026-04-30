@@ -82,15 +82,20 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
   Future<List<_ChildEntry>> _loadChildren(List<String> uids) async {
     if (uids.isEmpty) return const [];
     final users = FirebaseFirestore.instance.collection('users');
-    final docs = await Future.wait(uids.map((u) => users.doc(u).get()));
+    final docs = await Future.wait(
+      uids.map(
+        (u) => users.doc(u).collection('publicProfile').doc('main').get(),
+      ),
+    );
     final out = <_ChildEntry>[];
-    for (final d in docs) {
-      if (!d.exists) continue;
+    for (var i = 0; i < docs.length; i++) {
+      final d = docs[i];
+      final uid = uids[i];
       final data = d.data() ?? const <String, dynamic>{};
       out.add(
         _ChildEntry(
-          uid: d.id,
-          fullName: (data['fullName'] ?? data['displayName'] ?? '')
+          uid: uid,
+          fullName: (data['fullName'] ?? data['username'] ?? '')
               .toString()
               .trim(),
           classId: (data['classId'] ?? '').toString().trim(),

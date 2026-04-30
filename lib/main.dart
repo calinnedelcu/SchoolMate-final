@@ -72,7 +72,7 @@ Future<void> main() async {
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'student_channel',
-          'Notificari elev',
+          'Student notifications',
           importance: Importance.high,
           priority: Priority.high,
         ),

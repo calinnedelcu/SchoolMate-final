@@ -286,7 +286,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Încarcă o fotografie de profil pentru identificare vizuală.',
+                      'Upload a profile photo for visual identification.',
                       style: TextStyle(
                         fontSize: 13,
                         color: Color(0xFF777777),
@@ -394,7 +394,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // "Încarcă Foto" outlined button
+  // "Upload Photo" outlined button
   Widget _buildUploadButton() {
     return SizedBox(
       width: double.infinity,
@@ -407,8 +407,8 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
         ),
         label: Text(
           widget.canUploadPhoto
-              ? 'Încarcă Foto'
-              : 'Upload indisponibil pentru acest rol',
+              ? 'Upload Photo'
+              : 'Upload unavailable for this role',
           style: TextStyle(
             color: Color(0xFF333333),
             fontWeight: FontWeight.w500,
@@ -448,8 +448,8 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
           Expanded(
             child: Text(
               widget.canUploadPhoto
-                  ? 'Criterii: Față trebuie să fie vizibilă clar, fundal neutru, fără accesorii care ascund trăsăturile.'
-                  : 'Pentru conturile de secretariat, încărcarea pozei de profil este dezactivată. Apasă Skip pentru a continua.',
+                  ? 'Requirements: face must be clearly visible, neutral background, no accessories hiding features.'
+                  : 'For secretariat accounts, profile photo upload is disabled. Tap Skip to continue.',
               style: const TextStyle(
                 fontSize: 13,
                 color: Color(0xFF3D3D3D),
@@ -538,7 +538,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        widget.canUploadPhoto ? 'Finalizare' : 'Continuă',
+                        widget.canUploadPhoto ? 'Finish' : 'Continue',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -565,7 +565,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
       child: Column(
         children: [
           const Text(
-            'Ai nevoie de ajutor?',
+            'Need help?',
             style: TextStyle(fontSize: 13, color: Color(0xFF888888)),
           ),
           GestureDetector(
@@ -573,7 +573,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
               // TODO: open IT support link / dialog
             },
             child: const Text(
-              'Contactează suportul IT',
+              'Contact IT support',
               style: TextStyle(
                 fontSize: 13,
                 color: _primaryGreen,
