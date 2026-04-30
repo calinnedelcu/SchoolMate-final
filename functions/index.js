@@ -1,6 +1,6 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
-const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
+const { onDocumentCreated, onDocumentUpdated, onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { randomBytes, createHash } = require("crypto");
 const nodemailer = require("nodemailer");
 
@@ -1608,27 +1608,6 @@ exports.onAccessEventCreated = onDocumentCreated("accessEvents/{docId}", async (
         { unreadCount: admin.firestore.FieldValue.increment(1) },
         { merge: true }
     );
-
-    // Send push notification
-    const userDoc = await userRef.get();
-    const fcmToken = userDoc.data()?.fcmToken;
-    if (!fcmToken) return;
-
-    const eventType = String(data.type || "");
-    const title = eventType === "exit" ? "Ai iesit din scoala" : "Ai intrat in scoala";
-    const body = eventType === "exit"
-        ? "Iesirea ta a fost inregistrata."
-        : "Intrarea ta a fost inregistrata.";
-
-    try {
-        await admin.messaging().send({
-            token: fcmToken,
-            notification: { title, body },
-            android: { notification: { channelId: "student_channel" } },
-        });
-    } catch (e) {
-        console.error("onAccessEventCreated: FCM send failed:", e.message);
-    }
 });
 
 // Cancel (expire) leave requests whose date has passed. Runs every hour.

@@ -97,6 +97,8 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
       'tokenId': args.tokenId,
       'userId': args.userId ?? args.studentId, // Ensure an ID is captured
       if (args.errorMessage != null) 'error': args.errorMessage,
+          }).catchError((e) {
+      debugPrint('[GateScanResult] Firestore log failed: $e');
     });
   }
 

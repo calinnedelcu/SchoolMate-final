@@ -722,15 +722,29 @@ class _RecentItem extends StatelessWidget {
     final timestamp =
         (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now();
     final timeStr =
-        '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}'; 
-    final name = (data['fullName'] ?? 'Unknown').toString();
-    final classCode = (data['classId'] ?? '').toString();
+        '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+    final String name = (data['fullName'] ?? 'Unknown').toString();
+    final String rawReasonRaw = (data['reason'] ?? '').toString();
+    final String rawReason = (rawReasonRaw == 'NO_ACTIVE_LEAVE')
+        ? 'no_active_leave_request'
+        : (rawReasonRaw == 'EXPIRED')
+            ? 'expired_qr_token'
+            : rawReasonRaw;
+
+    final String reason = rawReason
+        .toLowerCase()
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((w) => w.isEmpty ? '' : w[0].toUpperCase() + w.substring(1))
+        .join(' ');
+
     final scanResult = (data['scanResult'] ?? '').toString().toLowerCase();
-
     final isAllowed = scanResult == 'allowed';
-
+    final displayedName =
+        isAllowed ? name : (reason.isNotEmpty ? reason : 'Denied');
+    final classCode = (data['classId'] ?? '').toString();
     final color = isAllowed ? _live : _denied;
-    final label = isAllowed ? 'EXIT' : 'DENIED';
+    final label = isAllowed ? 'ALLOWED' : 'DENIED';
     final dirIcon = isAllowed ? Icons.logout_rounded : Icons.block_rounded;
 
     return Padding(
@@ -763,7 +777,7 @@ class _RecentItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  displayedName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
