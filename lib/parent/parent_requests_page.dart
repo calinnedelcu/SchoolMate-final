@@ -83,7 +83,11 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
         bottom: false,
         child: Column(
           children: [
-            _TopHeader(onBack: () => Navigator.of(context).pop()),
+            PageBlueHeader(
+              title: 'Leave requests',
+              subtitle: 'Approve or reject',
+              onBack: () => Navigator.of(context).pop(),
+            ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
@@ -287,101 +291,6 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
     }
 
     return step(0, const <QueryDocumentSnapshot<Map<String, dynamic>>>[]);
-  }
-}
-
-class _TopHeader extends StatelessWidget {
-  final VoidCallback onBack;
-
-  const _TopHeader({required this.onBack});
-
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-    return Container(
-      width: double.infinity,
-      clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x302848B0),
-            blurRadius: 20,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: const HeaderSparklesPainter(variant: 1),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 24),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    onPressed: onBack,
-                    icon: const Icon(
-                      Icons.arrow_back_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                    padding: EdgeInsets.zero,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Leave requests',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        width: 42,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: kPencilYellow,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

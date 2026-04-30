@@ -1028,6 +1028,8 @@ class _ParentTutorRow extends StatelessWidget {
       future: FirebaseFirestore.instance
           .collection('users')
           .doc(parentUid)
+          .collection('publicProfile')
+          .doc('main')
           .get(),
       builder: (context, snapshot) {
         final parentData = snapshot.data?.data() ?? const <String, dynamic>{};

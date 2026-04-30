@@ -237,7 +237,15 @@ service cloud.firestore {
       // twoFactorVerifiedUntil, etc.) and must NOT be readable by arbitrary
       // signed-in users. Other authenticated users should look up directory
       // data via the publicProfile subcollection below.
-      allow read: if isOwnUser(userId) || isAdmin();
+      //
+      // Teachers additionally need to list students in their own class for the
+      // class-roster screen. The query filters by role=='student' and
+      // classId==<teacher's classId>, so the rule mirrors those constraints —
+      // teachers cannot read users outside their class or non-student users.
+      allow read: if isOwnUser(userId) || isAdmin() ||
+          (isTeacher() &&
+              resource.data.role == 'student' &&
+              resource.data.classId == me().classId);
       allow create: if isAdmin();
       allow update: if isAdmin() ||
           (isOwnUser(userId) && onlyOwnInboxFieldsChanged());
