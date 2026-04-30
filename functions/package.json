@@ -19,8 +19,8 @@
     "nodemailer": "^6.10.0"
   },
   "devDependencies": {
-    "firebase-functions-test": "^3.4.1",
     "@firebase/rules-unit-testing": "^4.0.0",
+    "firebase-functions-test": "^3.4.1",
     "jest": "^29.7.0"
   },
   "private": true

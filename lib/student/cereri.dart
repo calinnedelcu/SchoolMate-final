@@ -184,33 +184,66 @@ class _CereriScreenState extends State<CereriScreen> {
   }
 
   Future<bool> _fetchDaySchedule(int weekday) async {
-    final classId = AppSession.classId;
+    String? classId = AppSession.classId;
+
+    // If session is missing classId, try to resolve it from the user document
+    if (classId == null || classId.isEmpty) {
+      final userData = await _loadCurrentUserData();
+      classId = (userData['classId'] ?? '').toString().trim().toUpperCase();
+      // Update session for future calls
+      if (classId.isNotEmpty) AppSession.classId = classId;
+    }
+
     if (classId == null || classId.isEmpty) return false;
 
     setState(() => _loadingSchedule = true);
     try {
       final doc = await FirebaseFirestore.instance
-          .collection('classes')
+          .collection('timetables')
           .doc(classId)
           .get();
       if (!doc.exists) return false;
 
       final data = doc.data() ?? {};
-      final schedule = data['schedule'] as Map<String, dynamic>?;
-      if (schedule == null) return false;
+      final String? startStr = data['startTime'] as String?;
+      final List? slots = data['slots'] as List?;
+      final Map? days = data['days'] as Map?;
+      if (startStr == null || slots == null || days == null) return false;
 
-      // Firestore key matches Flutter weekday: 1=Mon..5=Fri
-      final dayData = schedule[weekday.toString()] as Map<String, dynamic>?;
-      if (dayData == null) return false;
+      final dayData = days[weekday.toString()] as Map?;
+      if (dayData == null || dayData.isEmpty) return false;
 
-      final startStr = dayData['start'] as String?;
-      final endStr = dayData['end'] as String?;
-      if (startStr == null || endStr == null) return false;
+      final startParts = startStr.split(':');
+      int currentMinutes =
+          int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
+
+      int? firstLessonStart;
+      int? lastLessonEnd;
+      int lessonIndex = 0;
+
+      for (var slot in slots) {
+        final s = Map<String, dynamic>.from(slot as Map);
+        final type = s['type'] as String? ?? 'lesson';
+        final duration = (s['duration'] as num? ?? 0).toInt();
+
+        if (type == 'lesson') {
+          if (dayData.containsKey(lessonIndex.toString()) || dayData.containsKey(lessonIndex)) {
+            firstLessonStart ??= currentMinutes;
+            lastLessonEnd = currentMinutes + duration;
+          }
+          lessonIndex++;
+        }
+        currentMinutes += duration;
+      }
+
+      if (firstLessonStart == null || lastLessonEnd == null) return false;
 
       if (mounted) {
         setState(() {
-          _scheduleStart = _parseHHmm(startStr);
-          _scheduleEnd = _parseHHmm(endStr);
+          _scheduleStart = TimeOfDay(
+              hour: firstLessonStart! ~/ 60, minute: firstLessonStart! % 60);
+          _scheduleEnd = TimeOfDay(
+              hour: lastLessonEnd! ~/ 60, minute: lastLessonEnd! % 60);
         });
       }
       return true;

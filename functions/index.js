@@ -534,15 +534,11 @@ exports.authRequestPasswordReset = onCall(async (request) => {
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiryMs = nowMs + PASSWORD_RESET_CODE_TTL_MS;
-    const codeHash = createHash("sha256").update(code).digest("hex");
 
     await admin.firestore().collection("users").doc(resolved.uid).set({
-        // Store only the hash. The plain code is delivered via email.
-        passwordResetCodeHash: codeHash,
+        passwordResetCode: code,
         passwordResetCodeExpiry: admin.firestore.Timestamp.fromMillis(expiryMs),
         passwordResetSentAt: admin.firestore.FieldValue.serverTimestamp(),
-        // Wipe legacy plain field if it existed.
-        passwordResetCode: admin.firestore.FieldValue.delete(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
 
@@ -605,11 +601,10 @@ exports.authConfirmPasswordReset = onCall(async (request) => {
 
     const resolved = await resolveUserByLoginInput(input);
     const userData = resolved.userData || {};
-    const storedHash = String(userData.passwordResetCodeHash || "");
+    const storedCode = String(userData.passwordResetCode || "");
     const expiryMs = userData.passwordResetCodeExpiry?.toMillis?.() || 0;
-    const inputHash = createHash("sha256").update(code).digest("hex");
 
-    if (!storedHash || storedHash !== inputHash) {
+    if (!storedCode || storedCode !== code) {
         throw new HttpsError("invalid-argument", "Cod invalid");
     }
     if (!expiryMs || expiryMs < Date.now()) {
@@ -622,7 +617,6 @@ exports.authConfirmPasswordReset = onCall(async (request) => {
     await admin.firestore().collection("users").doc(resolved.uid).set({
         passwordChanged: true,
         onboardingComplete: emailVerified,
-        passwordResetCodeHash: admin.firestore.FieldValue.delete(),
         passwordResetCode: admin.firestore.FieldValue.delete(),
         passwordResetCodeExpiry: admin.firestore.FieldValue.delete(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -881,7 +875,6 @@ exports.adminRemovePersonalEmail = onCall(async (request) => {
         personalEmailLower: admin.firestore.FieldValue.delete(),
         pendingPersonalEmail: admin.firestore.FieldValue.delete(),
         pendingPersonalEmailLower: admin.firestore.FieldValue.delete(),
-        verificationCodeHash: admin.firestore.FieldValue.delete(),
         verificationCode: admin.firestore.FieldValue.delete(),
         verificationCodeExpiry: admin.firestore.FieldValue.delete(),
         emailVerified: false,
@@ -1615,27 +1608,6 @@ exports.onAccessEventCreated = onDocumentCreated("accessEvents/{docId}", async (
         { unreadCount: admin.firestore.FieldValue.increment(1) },
         { merge: true }
     );
-
-    // Send push notification
-    const userDoc = await userRef.get();
-    const fcmToken = userDoc.data()?.fcmToken;
-    if (!fcmToken) return;
-
-    const eventType = String(data.type || "");
-    const title = eventType === "exit" ? "Ai iesit din scoala" : "Ai intrat in scoala";
-    const body = eventType === "exit"
-        ? "Iesirea ta a fost inregistrata."
-        : "Intrarea ta a fost inregistrata.";
-
-    try {
-        await admin.messaging().send({
-            token: fcmToken,
-            notification: { title, body },
-            android: { notification: { channelId: "student_channel" } },
-        });
-    } catch (e) {
-        console.error("onAccessEventCreated: FCM send failed:", e.message);
-    }
 });
 
 // Cancel (expire) leave requests whose date has passed. Runs every hour.
@@ -1788,18 +1760,15 @@ exports.sendVerificationEmail = onCall(async (request) => {
     // Generez cod 6 cifre
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiryMs = Date.now() + 60 * 60 * 1000; // 1 ora
-    const codeHash = createHash("sha256").update(code).digest("hex");
 
-    // Salvez doar hash-ul. Codul plain ajunge la utilizator prin email.
+    // Salvez codul în Firestore
     await userRef.update({
         pendingPersonalEmail: email,
         pendingPersonalEmailLower: emailLower,
         emailVerified: false,
         onboardingComplete: false,
-        verificationCodeHash: codeHash,
+        verificationCode: code,
         verificationCodeExpiry: admin.firestore.Timestamp.fromMillis(expiryMs),
-        // Wipe legacy plain field if it existed.
-        verificationCode: admin.firestore.FieldValue.delete(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -1950,19 +1919,18 @@ exports.verifyEmailCode = onCall(async (request) => {
     }
 
     const userData = userDoc.data();
-    const storedHash = String(userData.verificationCodeHash || "");
+    const storedCode = String(userData.verificationCode || "");
     const expiryTs = userData.verificationCodeExpiry;
     const pendingPersonalEmail = String(userData.pendingPersonalEmail || "").trim();
     const pendingPersonalEmailLower = normalizeEmail(
         userData.pendingPersonalEmailLower || pendingPersonalEmail
     );
-    const inputHash = createHash("sha256").update(code).digest("hex");
 
-    if (!storedHash) {
+    if (!storedCode) {
         throw new HttpsError("failed-precondition", "Niciun cod de verificare in asteptare");
     }
 
-    if (storedHash !== inputHash) {
+    if (storedCode !== code) {
         throw new HttpsError("invalid-argument", "Cod de verificare incorect");
     }
 
@@ -1986,7 +1954,6 @@ exports.verifyEmailCode = onCall(async (request) => {
         onboardingComplete: passwordChanged,
         pendingPersonalEmail: admin.firestore.FieldValue.delete(),
         pendingPersonalEmailLower: admin.firestore.FieldValue.delete(),
-        verificationCodeHash: admin.firestore.FieldValue.delete(),
         verificationCode: admin.firestore.FieldValue.delete(),
         verificationCodeExpiry: admin.firestore.FieldValue.delete(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
