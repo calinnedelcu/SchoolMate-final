@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../core/session.dart';
 
-// ─── Slot definition ──────────────────────────────────────────────────────────
+// Slot definition
 
 class _SlotDef {
   final String type; // 'lesson' | 'break'
@@ -19,7 +19,7 @@ class _SlotDef {
   }
 }
 
-// ─── Time helpers ─────────────────────────────────────────────────────────────
+// Time helpers
 
 int _toMin(String hhmm) {
   final p = hhmm.split(':');
@@ -44,7 +44,7 @@ List<(int, String, String)> _lessonTimes(String start, List<_SlotDef> slots) {
   return out;
 }
 
-// ─── Color palette ────────────────────────────────────────────────────────────
+// Color palette
 
 const List<Color> _kPalette = [
   Color(0xFF4361EE),
@@ -61,13 +61,13 @@ const List<Color> _kPalette = [
   Color(0xFFFFBE0B),
 ];
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// Constants
 
 const _kPrimary = Color(0xFF2848B0);
 const _kDayHeaders = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
 const _kDayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
-// ─── Blur dialog ─────────────────────────────────────────────────────────────
+// Blur dialog
 
 Future<T?> _blurDialog<T>({
   required BuildContext context,
@@ -96,9 +96,7 @@ Future<T?> _blurDialog<T>({
       pageBuilder: (ctx, anim3, anim4) => builder(ctx),
     );
 
-// ─────────────────────────────────────────────────────────────────────────────
 // SEARCHABLE CLASS DROPDOWN
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _ClassSelector extends StatefulWidget {
   const _ClassSelector({
@@ -396,9 +394,7 @@ class _ClassDropdownOverlayState extends State<_ClassDropdownOverlay> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // SEARCHABLE TEACHER DROPDOWN
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _TeacherSelector extends StatefulWidget {
   const _TeacherSelector({
@@ -666,9 +662,7 @@ class _TeacherDropdownOverlayState extends State<_TeacherDropdownOverlay> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // PAGE
-// ─────────────────────────────────────────────────────────────────────────────
 
 class AdminTimetablePage extends StatefulWidget {
   const AdminTimetablePage({super.key, this.embedded = false});
@@ -682,7 +676,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
   String? _selectedClassId;
   final _db = FirebaseFirestore.instance;
 
-  // ─── Streams ────────────────────────────────────────────────────────────────
+  // Streams
 
   Stream<QuerySnapshot> get _classesStream =>
       _db.collection('classes').snapshots();
@@ -699,7 +693,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
   Stream<DocumentSnapshot> _timetableDoc(String classId) =>
       _db.collection('timetables').doc(classId).snapshots();
 
-  // ─── Sort ────────────────────────────────────────────────────────────────────
+  // Sort
 
   int _cmpClass(String a, String b) {
     final am = RegExp(r'^\d+').firstMatch(a);
@@ -725,7 +719,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
     return list;
   }
 
-  // ─── Firestore writes ────────────────────────────────────────────────────────
+  // Firestore writes
 
   Future<void> _saveSubject(String? id, String name, int colorVal) async {
     final data = <String, dynamic>{
@@ -821,7 +815,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
   Future<void> _deleteTimetable(String classId) =>
       _db.collection('timetables').doc(classId).delete();
 
-  // ─── Build ──────────────────────────────────────────────────────────────────
+  // Build
 
   @override
   Widget build(BuildContext context) {
@@ -897,7 +891,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
   }
 
 
-  // ─── Stat cards ──────────────────────────────────────────────────────────────
+  // Stat cards
 
   Widget _buildStatCards({
     required int totalClasses,
@@ -1027,7 +1021,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
     );
   }
 
-  // ─── Main card ───────────────────────────────────────────────────────────────
+  // Main card
 
   Widget _buildMainCard({
     required List<QueryDocumentSnapshot> classDocs,
@@ -1096,7 +1090,6 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Buttons — centered vertically against the left column
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1165,7 +1158,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
     );
   }
 
-  // ─── No selection state ───────────────────────────────────────────────────────
+  // No selection state
 
   Widget _buildNoSelection() => Center(
         child: Column(
@@ -1203,7 +1196,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
         ),
       );
 
-  // ─── No timetable state ───────────────────────────────────────────────────────
+  // No timetable state
 
   Widget _buildNoTimetable(String classId) => Center(
         child: Column(
@@ -1279,7 +1272,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
         ),
       );
 
-  // ─── Grid ────────────────────────────────────────────────────────────────────
+  // Grid
 
   Widget _buildGrid({
     required String classId,
@@ -1429,7 +1422,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
     );
   }
 
-  // ─── Cell ────────────────────────────────────────────────────────────────────
+  // Cell
 
   Widget _buildCell({
     required String classId,
@@ -1494,7 +1487,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
     return '${p.first} ${p.last[0]}.';
   }
 
-  // ─── Subjects side panel ──────────────────────────────────────────────────────
+  // Subjects side panel
 
   Future<void> _showSubjectsPanel(List<QueryDocumentSnapshot> subjectDocs) {
     return showGeneralDialog(
@@ -1528,7 +1521,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
     );
   }
 
-  // ─── Dialogs ─────────────────────────────────────────────────────────────────
+  // Dialogs
 
   Future<void> _showSlotEditor({
     required String classId,
@@ -2116,9 +2109,7 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // SUBJECTS PANEL (slide-in from right)
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _SubjectsPanelContent extends StatelessWidget {
   const _SubjectsPanelContent({
@@ -2406,9 +2397,7 @@ class _SubjectsPanelContent extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // SUBJECT LIST ITEM (with hover)
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _SubjectListItem extends StatefulWidget {
   const _SubjectListItem({
@@ -2467,19 +2456,19 @@ class _SubjectListItemState extends State<_SubjectListItem> {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: Icon(Icons.edit_outlined, size: 17, color: Colors.grey.shade500),
+                icon: Icon(Icons.edit_outlined, size: 20, color: Colors.grey.shade500),
                 tooltip: 'Edit',
                 onPressed: widget.onEdit,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 4),
               IconButton(
-                icon: const Icon(Icons.delete_outline, size: 17, color: Colors.redAccent),
+                icon: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
                 tooltip: 'Delete',
                 onPressed: widget.onDelete,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),
             ],
           ),
@@ -2489,9 +2478,7 @@ class _SubjectListItemState extends State<_SubjectListItem> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // TIMETABLE CELL (with hover)
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _TimetableCell extends StatefulWidget {
   const _TimetableCell({

@@ -6,10 +6,11 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "test:rules": "firebase emulators:exec --only firestore \"jest test/rules.test.js\""
   },
   "engines": {
-    "node": "24"
+    "node": "22"
   },
   "main": "index.js",
   "dependencies": {
@@ -18,7 +19,9 @@
     "nodemailer": "^6.10.0"
   },
   "devDependencies": {
-    "firebase-functions-test": "^3.4.1"
+    "firebase-functions-test": "^3.4.1",
+    "@firebase/rules-unit-testing": "^4.0.0",
+    "jest": "^29.7.0"
   },
   "private": true
 }

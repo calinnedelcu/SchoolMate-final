@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../Auth/login_page_firestore.dart';
+import '../auth/login_page_firestore.dart';
 import '../core/session.dart';
-import '../student/widgets/maniubara.dart';
+import '../common/widgets/maniubara.dart';
 import '../student/widgets/school_decor.dart' as decor;
 import 'account_bottom_sheet.dart';
 import 'statuselevi.dart';
@@ -54,9 +54,7 @@ class _TeacherShellState extends State<TeacherShell> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // TEACHER PROFILE PAGE
-// ─────────────────────────────────────────────────────────────────────────────
 class TeacherProfilePage extends StatelessWidget {
   final bool showBack;
 

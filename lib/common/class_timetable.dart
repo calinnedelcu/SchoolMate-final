@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../student/widgets/timetable.dart';
+import 'widgets/timetable.dart';
 
 const _primary = Color(0xFF2848B0);
 const _surfaceLowest = Color(0xFFFFFFFF);
@@ -13,8 +13,8 @@ const _onSurface = Color(0xFF1A2050);
 /// `timetables/{classId}` document together with the `subjects` and
 /// teacher `users` collections, and feeding the result into [TimetableGrid].
 ///
-/// Same logic the student schedule page uses — extracted so the parent
-/// schedule page and the teacher schedule sheet stay in sync.
+/// Shared with the student schedule page so the parent schedule page and
+/// the teacher schedule sheet stay in sync.
 class ClassTimetable extends StatelessWidget {
   final String classId;
 
@@ -142,15 +142,14 @@ class ClassTimetable extends StatelessWidget {
             };
 
             return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: db
-                  .collection('users')
-                  .where('role', isEqualTo: 'teacher')
-                  .snapshots(),
+              stream: db.collectionGroup('publicProfile').snapshots(),
               builder: (context, teachSnap) {
                 final teacherNames = <String, String>{};
                 for (final d in teachSnap.data?.docs ?? const []) {
                   final m = d.data();
-                  final username = (m['username'] as String?) ?? d.id;
+                  if ((m['role'] as String?) != 'teacher') continue;
+                  final ownerUid = d.reference.parent.parent?.id ?? '';
+                  final username = (m['username'] as String?) ?? ownerUid;
                   final fullName = (m['fullName'] as String?)?.trim() ?? '';
                   teacherNames[username] = _shortTeacher(
                     fullName.isEmpty ? username : fullName,

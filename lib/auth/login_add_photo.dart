@@ -28,7 +28,7 @@ class ProfilePicturePage extends StatefulWidget {
 }
 
 class _ProfilePicturePageState extends State<ProfilePicturePage> {
-  // ── colours ──
+  // colours
   static const _darkBg = Color(0xFF1E3CA0);
   static const _leftPanelGreen = Color(0xFF2E58D0);
   static const _primaryGreen = Color(0xFF2848B0);
@@ -40,7 +40,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
   String? _imageFilePath;
   bool _loading = false;
 
-  // ── image picking ────────────────────────────────────────────────────────────
+  // image picking
   Future<void> _pickImage() async {
     if (!widget.canUploadPhoto) return;
     final picker = ImagePicker();
@@ -57,7 +57,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     });
   }
 
-  // ── finalize / upload ────────────────────────────────────────────────────────
+  // finalize / upload
   Future<void> _finalize() async {
     setState(() => _loading = true);
     try {
@@ -91,11 +91,11 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
       if (!mounted) return;
       final message = switch (e.code) {
         'unauthorized' =>
-          'Nu am putut salva fotografia acum. Incearca din nou in cateva secunde.',
-        'canceled' => 'Incarcarea fotografiei a fost anulata.',
+          'Could not save the photo right now. Please try again in a few seconds.',
+        'canceled' => 'Photo upload was canceled.',
         'quota-exceeded' =>
-          'Spatiul de stocare este momentan indisponibil. Incearca din nou mai tarziu.',
-        _ => 'Nu am putut salva fotografia acum. Incearca din nou.',
+          'Storage is temporarily unavailable. Please try again later.',
+        _ => 'Could not save the photo right now. Please try again.',
       };
       ScaffoldMessenger.of(
         context,
@@ -105,7 +105,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Nu am putut salva fotografia acum. Incearca din nou.',
+              'Could not save the photo right now. Please try again.',
             ),
           ),
         );
@@ -115,7 +115,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     }
   }
 
-  // ── build ────────────────────────────────────────────────────────────────────
+  // build
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,7 +140,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // ── wide (desktop / web) layout ──────────────────────────────────────────────
+  // wide (desktop / web) layout
   Widget _buildWideLayout() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -175,7 +175,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // ── narrow (mobile) layout ───────────────────────────────────────────────────
+  // narrow (mobile) layout
   Widget _buildNarrowLayout() {
     return Center(
       child: SingleChildScrollView(
@@ -195,7 +195,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // ── left green panel ─────────────────────────────────────────────────────────
+  // left green panel
   Widget _buildLeftPanel() {
     return Container(
       color: _leftPanelGreen,
@@ -251,7 +251,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // ── right cream panel ────────────────────────────────────────────────────────
+  // right cream panel
   Widget _buildRightPanel() {
     return Container(
       color: _cardCream,
@@ -286,7 +286,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Încarcă o fotografie de profil pentru identificare vizuală.',
+                      'Upload a profile photo for visual identification.',
                       style: TextStyle(
                         fontSize: 13,
                         color: Color(0xFF777777),
@@ -313,7 +313,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // ── step indicator row ───────────────────────────────────────────────────────
+  // step indicator row
   Widget _buildStepIndicator() {
     return Row(
       children: [
@@ -347,7 +347,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // ── avatar circle with camera overlay ───────────────────────────────────────
+  // avatar circle with camera overlay
   Widget _buildAvatar() {
     return SizedBox(
       width: 130,
@@ -394,7 +394,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // ── "Încarcă Foto" outlined button ──────────────────────────────────────────
+  // "Upload Photo" outlined button
   Widget _buildUploadButton() {
     return SizedBox(
       width: double.infinity,
@@ -407,8 +407,8 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
         ),
         label: Text(
           widget.canUploadPhoto
-              ? 'Încarcă Foto'
-              : 'Upload indisponibil pentru acest rol',
+              ? 'Upload Photo'
+              : 'Upload unavailable for this role',
           style: TextStyle(
             color: Color(0xFF333333),
             fontWeight: FontWeight.w500,
@@ -427,7 +427,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // ── criteria info box ────────────────────────────────────────────────────────
+  // criteria info box
   Widget _buildInfoBox() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -448,8 +448,8 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
           Expanded(
             child: Text(
               widget.canUploadPhoto
-                  ? 'Criterii: Față trebuie să fie vizibilă clar, fundal neutru, fără accesorii care ascund trăsăturile.'
-                  : 'Pentru conturile de secretariat, încărcarea pozei de profil este dezactivată. Apasă Skip pentru a continua.',
+                  ? 'Requirements: face must be clearly visible, neutral background, no accessories hiding features.'
+                  : 'For secretariat accounts, profile photo upload is disabled. Tap Skip to continue.',
               style: const TextStyle(
                 fontSize: 13,
                 color: Color(0xFF3D3D3D),
@@ -462,7 +462,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // ── navigation buttons ───────────────────────────────────────────────────────
+  // navigation buttons
   Widget _buildNavigationRow() {
     return Row(
       children: [
@@ -538,7 +538,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        widget.canUploadPhoto ? 'Finalizare' : 'Continuă',
+                        widget.canUploadPhoto ? 'Finish' : 'Continue',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -559,13 +559,13 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     );
   }
 
-  // ── help text ────────────────────────────────────────────────────────────────
+  // help text
   Widget _buildHelpText() {
     return Center(
       child: Column(
         children: [
           const Text(
-            'Ai nevoie de ajutor?',
+            'Need help?',
             style: TextStyle(fontSize: 13, color: Color(0xFF888888)),
           ),
           GestureDetector(
@@ -573,7 +573,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
               // TODO: open IT support link / dialog
             },
             child: const Text(
-              'Contactează suportul IT',
+              'Contact IT support',
               style: TextStyle(
                 fontSize: 13,
                 color: _primaryGreen,

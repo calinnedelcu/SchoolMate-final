@@ -1,4 +1,5 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../core/session.dart';
 import '../student/widgets/school_decor.dart';
@@ -19,6 +20,7 @@ class _StatusEleviPageState extends State<StatusEleviPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final teacherUid = AppSession.uid;
     if (teacherUid == null || teacherUid.isEmpty) {
       return const Scaffold(body: Center(child: Text("No session")));
@@ -47,7 +49,15 @@ class _StatusEleviPageState extends State<StatusEleviPage> {
                 future: teacherDoc.get(),
                 builder: (context, snap) {
                   if (snap.hasError) {
-                    return Center(child: Text('Error: ${snap.error}'));
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                          'Could not load teacher details.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    );
                   }
                   if (!snap.hasData) {
                     return const Center(child: CircularProgressIndicator());
@@ -126,8 +136,8 @@ class _StatusEleviPageState extends State<StatusEleviPage> {
                                   children: [
                                     Text(
                                       'Class $classId',
-                                      style: const TextStyle(
-                                        color: Color(0xFF1A2050),
+                                      style: TextStyle(
+                                        color: cs.onSurface,
                                         fontSize: 20,
                                         fontWeight: FontWeight.w800,
                                       ),
@@ -135,8 +145,8 @@ class _StatusEleviPageState extends State<StatusEleviPage> {
                                     const Spacer(),
                                     Text(
                                       '${sortedStudents.length} ${sortedStudents.length == 1 ? 'student' : 'students'}',
-                                      style: const TextStyle(
-                                        color: Color(0xFF7A7E9A),
+                                      style: TextStyle(
+                                        color: cs.onSurfaceVariant,
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -262,6 +272,7 @@ class _StudentListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final avatarBg = _avatarBackgroundColor(avatarSeed);
 
     return Container(
@@ -296,12 +307,19 @@ class _StudentListCard extends StatelessWidget {
                   alignment: Alignment.center,
                   clipBehavior: Clip.antiAlias,
                   child: photoUrl.isNotEmpty
-                      ? Image.network(
-                          photoUrl,
+                      ? CachedNetworkImage(
+                          imageUrl: photoUrl,
                           width: 52,
                           height: 52,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
+                          placeholder: (context, url) => const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) {
                             return _AvatarInitials(
                               initials: initials,
                               backgroundColor: avatarBg,
@@ -319,8 +337,8 @@ class _StudentListCard extends StatelessWidget {
                     name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF1A2050),
+                    style: TextStyle(
+                      color: cs.onSurface,
                       fontWeight: FontWeight.w800,
                       fontSize: 16,
                       height: 1.2,
@@ -328,10 +346,10 @@ class _StudentListCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
                   size: 24,
-                  color: Color(0xFF7A7E9A),
+                  color: cs.onSurfaceVariant,
                 ),
               ],
             ),
@@ -390,7 +408,7 @@ class _AvatarInitials extends StatelessWidget {
   }
 }
 
-// ─── Student detail page ──────────────────────────────────────────────────────
+// Student detail page
 
 class _StudentDetailPage extends StatelessWidget {
   final String avatarSeed;
@@ -413,6 +431,7 @@ class _StudentDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const primary = Color(0xFF2848B0);
     const onSurface = Color(0xFF1A2050);
 
@@ -435,7 +454,7 @@ class _StudentDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ── Identity card ──
+                    // Identity card
                     Container(
                       width: double.infinity,
                       clipBehavior: Clip.antiAlias,
@@ -481,10 +500,21 @@ class _StudentDetailPage extends StatelessWidget {
                                           width: 64,
                                           height: 64,
                                           child: photoUrl.isNotEmpty
-                                              ? Image.network(
-                                                  photoUrl,
+                                              ? CachedNetworkImage(
+                                                  imageUrl: photoUrl,
                                                   fit: BoxFit.cover,
-                                                  errorBuilder: (_, _, _) =>
+                                                  placeholder:
+                                                      (context, url) =>
+                                                          const Center(
+                                                    child: SizedBox(
+                                                      width: 20,
+                                                      height: 20,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                              strokeWidth: 2),
+                                                    ),
+                                                  ),
+                                                  errorWidget: (_, _, _) =>
                                                       _DetailAvatarFallback(
                                                         avatarSeed: avatarSeed,
                                                         name: name,
@@ -541,7 +571,7 @@ class _StudentDetailPage extends StatelessWidget {
                                 const SizedBox(height: 22),
                                 Container(
                                   height: 1,
-                                  color: const Color(0xFFE8EAF2),
+                                  color: cs.outlineVariant,
                                 ),
                                 const SizedBox(height: 18),
                                 _PersonMetaRow(
@@ -558,7 +588,7 @@ class _StudentDetailPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    // ── Recent leave requests for this student ──
+                    // Recent leave requests for this student
                     _StudentRecentRequestsCard(
                       studentUid: avatarSeed,
                       classId: classId,
@@ -574,9 +604,7 @@ class _StudentDetailPage extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // RECENT LEAVE REQUESTS (per student, for teacher view)
-// ─────────────────────────────────────────────────────────────────────────────
 class _StudentRecentRequestsCard extends StatelessWidget {
   final String studentUid;
   final String classId;
@@ -880,10 +908,17 @@ class _DetailFullScreenImage extends StatelessWidget {
               child: InteractiveViewer(
                 minScale: 0.5,
                 maxScale: 4,
-                child: Image.network(
-                  url,
+                child: CachedNetworkImage(
+                  imageUrl: url,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, _, _) => const Icon(
+                  placeholder: (context, url) => const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                  errorWidget: (_, _, _) => const Icon(
                     Icons.broken_image_outlined,
                     color: Colors.white70,
                     size: 56,
@@ -1024,16 +1059,17 @@ class _PersonMetaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
         Container(
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFFE8EAF2),
+            color: cs.outlineVariant,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: const Color(0xFF2848B0), size: 24),
+          child: Icon(icon, color: cs.primary, size: 24),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -1042,11 +1078,11 @@ class _PersonMetaRow extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
-                  color: Color(0xFF7A7E9A),
+                  color: cs.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 3),
@@ -1054,10 +1090,10 @@ class _PersonMetaRow extends StatelessWidget {
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1A2050),
+                  color: cs.onSurface,
                 ),
               ),
             ],

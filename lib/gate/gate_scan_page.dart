@@ -44,7 +44,7 @@ class _GateScanPageState extends State<GateScanPage> {
     final callable = FirebaseFunctions.instance.httpsCallable('redeemQrToken');
     final res = await callable.call(<String, dynamic>{'token': tokenId});
     final data = res.data;
-    if (data is! Map) throw Exception('Răspuns invalid de la server');
+    if (data is! Map) throw Exception('Invalid response from server');
     return Map<String, dynamic>.from(data);
   }
 
@@ -82,12 +82,7 @@ class _GateScanPageState extends State<GateScanPage> {
         '/gateScanResult',
         arguments: GateScanResultPageArguments(
           isAllowed: false,
-          errorMessage: 'Eroare validare: $e',
-          userId: '-',
-          fullName: 'Eroare sistem',
-          classId: '',
-          reason: 'SCAN_ERROR',
-          tokenId: tokenId,
+          errorMessage: 'Validation error. Please try again.',
         ),
       );
     }

@@ -110,7 +110,7 @@ class _InboxScreenState extends State<InboxScreen> {
         if (mounted) setState(() => _activeHighlightId = null);
       });
     } else if (retries > 0) {
-      // List may not be rendered yet — retry after one frame.
+      // List may not be rendered yet; retry after one frame.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _scrollToHighlight(docId, retries: retries - 1);
       });
@@ -418,7 +418,7 @@ class _InboxScreenState extends State<InboxScreen> {
       stream: _leaveStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          return const _InboxErrorView();
         }
 
         if (!snapshot.hasData) {
@@ -431,14 +431,14 @@ class _InboxScreenState extends State<InboxScreen> {
           stream: _secretariatStream,
           builder: (context, secretariatSnap) {
             if (secretariatSnap.hasError) {
-              return Center(child: Text('Error: ${secretariatSnap.error}'));
+              return const _InboxErrorView();
             }
 
             return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: _secretariatGlobalStream,
               builder: (context, globalSnap) {
                 if (globalSnap.hasError) {
-                  return Center(child: Text('Error: ${globalSnap.error}'));
+                  return const _InboxErrorView();
                 }
 
                 return _buildLoadedBody(
@@ -637,7 +637,6 @@ class _InboxHeaderState extends State<_InboxHeader> {
 
     return Column(
       children: [
-        // Gradient header — same as other pages
         Container(
           width: double.infinity,
           clipBehavior: Clip.antiAlias,
@@ -841,10 +840,11 @@ class _InboxRequestTileState extends State<_InboxRequestTile>
     );
     if (widget.highlighted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted)
+        if (mounted) {
           _bounceCtrl.forward().then((_) {
             if (mounted) _bounceCtrl.reverse();
           });
+        }
       });
     }
   }
@@ -1121,10 +1121,6 @@ class _MetaChip extends StatelessWidget {
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// DETAIL SHEETS — bottom sheets shown on tap to display the full message body
-// and any extra fields (location, dates, link, audience, sender).
-// ────────────────────────────────────────────────────────────────────────────
 
 String _formatLongDate(DateTime d) {
   const months = <String>[
@@ -1344,6 +1340,7 @@ class _InboxCardDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final raw = data.raw;
     final eventDate = (raw['eventDate'] as Timestamp?)?.toDate();
     final eventEndDate = (raw['eventEndDate'] as Timestamp?)?.toDate();
@@ -1362,6 +1359,7 @@ class _InboxCardDetailDialog extends StatelessWidget {
     final bookmarkCategory = switch (data.category) {
       _InboxFilter.competition => 'competition',
       _InboxFilter.camp => 'camp',
+      _InboxFilter.volunteer => 'volunteer',
       _InboxFilter.announcements => 'announcement',
       _ => '',
     };
@@ -1403,7 +1401,7 @@ class _InboxCardDetailDialog extends StatelessWidget {
                     loadingBuilder: (_) => Container(
                       width: 280,
                       height: 180,
-                      color: const Color(0xFFE8EAF2),
+                      color: cs.outlineVariant,
                       alignment: Alignment.center,
                       child: const SizedBox(
                         width: 22,
@@ -1414,7 +1412,7 @@ class _InboxCardDetailDialog extends StatelessWidget {
                     errorBuilder: (_, _) => Container(
                       width: 280,
                       height: 160,
-                      color: const Color(0xFFE8EAF2),
+                      color: cs.outlineVariant,
                       alignment: Alignment.center,
                       child: const Icon(
                         Icons.broken_image_rounded,
@@ -1494,8 +1492,9 @@ class _DetailLinkBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Material(
-      color: const Color(0xFFF2F4F8),
+      color: cs.surfaceContainerHighest,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -1553,6 +1552,7 @@ class _DetailFooterMeta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final rows = <Widget>[];
 
     if (senderName.isNotEmpty) {
@@ -1619,7 +1619,7 @@ class _DetailFooterMeta extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FB),
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -1740,6 +1740,40 @@ class _FooterRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _InboxErrorView extends StatelessWidget {
+  const _InboxErrorView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.cloud_off_rounded, size: 48, color: _textMuted),
+            SizedBox(height: 12),
+            Text(
+              'Could not load messages',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: _textDark,
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              'Check your connection and try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: _textMuted),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

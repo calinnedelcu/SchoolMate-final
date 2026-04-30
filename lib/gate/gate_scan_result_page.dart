@@ -102,16 +102,28 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
 
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)?.settings.arguments as GateScanResultPageArguments?;
-
-    if (args == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text('Invalid scan arguments'),
+    final rawArgs = ModalRoute.of(context)?.settings.arguments;
+    if (rawArgs is! GateScanResultPageArguments) {
+      return Scaffold(
+        backgroundColor: _surface,
+        appBar: AppBar(
+          backgroundColor: _primary,
+          foregroundColor: Colors.white,
+          title: const Text('Scan result'),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Scan data is missing. Please scan again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _onSurface),
+            ),
+          ),
         ),
       );
     }
+    final args = rawArgs;
 
     final name = args.fullName ?? '??';
     final initials = name
@@ -158,7 +170,6 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
                         _LeaveRequestCard(hasActiveLeave: args.hasActiveLeave),
                         const SizedBox(height: 14),
                         _ScheduleCard(
-                          classId: args.classId,
                           timetableData: timetableData,
                           isLoading: snapshot.connectionState == ConnectionState.waiting,
                         ),
@@ -260,9 +271,7 @@ class _GatePill extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // STUDENT CARD
-// ─────────────────────────────────────────────────────────────────────────────
 class _StudentCard extends StatelessWidget {
   final String initials;
   final String? fullName;
@@ -380,9 +389,7 @@ class _StudentCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // LEAVE REQUEST CARD
-// ─────────────────────────────────────────────────────────────────────────────
 class _LeaveRequestCard extends StatelessWidget {
   final bool hasActiveLeave;
   const _LeaveRequestCard({required this.hasActiveLeave});
@@ -464,107 +471,142 @@ class _LeaveRequestCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCHEDULE CARD (placeholder mock — wired to real schedule when available)
-// ─────────────────────────────────────────────────────────────────────────────
+// SCHEDULE CARD: shows today's lessons resolved from the class timetable.
 class _ScheduleCard extends StatelessWidget {
-  final String? classId;
   final Map<String, dynamic>? timetableData;
   final bool isLoading;
-  const _ScheduleCard({this.classId, this.timetableData, this.isLoading = false});
+  const _ScheduleCard({this.timetableData, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 20),
-                child: CircularProgressIndicator(strokeWidth: 2, color: _primary),
-              ),
-            );
+      return const _ThemedCard(
+        variant: 4,
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: _primary,
+            ),
+          ),
+        ),
+      );
     }
     if (timetableData == null) {
-      return const _ThemedCard(variant: 4, child: Text('No schedule available', style: TextStyle(color: _labelColor)));
+      return const _ThemedCard(
+        variant: 4,
+        child: Text(
+          'No schedule available',
+          style: TextStyle(color: _labelColor),
+        ),
+      );
+    }
+
+    final String? startStr = timetableData!['startTime'] as String?;
+    if (startStr == null || startStr.isEmpty) {
+      return const _ThemedCard(
+        variant: 4,
+        child: Text(
+          'No schedule start time defined',
+          style: TextStyle(color: _labelColor),
+        ),
+      );
+    }
+
+    final List slots = (timetableData!['slots'] as List?) ?? const [];
+    final now = DateTime.now();
+    final dayData =
+        (timetableData!['days'] as Map<String, dynamic>?)?[now.weekday
+                .toString()]
+            as Map<String, dynamic>? ??
+        const <String, dynamic>{};
+
+    final parts = startStr.split(':');
+    DateTime current = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+    );
+
+    final List<Widget> scheduleWidgets = [];
+    int lessonIndex = 0;
+
+    for (int i = 0; i < slots.length; i++) {
+      final slot = slots[i] as Map<String, dynamic>;
+      final type = (slot['type'] ?? 'lesson').toString();
+      final duration = (slot['duration'] ?? 0) as int;
+
+      if (type == 'lesson') {
+        final daySlotInfo =
+            dayData[lessonIndex.toString()] as Map<String, dynamic>?;
+        final subjectId = daySlotInfo?['subjectId'] as String?;
+
+        if (subjectId != null) {
+          final lessonEnd = current.add(Duration(minutes: duration));
+          final startFmt =
+              '${current.hour.toString().padLeft(2, '0')}:${current.minute.toString().padLeft(2, '0')}';
+          final endFmt =
+              '${lessonEnd.hour.toString().padLeft(2, '0')}:${lessonEnd.minute.toString().padLeft(2, '0')}';
+          final bool isNow =
+              now.isAfter(current) && now.isBefore(lessonEnd);
+          final bool isCompleted = now.isAfter(lessonEnd);
+          final bool isFuture = now.isBefore(current);
+
+          scheduleWidgets.add(
+            _ScheduleItem(
+              time: '$startFmt - $endFmt',
+              subjectId: subjectId,
+              isNow: isNow,
+              isCompleted: isCompleted,
+              isFuture: isFuture,
+            ),
+          );
+        }
+        lessonIndex++;
+      }
+      current = current.add(Duration(minutes: duration));
+    }
+
+    if (scheduleWidgets.isEmpty) {
+      return const _ThemedCard(
+        variant: 4,
+        child: Text(
+          'No lessons scheduled for today',
+          style: TextStyle(color: _labelColor),
+        ),
+      );
     }
 
     return _ThemedCard(
       variant: 4,
-      child: () {
-          final String? startStr = timetableData?['startTime'];
-          if (startStr == null || startStr.isEmpty) {
-            return const Text('No schedule start time defined', style: TextStyle(color: _labelColor));
-          }
-          
-          final List slots = timetableData!['slots'] ?? [];
-          final now = DateTime.now();
-          final dayData = (timetableData!['days'] as Map<String, dynamic>?)?[now.weekday.toString()] as Map<String, dynamic>? ?? {};
-          
-          final parts = startStr.split(':');
-          DateTime current = DateTime(now.year, now.month, now.day, int.parse(parts[0]), int.parse(parts[1]));
-
-          final List<Widget> scheduleWidgets = [];
-          int lessonIndex = 0;
-
-          for (int i = 0; i < slots.length; i++) {
-            final slot = slots[i] as Map<String, dynamic>;
-            final type = (slot['type'] ?? 'lesson').toString();
-            final duration = (slot['duration'] as num? ?? 0).toInt();
-
-            if (type == 'lesson') {
-              final daySlotInfo = dayData[lessonIndex.toString()] as Map<String, dynamic>?;
-              final subjectId = daySlotInfo?['subjectId'] as String?;
-
-              if (subjectId != null) {
-              final lessonEnd = current.add(Duration(minutes: duration));
-              
-              final startFmt = '${current.hour.toString().padLeft(2, '0')}:${current.minute.toString().padLeft(2, '0')}';
-              final endFmt = '${lessonEnd.hour.toString().padLeft(2, '0')}:${lessonEnd.minute.toString().padLeft(2, '0')}';
-
-              final bool isNow = now.isAfter(current) && now.isBefore(lessonEnd);
-              final bool isCompleted = now.isAfter(lessonEnd);
-              final bool isFuture = now.isBefore(current);
-
-              scheduleWidgets.add(
-                _ScheduleItem(
-                  time: '$startFmt - $endFmt',
-                  subjectId: subjectId,
-                  isNow: isNow,
-                  isCompleted: isCompleted,
-                  isFuture: isFuture,
-                ),
-              );
-            }
-              lessonIndex++;
-            }
-            current = current.add(Duration(minutes: duration));
-          }
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
             children: [
-              const Row(
-                children: [
-                  Icon(Icons.schedule_rounded, color: _labelColor, size: 16),
-                  SizedBox(width: 6),
-                  Text(
-                    "TODAY'S SCHEDULE",
-                    style: TextStyle(
-                      color: _labelColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ],
+              Icon(Icons.schedule_rounded, color: _labelColor, size: 16),
+              SizedBox(width: 6),
+              Text(
+                "TODAY'S SCHEDULE",
+                style: TextStyle(
+                  color: _labelColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                ),
               ),
-              const SizedBox(height: 8),
-              for (int i = 0; i < scheduleWidgets.length; i++) ...[
-                scheduleWidgets[i],
-                if (i < scheduleWidgets.length - 1) _DottedDivider(),
-              ],
             ],
-          );
-      }(),
+          ),
+          const SizedBox(height: 8),
+          for (int i = 0; i < scheduleWidgets.length; i++) ...[
+            scheduleWidgets[i],
+            if (i < scheduleWidgets.length - 1) _DottedDivider(),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -685,9 +727,7 @@ class _DottedLinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RESULT FOOTER — banner + back button
-// ─────────────────────────────────────────────────────────────────────────────
+// RESULT FOOTER: banner + back button
 class _ResultFooter extends StatelessWidget {
   final GateScanResultPageArguments args;
   final bool isDayFinished;
@@ -855,9 +895,7 @@ class _StatusBanner extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SHARED — themed card with sparkles
-// ─────────────────────────────────────────────────────────────────────────────
+// SHARED: themed card with sparkles
 class _ThemedCard extends StatelessWidget {
   final Widget child;
   final int variant;

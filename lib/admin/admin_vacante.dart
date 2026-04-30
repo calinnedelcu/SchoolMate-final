@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../core/session.dart';
 
+import 'admin_classes_page.dart';
 import 'admin_parents_page.dart';
 import 'admin_students_page.dart';
 import 'admin_teachers_page.dart';
@@ -76,15 +77,15 @@ Widget _wrapBlurredPopupBackground(Widget child) {
   );
 }
 
-class AdminClassesPage extends StatefulWidget {
-  const AdminClassesPage({super.key, this.embedded = false});
+class AdminVacantePage extends StatefulWidget {
+  const AdminVacantePage({super.key, this.embedded = false});
   final bool embedded;
 
   @override
-  State<AdminClassesPage> createState() => _AdminClassesPageState();
+  State<AdminVacantePage> createState() => _AdminVacantePageState();
 }
 
-class _AdminClassesPageState extends State<AdminClassesPage> {
+class _AdminVacantePageState extends State<AdminVacantePage> {
   bool _sidebarNavigationBusy = false;
 
   Future<void> _openSidebarPage(Widget page) async {

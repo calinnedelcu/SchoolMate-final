@@ -162,7 +162,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
     final resolveData = Map<String, dynamic>.from(resolveRes.data as Map);
     final username = (resolveData['username'] ?? '').toString().toLowerCase();
     if (username.isEmpty) {
-      throw Exception('Date invalide - username lipsa');
+      throw Exception('Invalid credentials');
     }
     return username;
   }
@@ -184,7 +184,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             return AlertDialog(
-              title: const Text('Resetare parola'),
+              title: const Text('Reset password'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -192,7 +192,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                     TextField(
                       controller: inputC,
                       decoration: const InputDecoration(
-                        labelText: 'Username sau email',
+                        labelText: 'Username or email',
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -200,7 +200,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                       controller: codeC,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Cod resetare (6 cifre)',
+                        labelText: 'Reset code (6 digits)',
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -208,7 +208,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                       controller: newPassC,
                       obscureText: !showPass,
                       decoration: InputDecoration(
-                        labelText: 'Parola noua',
+                        labelText: 'New password',
                         suffixIcon: IconButton(
                           icon: Icon(
                             showPass ? Icons.visibility : Icons.visibility_off,
@@ -224,7 +224,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                       controller: confirmPassC,
                       obscureText: !showConfirmPass,
                       decoration: InputDecoration(
-                        labelText: 'Confirma parola noua',
+                        labelText: 'Confirm new password',
                         suffixIcon: IconButton(
                           icon: Icon(
                             showConfirmPass
@@ -245,7 +245,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
               actions: [
                 TextButton(
                   onPressed: submitting ? null : () => Navigator.of(ctx).pop(),
-                  child: const Text('Anuleaza'),
+                  child: const Text('Cancel'),
                 ),
                 ElevatedButton(
                   onPressed: submitting
@@ -262,7 +262,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                               confirmPass.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Completeaza toate campurile.'),
+                                content: Text('Please fill in all fields.'),
                               ),
                             );
                             return;
@@ -270,7 +270,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                           if (newPass != confirmPass) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Parolele nu coincid.'),
+                                content: Text('Passwords do not match.'),
                               ),
                             );
                             return;
@@ -279,7 +279,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                  'Parola trebuie sa aiba minim 6 caractere.',
+                                  'Password must be at least 6 characters.',
                                 ),
                               ),
                             );
@@ -304,16 +304,16 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                  'Parola a fost resetata. Te poti loga acum.',
+                                  'Password reset. You can log in now.',
                                 ),
                               ),
                             );
                           } on FirebaseFunctionsException catch (e) {
-                            var msg = 'Resetare esuata. Incearca din nou.';
+                            var msg = 'Reset failed. Please try again.';
                             if (e.code == 'invalid-argument') {
-                              msg = 'Date invalide sau cod gresit.';
+                              msg = 'Invalid data or wrong code.';
                             } else if (e.code == 'deadline-exceeded') {
-                              msg = 'Cod expirat. Cere un cod nou.';
+                              msg = 'Code expired. Request a new one.';
                             }
                             if (mounted) {
                               ScaffoldMessenger.of(
@@ -325,7 +325,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                    'Resetare esuata. Incearca din nou.',
+                                    'Reset failed. Please try again.',
                                   ),
                                 ),
                               );
@@ -336,7 +336,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                             }
                           }
                         },
-                  child: Text(submitting ? 'Se salveaza...' : 'Reseteaza'),
+                  child: Text(submitting ? 'Saving...' : 'Reset'),
                 ),
               ],
             );
@@ -364,18 +364,18 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             return AlertDialog(
-              title: const Text('Ai uitat parola?'),
+              title: const Text('Forgot password?'),
               content: TextField(
                 controller: inputC,
                 decoration: const InputDecoration(
-                  labelText: 'Username sau email',
-                  hintText: 'ex: elev1 sau elev1@gmail.com',
+                  labelText: 'Username or email',
+                  hintText: 'e.g. student1 or student1@gmail.com',
                 ),
               ),
               actions: [
                 TextButton(
                   onPressed: sending ? null : () => Navigator.of(ctx).pop(),
-                  child: const Text('Anuleaza'),
+                  child: const Text('Cancel'),
                 ),
                 ElevatedButton.icon(
                   onPressed: sending
@@ -386,7 +386,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                  'Completeaza username sau email.',
+                                  'Please enter a username or email.',
                                 ),
                               ),
                             );
@@ -410,13 +410,13 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                             if (!ctx.mounted) return;
                             nextInput = input;
                             postMessage = cooldown > 0
-                                ? 'Un cod a fost deja trimis recent. Reincearca in ${cooldown}s.'
-                                : 'Daca datele exista in sistem, am trimis codul de resetare pe email.';
+                                ? 'A code was sent recently. Try again in ${cooldown}s.'
+                                : 'If your account exists, we sent a reset code to your email.';
                             Navigator.of(ctx).pop();
                             dialogClosed = true;
                           } on FirebaseFunctionsException catch (e) {
                             var msg =
-                                'Nu am putut trimite codul. Incearca din nou.';
+                                'Could not send the code. Please try again.';
                             if (e.code == 'failed-precondition') {
                               msg = e.message ?? msg;
                             }
@@ -430,7 +430,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                    'Nu am putut trimite codul. Incearca din nou.',
+                                    'Could not send the code. Please try again.',
                                   ),
                                 ),
                               );
@@ -448,7 +448,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.email_outlined, size: 18),
-                  label: const Text('Trimite cod'),
+                  label: const Text('Send code'),
                 ),
               ],
             );
@@ -478,7 +478,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              "Cont blocat temporar. Incearca din nou in ${_remainingSeconds}s.",
+              "Account temporarily locked. Try again in ${_remainingSeconds}s.",
             ),
           ),
         );
@@ -492,14 +492,14 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
       final input = userC.text.trim().toLowerCase();
       final password = passC.text.trim();
       if (input.isEmpty || password.isEmpty) {
-        throw Exception("Date invalide");
+        throw Exception("Invalid credentials");
       }
 
       final username = await _resolveUsernameFromInput(input);
 
       await _ensureActorKey();
       if (_actorKey.isEmpty) {
-        throw Exception("Autentificare temporar indisponibila");
+        throw Exception("Authentication temporarily unavailable");
       }
 
       final precheck = await _withAuthTimeout(
@@ -514,7 +514,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
       if (preData['blocked'] == true) {
         final sec = _asInt(preData['remainingSeconds'], fallback: 120);
         await _setBlockedForSeconds(sec);
-        throw Exception("Cont blocat temporar. Incearca din nou in ${sec}s.");
+        throw Exception("Account temporarily locked. Try again in ${sec}s.");
       }
 
       final email = "$username@school.local";
@@ -536,13 +536,13 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
 
       if (!doc.exists) {
         await FirebaseAuth.instance.signOut();
-        throw Exception('Date invalide');
+        throw Exception('Invalid credentials');
       }
 
       final data = doc.data() as Map<String, dynamic>;
       if ((data["status"] ?? "active") == "disabled") {
         await FirebaseAuth.instance.signOut();
-        throw Exception("Autentificare indisponibila");
+        throw Exception("Authentication unavailable");
       }
 
       final role = (data["role"] ?? "").toString();
@@ -578,7 +578,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
       // auth-state change and routes to OnboardingPage, TwoFactorVerifyPage,
       // or the role dashboard ÔÇö no Navigator.push needed here.
     } on FirebaseAuthException catch (e) {
-      String msg = "Date de autentificare invalide.";
+      String msg = "Invalid credentials.";
       if (e.code == "wrong-password" ||
           e.code == "invalid-credential" ||
           e.code == "invalid-login-credentials" ||
@@ -611,21 +611,21 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
               final sec = _asInt(failData['remainingSeconds'], fallback: 120);
               await _setBlockedForSeconds(sec);
               msg =
-                  "Autentificare temporar indisponibila. Incearca din nou mai tarziu.";
+                  "Authentication temporarily unavailable. Please try again later.";
             }
           }
         } on FirebaseFunctionsException catch (fx) {
           if (fx.code == 'resource-exhausted') {
             msg =
-                "Autentificare temporar indisponibila. Incearca din nou mai tarziu.";
+                "Authentication temporarily unavailable. Please try again later.";
           } else if (fx.code == 'failed-precondition') {
-            msg = "Date de autentificare invalide.";
+            msg = "Invalid credentials.";
           }
         }
       }
       if (e.code == "too-many-requests") {
         msg =
-            "Autentificare temporar indisponibila. Incearca din nou mai tarziu.";
+            "Authentication temporarily unavailable. Please try again later.";
       }
       if (mounted) {
         ScaffoldMessenger.of(
@@ -637,7 +637,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Autentificarea a expirat. Verifica internetul si incearca din nou.',
+              'Login timed out. Check your connection and try again.',
             ),
           ),
         );
@@ -646,8 +646,8 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
       debugPrint('[LOGIN ERROR] $e');
       debugPrint('[LOGIN STACK] $st');
       final msg = e.toString().contains('timeout')
-          ? 'Autentificarea a expirat. Verifica internetul si incearca din nou.'
-          : 'Autentificare esuata. Incearca din nou.';
+          ? 'Login timed out. Check your connection and try again.'
+          : 'Login failed. Please try again.';
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -666,14 +666,14 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
     super.dispose();
   }
 
-  // ── Colors (school theme) ──
+  // Colors (school theme)
   static const _accent = Color(0xFF2848B0);
   static const _cardBg = Color(0xFFF2F4F8);
   static const _inputBorder = Color(0xFFC0C4D8);
   static const _hintColor = Color(0xFF7A7E9A);
   static const _pencilYellow = Color(0xFFF5C518);
 
-  // ── Math-symbol sparkles (school-themed background flourish) ──
+  // Math-symbol sparkles (school-themed background flourish)
   Widget _buildMathSparkles({double opacity = 1.0}) {
     return IgnorePointer(
       child: CustomPaint(
@@ -717,7 +717,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
     );
   }
 
-  // ── Branding panel (left side on landscape) ──
+  // Branding panel (left side on landscape)
   Widget _buildBrandingPanel() {
     return Container(
       decoration: const BoxDecoration(
@@ -873,7 +873,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
     );
   }
 
-  // ── Login form card ──
+  // Login form card
   Widget _buildLoginForm({required bool compact}) {
     final radius = BorderRadius.circular(14);
 
@@ -887,7 +887,8 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
         color: _cardBg,
         borderRadius: BorderRadius.circular(24),
       ),
-      child: Column(
+      child: AutofillGroup(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -919,6 +920,11 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
           const SizedBox(height: 8),
           TextField(
             controller: userC,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            autocorrect: false,
+            enableSuggestions: false,
+            autofillHints: const [AutofillHints.username],
             decoration: InputDecoration(
               hintText: 'e.g. ion.popescu',
               hintStyle: const TextStyle(color: _inputBorder, fontSize: 14),
@@ -979,6 +985,13 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
           TextField(
             controller: passC,
             obscureText: !passwordVisible,
+            textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.password],
+            onSubmitted: (_) {
+              if (!loading && !_isLocallyBlocked) {
+                _login();
+              }
+            },
             decoration: InputDecoration(
               hintText: '••••••••',
               hintStyle: const TextStyle(color: _inputBorder, fontSize: 14),
@@ -1089,6 +1102,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -1119,14 +1133,18 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
           extendBody: true,
           extendBodyBehindAppBar: true,
           body: SafeArea(
-            child: isWide ? _buildLandscape() : _buildPortrait(),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: isWide ? _buildLandscape() : _buildPortrait(),
+            ),
           ),
         ),
       ),
     );
   }
 
-  // ── LANDSCAPE: split view ──
+  // LANDSCAPE: split view
   Widget _buildLandscape() {
     return Center(
       child: Padding(
@@ -1163,7 +1181,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
     );
   }
 
-  // ── PORTRAIT: card over dark background ──
+  // PORTRAIT: card over dark background
   Widget _buildPortrait() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 28),
@@ -1210,7 +1228,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
   }
 }
 
-// ── Math-symbol sparkles painter (school theme) ──
+// Math-symbol sparkles painter (school theme)
 class _MathSparklesPainter extends CustomPainter {
   final double opacity;
 

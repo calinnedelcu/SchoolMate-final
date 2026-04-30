@@ -102,9 +102,7 @@ class _DampedScrollPhysics extends ScrollPhysics {
       super.applyPhysicsToUserOffset(position, offset) * 0.55;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // MAIN WIDGET
-// ─────────────────────────────────────────────────────────────────────────────
 class TeacherDashboardPage extends StatefulWidget {
   const TeacherDashboardPage({super.key});
 
@@ -261,9 +259,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // QUICK STATS CARD (STUDENTS / PENDING / MESSAGES)
-// ─────────────────────────────────────────────────────────────────────────────
 class _QuickStatsCard extends StatelessWidget {
   final Stream<QuerySnapshot<Map<String, dynamic>>>? studentsStream;
   final Stream<QuerySnapshot<Map<String, dynamic>>>? pendingStream;
@@ -521,9 +517,7 @@ class _MessagesStatTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // SHORTCUT TILES
-// ─────────────────────────────────────────────────────────────────────────────
 class _ShortcutsRow extends StatelessWidget {
   final Stream<QuerySnapshot<Map<String, dynamic>>>? pendingStream;
   final VoidCallback onRequestsTap;
@@ -710,9 +704,7 @@ class _ShortcutTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // ANNOUNCEMENTS CARD (light, mirrors parent's announcements card)
-// ─────────────────────────────────────────────────────────────────────────────
 class _AnnouncementsCard extends StatelessWidget {
   final VoidCallback onTap;
   final Stream<QuerySnapshot<Map<String, dynamic>>>? messagesStream;

@@ -527,16 +527,22 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           Flexible(
             child: Container(
               color: _surfaceColor,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildKindChips(),
-                    const SizedBox(height: 14),
-                    _buildComposerCard(),
-                    const SizedBox(height: 8),
-                  ],
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildKindChips(),
+                      const SizedBox(height: 14),
+                      _buildComposerCard(),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -557,9 +563,14 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
     if (widget.embedded) {
       return Container(
         color: _surfaceColor,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -597,6 +608,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
               ),
             ],
           ),
+          ),
         ),
       );
     }
@@ -619,35 +631,44 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
               onBack: () => Navigator.of(context).maybePop(),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      subtitle,
-                      style: const TextStyle(color: _outline, fontSize: 13),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildKindChips(),
-                    const SizedBox(height: 16),
-                    _buildComposerCard(),
-                    const SizedBox(height: 24),
-                    Text(
-                      recentLabel,
-                      style: const TextStyle(
-                        color: _onSurface,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: _outline,
+                          fontSize: 13,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    _PostsManagementList(
-                      mode: widget.mode,
-                      ownerUid: AppSession.uid ?? '',
-                      ownerClassId: (AppSession.classId ?? '').trim(),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      _buildKindChips(),
+                      const SizedBox(height: 16),
+                      _buildComposerCard(),
+                      const SizedBox(height: 24),
+                      Text(
+                        recentLabel,
+                        style: const TextStyle(
+                          color: _onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _PostsManagementList(
+                        mode: widget.mode,
+                        ownerUid: AppSession.uid ?? '',
+                        ownerClassId: (AppSession.classId ?? '').trim(),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1181,9 +1202,7 @@ class _ClassOption {
   const _ClassOption({required this.id, required this.name});
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // COMPOSER INPUT
-// ────────────────────────────────────────────────────────────────────────────
 class _ComposerInput extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
@@ -1230,9 +1249,7 @@ class _ComposerInput extends StatelessWidget {
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // DATE FIELD
-// ────────────────────────────────────────────────────────────────────────────
 class _DateField extends StatelessWidget {
   final String label;
   final DateTime? date;
@@ -1278,9 +1295,7 @@ class _DateField extends StatelessWidget {
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // POSTS MANAGEMENT LIST
-// ────────────────────────────────────────────────────────────────────────────
 class _PostsManagementList extends StatelessWidget {
   final PostComposerMode mode;
   final String ownerUid;

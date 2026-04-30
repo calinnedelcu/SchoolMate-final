@@ -456,7 +456,7 @@ class AdminStore {
     final classRef = _db.collection('classes').doc(classId);
 
     await _db.runTransaction((tx) async {
-      // ── ALL READS FIRST (Firestore client SDK requires reads before writes) ──
+      // ALL READS FIRST (Firestore client SDK requires reads before writes)
       final classSnap = await tx.get(classRef);
       if (!classSnap.exists) {
         throw Exception("Class $classId does not exist");
@@ -484,7 +484,7 @@ class AdminStore {
         newSnap = await tx.get(newTeacherRef);
       }
 
-      // ── VALIDATIONS ────────────────────────────────────────────────────────
+      // VALIDATIONS
       if (teacherUsername.isNotEmpty &&
           oldTeacher != null &&
           oldTeacher != teacherUsername) {
@@ -510,7 +510,7 @@ class AdminStore {
         }
       }
 
-      // ── ALL WRITES AFTER ALL READS ─────────────────────────────────────────
+      // ALL WRITES AFTER ALL READS
       if (teacherUsername.isEmpty) {
         tx.set(classRef, {
           "name": classId,

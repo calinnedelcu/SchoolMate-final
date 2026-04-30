@@ -1,10 +1,11 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../core/session.dart';
 import '../student/widgets/no_anim_route.dart';
 import '../student/widgets/school_decor.dart';
-import '../student/widgets/timetable.dart';
+import '../common/widgets/timetable.dart';
 
 const _kPrimary = Color(0xFF2848B0);
 const _kOnSurface = Color(0xFF1A2050);
@@ -38,6 +39,8 @@ class ParentStudentsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final parentUid = (AppSession.uid ?? '').trim();
     final users = FirebaseFirestore.instance.collection('users');
+    DocumentReference<Map<String, dynamic>> publicProfileRef(String uid) =>
+        users.doc(uid).collection('publicProfile').doc('main');
 
     return Scaffold(
       backgroundColor: _kPageBg,
@@ -66,7 +69,12 @@ class ParentStudentsPage extends StatelessWidget {
 
                         final parentData = snapshot.data!.data();
                         if (parentData == null) {
-                          return const Center(child: Text('Nu exista date.'));
+                          return const _ParentStudentsEmpty(
+                            icon: Icons.error_outline_rounded,
+                            title: 'No data available',
+                            message:
+                                'We could not find your account details. Please try again later.',
+                          );
                         }
 
                         final childIds = _extractChildUids(
@@ -74,8 +82,11 @@ class ParentStudentsPage extends StatelessWidget {
                           parentUid,
                         );
                         if (childIds.isEmpty) {
-                          return const Center(
-                            child: Text('No children linked yet.'),
+                          return const _ParentStudentsEmpty(
+                            icon: Icons.family_restroom_rounded,
+                            title: 'No children linked yet',
+                            message:
+                                'Once a student is linked to your account, they will appear here.',
                           );
                         }
 
@@ -89,7 +100,7 @@ class ParentStudentsPage extends StatelessWidget {
                             return StreamBuilder<
                               DocumentSnapshot<Map<String, dynamic>>
                             >(
-                              stream: users.doc(uid).snapshots(),
+                              stream: publicProfileRef(uid).snapshots(),
                               builder: (context, studentSnap) {
                                 if (!studentSnap.hasData ||
                                     !studentSnap.data!.exists) {
@@ -98,7 +109,7 @@ class ParentStudentsPage extends StatelessWidget {
 
                                 final data = studentSnap.data!.data()!;
                                 final viewData = _toStudentViewData(
-                                  studentSnap.data!.id,
+                                  uid,
                                   data,
                                 );
                                 final name = viewData.fullName.trim().isNotEmpty
@@ -317,11 +328,12 @@ class _StudentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
@@ -354,12 +366,19 @@ class _StudentCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(18),
                   child: photoUrl.isNotEmpty
-                      ? Image.network(
-                          photoUrl,
+                      ? CachedNetworkImage(
+                          imageUrl: photoUrl,
                           width: 56,
                           height: 56,
                           fit: BoxFit.cover,
-                          errorBuilder: (ctx, err, st) =>
+                          placeholder: (context, url) => const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          errorWidget: (ctx, url, error) =>
                               _AvatarInitials(initials: initials),
                         )
                       : _AvatarInitials(initials: initials),
@@ -370,8 +389,8 @@ class _StudentCard extends StatelessWidget {
                     name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF1A2050),
+                    style: TextStyle(
+                      color: cs.onSurface,
                       fontWeight: FontWeight.w800,
                       fontSize: 18,
                       height: 1.15,
@@ -383,7 +402,7 @@ class _StudentCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8EAF2),
+                    color: cs.outlineVariant,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -454,10 +473,29 @@ class _StudentDetailPage extends StatelessWidget {
     required this.photoUrl,
   });
 
+  Future<String> _resolveHomeroomTeacher(String classId) async {
+    if (classId.isEmpty) return '';
+    final db = FirebaseFirestore.instance;
+    final classSnap = await db.collection('classes').doc(classId).get();
+    final teacherUid = (classSnap.data()?['teacherUid'] ?? '').toString().trim();
+    if (teacherUid.isEmpty) {
+      return (classSnap.data()?['teacherUsername'] ?? '').toString().trim();
+    }
+    final profileSnap = await db
+        .collection('users')
+        .doc(teacherUid)
+        .collection('publicProfile')
+        .doc('main')
+        .get();
+    final p = profileSnap.data() ?? const <String, dynamic>{};
+    return ((p['fullName'] ?? p['username']) ?? '').toString().trim();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: cs.surfaceContainerHighest,
       body: SafeArea(
         top: false,
         bottom: false,
@@ -470,36 +508,22 @@ class _StudentDetailPage extends StatelessWidget {
               variant: 3,
             ),
             Expanded(
-              child: FutureBuilder<QuerySnapshot<Map<String, dynamic>>?>(
-                future: classId.isEmpty
-                    ? Future.value(null)
-                    : FirebaseFirestore.instance
-                        .collection('users')
-                        .where('classId', isEqualTo: classId)
-                        .where('role', isEqualTo: 'teacher')
-                        .limit(1)
-                        .get(),
+              child: FutureBuilder<String>(
+                future: _resolveHomeroomTeacher(classId),
                 builder: (context, snap) {
-                  String diriginte = '';
-                  final teacherSnap = snap.data;
-                  if (teacherSnap != null && teacherSnap.docs.isNotEmpty) {
-                    final td = teacherSnap.docs.first.data();
-                    diriginte = (td['fullName'] ?? td['username'] ?? '')
-                        .toString()
-                        .trim();
-                  }
+                  final diriginte = (snap.data ?? '').trim();
 
                   return SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── Info card ──
+                        // Info card
                         Container(
                           width: double.infinity,
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: cs.surface,
                             borderRadius: BorderRadius.circular(28),
                             boxShadow: const [
                               BoxShadow(
@@ -531,13 +555,23 @@ class _StudentDetailPage extends StatelessWidget {
                                           borderRadius:
                                               BorderRadius.circular(18),
                                           child: photoUrl.isNotEmpty
-                                              ? Image.network(
-                                                  photoUrl,
+                                              ? CachedNetworkImage(
+                                                  imageUrl: photoUrl,
                                                   width: 64,
                                                   height: 64,
                                                   fit: BoxFit.cover,
-                                                  errorBuilder:
-                                                      (ctx, err, st) =>
+                                                  placeholder: (context, url) =>
+                                                      const Center(
+                                                    child: SizedBox(
+                                                      width: 20,
+                                                      height: 20,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                              strokeWidth: 2),
+                                                    ),
+                                                  ),
+                                                  errorWidget:
+                                                      (ctx, url, error) =>
                                                           _DetailAvatarFallback(
                                                               name: name),
                                                 )
@@ -588,7 +622,7 @@ class _StudentDetailPage extends StatelessWidget {
                                     const SizedBox(height: 22),
                                     Container(
                                       height: 1,
-                                      color: const Color(0xFFE8EAF2),
+                                      color: cs.outlineVariant,
                                     ),
                                     const SizedBox(height: 18),
                                     _PersonMetaRow(
@@ -613,15 +647,15 @@ class _StudentDetailPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        // ── Recent leave requests ──
+                        // Recent leave requests
                         _RecentRequestsCard(studentUid: avatarSeed),
                         const SizedBox(height: 14),
-                        // ── Schedule timetable ──
+                        // Schedule timetable
                         Container(
                           width: double.infinity,
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: cs.surface,
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: const [
                               BoxShadow(
@@ -703,9 +737,7 @@ class _StudentDetailPage extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // RECENT LEAVE REQUESTS
-// ─────────────────────────────────────────────────────────────────────────────
 class _RecentRequestsCard extends StatelessWidget {
   final String studentUid;
 
@@ -732,7 +764,7 @@ class _RecentRequestsCard extends StatelessWidget {
               child: Center(child: CircularProgressIndicator()),
             );
           }
-          // Dedupe — a single request can be split into teacher + parent rows.
+          // A single request can produce a teacher row and a parent row.
           final byKey = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
           for (final d in snap.data!.docs) {
             final data = d.data();
@@ -775,6 +807,7 @@ class _RequestRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final dateText = (data['dateText'] ?? '').toString();
     final timeText = (data['timeText'] ?? '').toString();
     final message = (data['message'] ?? '').toString().trim();
@@ -805,7 +838,7 @@ class _RequestRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8EAF2),
+        color: cs.outlineVariant,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -861,9 +894,7 @@ class _RequestRow extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Shared section card wrapper
-// ─────────────────────────────────────────────────────────────────────────────
 class _SectionCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -877,11 +908,12 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(22),
         boxShadow: const [
           BoxShadow(
@@ -946,11 +978,12 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8EAF2),
+        color: cs.outlineVariant,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
@@ -1014,16 +1047,17 @@ class _PersonMetaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
         Container(
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFFE8EAF2),
+            color: cs.outlineVariant,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: const Color(0xFF2848B0), size: 24),
+          child: Icon(icon, color: cs.primary, size: 24),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -1032,11 +1066,11 @@ class _PersonMetaRow extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
-                  color: Color(0xFF7A7E9A),
+                  color: cs.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 3),
@@ -1044,16 +1078,71 @@ class _PersonMetaRow extends StatelessWidget {
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1A2050),
+                  color: cs.onSurface,
                 ),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ParentStudentsEmpty extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+
+  const _ParentStudentsEmpty({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                color: _kPrimary.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 44, color: _kPrimary),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: _kOnSurface,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                color: _kLabelColor,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -145,9 +145,7 @@ class _GateMenuPageState extends State<GateMenuPage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HEADER — flat compact bar: clock, name, ON DUTY, logout
-// ─────────────────────────────────────────────────────────────────────────────
+// HEADER: flat compact bar with clock, name, ON DUTY, logout
 class _GateHeader extends StatelessWidget {
   final String displayName;
   final DateTime now;
@@ -305,9 +303,7 @@ class _HeaderIconButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCAN HERO — primary action, viewfinder + QR target on themed gradient
-// ─────────────────────────────────────────────────────────────────────────────
+// SCAN HERO: primary action, viewfinder + QR target on themed gradient
 class _ScanHeroCard extends StatelessWidget {
   final VoidCallback onTap;
   const _ScanHeroCard({required this.onTap});
@@ -555,9 +551,7 @@ class _ViewfinderPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // SECTION TITLE
-// ─────────────────────────────────────────────────────────────────────────────
 class _SectionTitle extends StatelessWidget {
   final String title;
   final int count;
@@ -607,9 +601,7 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // GATE LOG
-// ─────────────────────────────────────────────────────────────────────────────
 class _RecentList extends StatelessWidget {
   final List<QueryDocumentSnapshot<Map<String, dynamic>>> docs;
   final bool loading;

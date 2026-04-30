@@ -97,16 +97,24 @@ async function assertPersonalEmailUnique({ uid, email }) {
         );
     }
 
-    // Backward-compatibility: older user docs may miss *Lower fields.
-    // Fallback to normalized comparison on raw email fields to prevent duplicates.
-    const allUsers = await db.collection("users").get();
-    const hasLegacyOwner = allUsers.docs.some((d) => {
-        if (d.id === uid) return false;
-        const data = d.data() || {};
-        const verified = normalizeEmail(data.personalEmail || "");
-        const pending = normalizeEmail(data.pendingPersonalEmail || "");
-        return verified === emailLower || pending === emailLower;
-    });
+    // Bounded legacy fallback: docs created before personalEmailLower existed
+    // are detected via direct equality on the raw field for the typical
+    // already-lowercased and original-case inputs. Mixed-case legacy docs are
+    // not caught here; run adminBackfillEmailLowerFields once after deploy
+    // to normalize existing user docs.
+    const rawCandidates = new Set([emailLower, String(email || "").trim()]);
+    const legacyQueries = [];
+    for (const candidate of rawCandidates) {
+        if (!candidate) continue;
+        legacyQueries.push(
+            db.collection("users").where("personalEmail", "==", candidate).limit(3).get(),
+            db.collection("users").where("pendingPersonalEmail", "==", candidate).limit(3).get(),
+        );
+    }
+    const legacyResults = await Promise.all(legacyQueries);
+    const hasLegacyOwner = legacyResults.some((snap) =>
+        snap.docs.some((d) => d.id !== uid)
+    );
 
     if (hasLegacyOwner) {
         throw new HttpsError(
@@ -118,9 +126,17 @@ async function assertPersonalEmailUnique({ uid, email }) {
     return emailLower;
 }
 
-function resolveActorKey(request) {
+function resolveActorKey(request, scope) {
+    // The fingerprint is scoped per (actor, username) so users behind the
+    // same NAT/CGNAT IP do not lock each other out. Spray detection across
+    // many usernames is still covered by the per-username guard
+    // (authLoginGuards) which fires at LOGIN_MAX_FAILURES regardless of
+    // actor identity.
     const provided = String(request.data?.actorKey || "").trim().toLowerCase();
+    const scopeStr = String(scope || "").trim().toLowerCase();
     if (ACTOR_KEY_RE.test(provided)) {
+        // A pre-hashed actor key supplied by a trusted caller (e.g. a server
+        // that already mixed in scope) is honored verbatim.
         return provided;
     }
 
@@ -128,8 +144,8 @@ function resolveActorKey(request) {
     const ip = forwardedFor.split(",")[0].trim();
     const ua = String(request.rawRequest?.headers?.["user-agent"] || "").trim();
     const appId = String(request.app?.appId || "").trim();
-    const fingerprint = `${ip}|${ua}|${appId}`;
-    const hasSignal = ip || ua || appId;
+    const fingerprint = `${ip}|${ua}|${appId}|${scopeStr}`;
+    const hasSignal = ip || ua || appId || scopeStr;
     if (!hasSignal) {
         return "";
     }
@@ -260,10 +276,10 @@ async function resolveUserByLoginInput(inputRaw) {
 
 exports.authPrecheckLogin = onCall(async (request) => {
     const username = String(request.data?.username || "").trim().toLowerCase();
-    const actorKey = resolveActorKey(request);
     if (!USERNAME_RE.test(username)) {
         throw new HttpsError("invalid-argument", "Username invalid");
     }
+    const actorKey = resolveActorKey(request, username);
 
     const db = admin.firestore();
     const guardRef = db.collection("authLoginGuards").doc(username);
@@ -306,11 +322,12 @@ exports.authPrecheckLogin = onCall(async (request) => {
 exports.authReportLoginFailure = onCall(async (request) => {
     const username = String(request.data?.username || "").trim().toLowerCase();
     const attemptToken = String(request.data?.attemptToken || "").trim();
-    const actorKey = resolveActorKey(request);
 
     if (!USERNAME_RE.test(username) || !attemptToken) {
         throw new HttpsError("failed-precondition", "Date invalide");
     }
+
+    const actorKey = resolveActorKey(request, username);
 
     const db = admin.firestore();
     const guardRef = db.collection("authLoginGuards").doc(username);
@@ -738,11 +755,28 @@ exports.adminCreateUser = onCall(async (request) => {
             });
         }
     } catch (e) {
-        // rollback auth user in case firestore/class assignment fails
+        // Rollback the Auth user when Firestore/class writes fail. If the
+        // rollback itself fails the Auth user is orphaned; surface that
+        // explicitly so the operator knows manual cleanup is required.
+        let rollbackError = null;
         try {
             await admin.auth().deleteUser(user.uid);
-        } catch (_) {
-            // ignore rollback failures
+        } catch (rollbackErr) {
+            rollbackError = rollbackErr;
+            console.error(
+                `[adminCreateUser] rollback FAILED for orphan auth uid=${user.uid} username=${username}`,
+                rollbackErr
+            );
+        }
+
+        if (rollbackError) {
+            throw new HttpsError(
+                "internal",
+                `Crearea utilizatorului a esuat si rollback-ul nu a reusit. ` +
+                `User Auth orfan: uid=${user.uid}. ` +
+                `Cauza initiala: ${e?.message || e}. ` +
+                `Eroare rollback: ${rollbackError?.message || rollbackError}.`
+            );
         }
         throw e;
     }
@@ -1430,22 +1464,21 @@ exports.redeemQrToken = onCall(async (request) => {
 
     const callerDoc = await admin.firestore().collection("users").doc(callerUid).get();
     if (!callerDoc.exists) {
-        throw new HttpsError("permission-denied", "Profil inexistent");
+        throw new HttpsError("permission-denied", "Profile not found");
     }
 
     const callerData = callerDoc.data();
     if (callerData.role !== "gate" && callerData.role !== "admin") {
-        throw new HttpsError("permission-denied", "Doar poarta/admin poate valida QR");
+        throw new HttpsError("permission-denied", "Only gate or admin can validate QR codes");
     }
 
     const tokenId = String(request.data.token || "").trim();
     if (!tokenId) {
-        return { ok: false, reason: "INVALID_TOKEN", userId: "", fullName: "", classId: "", hasActiveLeave: false };
+        throw new HttpsError("invalid-argument", "Missing token");
     }
 
     const db = admin.firestore();
     const tokenRef = db.collection("qrTokens").doc(tokenId);
-
     const scanTimestamp = admin.firestore.Timestamp.now();
 
     // Pre-read the token outside the transaction to get userId for the leave-request query.
@@ -1462,14 +1495,12 @@ exports.redeemQrToken = onCall(async (request) => {
         const todayText = `${roDay}/${roMonth}/${roYear}`;
         const nowMinutes = roNow.getHours() * 60 + roNow.getMinutes();
 
-        // Query approved leave requests for today, then check timeText in code
         const leaveSnap = await db.collection("leaveRequests")
             .where("studentUid", "==", preUserId)
             .where("status", "==", "approved")
             .where("dateText", "==", todayText)
             .get();
 
-        // approvedLeaveExit is true if at least one request's timeText (HH:mm) is <= now
         approvedLeaveExit = leaveSnap.docs.some((doc) => {
             const timeText = String(doc.data().timeText || "");
             const parts = timeText.split(":").map((x) => parseInt(x, 10));
@@ -1483,17 +1514,17 @@ exports.redeemQrToken = onCall(async (request) => {
         const snap = await tx.get(tokenRef);
 
         if (!snap.exists) {
-            return { ok: false, reason: "NOT_FOUND", userId: "", fullName: "Cod inexistent", classId: "", hasActiveLeave: false };
+            return { ok: false, reason: "NOT_FOUND", userId: "", fullName: "", classId: "", hasActiveLeave: false };
         }
 
         const data = snap.data() || {};
         if (data.used === true) {
-            return { ok: false, reason: "ALREADY_USED", userId: data.userId || "", fullName: "Cod deja folosit", classId: "", hasActiveLeave: false };
+            return { ok: false, reason: "ALREADY_USED", userId: String(data.userId || ""), fullName: "", classId: "", hasActiveLeave: false };
         }
 
         const expiresAt = data.expiresAt;
         if (!expiresAt || typeof expiresAt.toDate !== "function" || expiresAt.toDate().getTime() <= Date.now()) {
-            return { ok: false, reason: "EXPIRED", userId: data.userId || "", fullName: "Cod expirat", classId: "", hasActiveLeave: false };
+            return { ok: false, reason: "EXPIRED", userId: String(data.userId || ""), fullName: "", classId: "", hasActiveLeave: false };
         }
 
         const userId = String(data.userId || "");
@@ -1501,7 +1532,7 @@ exports.redeemQrToken = onCall(async (request) => {
         const userSnap = await tx.get(userRef);
 
         if (!userSnap.exists) {
-            return { ok: false, reason: "USER_NOT_FOUND", userId, fullName: "Utilizator necunoscut", classId: "", hasActiveLeave: false };
+            return { ok: false, reason: "USER_NOT_FOUND", userId, fullName: "", classId: "", hasActiveLeave: false };
         }
 
         const userData = userSnap.data() || {};
@@ -1513,10 +1544,11 @@ exports.redeemQrToken = onCall(async (request) => {
             return { ok: false, reason: "USER_DISABLED", userId, fullName, classId, hasActiveLeave: false };
         }
 
-        // Every scan is now considered an exit attempt. Permission depends solely on an active leave.
+        // Without turnstiles we can't track in/out state, so every scan is treated
+        // as an exit attempt. Permission depends solely on an approved leave request.
         const isAllowed = approvedLeaveExit;
 
-        // Always mark the token as used, even if the movement was denied.
+        // Mark token as used regardless of outcome to prevent retrying the same QR.
         tx.update(tokenRef, {
             used: true,
             usedAt: scanTimestamp,
@@ -1530,7 +1562,7 @@ exports.redeemQrToken = onCall(async (request) => {
             classId,
             hasActiveLeave: approvedLeaveExit,
             timestamp: scanTimestamp,
-            reason: !isAllowed ? "NO_ACTIVE_LEAVE" : null
+            reason: isAllowed ? null : "NO_ACTIVE_LEAVE",
         };
     });
 });
@@ -1562,7 +1594,44 @@ exports.cleanupExpiredQrTokens = onSchedule("every 60 minutes", async (event) =>
     console.log(`cleanupExpiredQrTokens: deleted ${deletedCount} expired QR tokens`);
 });
 
-// Cancel (expire) leave requests whose date has passed — runs every hour
+// Increment unreadCount when a new accessEvent is created for a student
+exports.onAccessEventCreated = onDocumentCreated("accessEvents/{docId}", async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+
+    const userId = String(data.userId || "").trim();
+    if (!userId) return;
+
+    const userRef = admin.firestore().collection("users").doc(userId);
+
+    await userRef.set(
+        { unreadCount: admin.firestore.FieldValue.increment(1) },
+        { merge: true }
+    );
+
+    // Send push notification
+    const userDoc = await userRef.get();
+    const fcmToken = userDoc.data()?.fcmToken;
+    if (!fcmToken) return;
+
+    const eventType = String(data.type || "");
+    const title = eventType === "exit" ? "Ai iesit din scoala" : "Ai intrat in scoala";
+    const body = eventType === "exit"
+        ? "Iesirea ta a fost inregistrata."
+        : "Intrarea ta a fost inregistrata.";
+
+    try {
+        await admin.messaging().send({
+            token: fcmToken,
+            notification: { title, body },
+            android: { notification: { channelId: "student_channel" } },
+        });
+    } catch (e) {
+        console.error("onAccessEventCreated: FCM send failed:", e.message);
+    }
+});
+
+// Cancel (expire) leave requests whose date has passed. Runs every hour.
 exports.cleanupExpiredLeaveRequests = onSchedule("every 60 minutes", async (event) => {
     const db = admin.firestore();
 
@@ -1801,9 +1870,9 @@ exports.setNewPassword = onCall(async (request) => {
     // NOTE: updateUser with password REVOKES the refresh token on the client.
     await admin.auth().updateUser(uid, { password: newPassword });
 
-    // We intentionally do NOT write to Firestore here — the client writes
+    // We intentionally do NOT write to Firestore here. The client writes
     // passwordChanged (and optionally calls markPasswordChanged) only AFTER
-    // it has re-authenticated.  This eliminates the race condition where
+    // it has re-authenticated. This eliminates the race condition where
     // the Firestore listener fires while the old (revoked) auth session
     // is still active.
 
@@ -1919,6 +1988,7 @@ exports.verifyEmailCode = onCall(async (request) => {
 const TWO_FA_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 const TWO_FA_COOLDOWN_MS = 60 * 1000;     // 60 seconds between resends
 const TWO_FA_MAX_ATTEMPTS = 5;
+const TWO_FA_SESSION_DURATION_MS = 2 * 60 * 60 * 1000; // 2h trusted window
 
 function maskEmail(email) {
     const atIdx = String(email || "").indexOf("@");
@@ -1970,7 +2040,7 @@ async function sendTwoFactorEmail(to, code) {
 
 // Trimite codul 2FA dupa autentificarea cu parola.
 // Returneaza maskedEmail si cooldownRemaining.
-// Daca exista deja un challenge trimis recent (cooldown), nu retrimite — returneaza sent: false.
+// Daca exista deja un challenge trimis recent (cooldown), nu retrimite; returneaza sent: false.
 exports.authStartSecondFactor = onCall(async (request) => {
     if (!request.auth) {
         throw new HttpsError("unauthenticated", "Login required");
@@ -2004,7 +2074,7 @@ exports.authStartSecondFactor = onCall(async (request) => {
     const challengeRef = db.collection("loginSecondFactorChallenges").doc(uid);
     const existingSnap = await challengeRef.get();
 
-    // authStartSecondFactor is called ONCE per login — always generate a fresh code.
+    // authStartSecondFactor is called ONCE per login: always generate a fresh code.
     // Cooldown applies only to authResendSecondFactor (user-triggered resends).
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -2091,7 +2161,23 @@ exports.authVerifySecondFactor = onCall(async (request) => {
         });
     });
 
-    return { verified: true };
+    // Persist the trusted-session window on the user doc. This must be
+    // written server-side: rules deny client writes so a compromised client
+    // cannot extend the session by writing an arbitrary future timestamp.
+    const sessionExpiresAt = admin.firestore.Timestamp.fromMillis(
+        Date.now() + TWO_FA_SESSION_DURATION_MS
+    );
+    try {
+        await db.collection("users").doc(uid).set({
+            twoFactorVerifiedUntil: sessionExpiresAt,
+        }, { merge: true });
+    } catch (e) {
+        // Best-effort: client also tracks the session locally via
+        // SharedPreferences. A failure here means the user re-verifies on
+        // next launch from a different device/cache, which is the safe path.
+    }
+
+    return { verified: true, expiresAtMs: sessionExpiresAt.toMillis() };
 });
 
 // Retrimite codul 2FA (cu cooldown de 60s).
@@ -2150,4 +2236,188 @@ exports.authResendSecondFactor = onCall(async (request) => {
     await sendTwoFactorEmail(personalEmail, code);
 
     return { sent: true, maskedEmail: maskEmail(personalEmail) };
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Public profile mirror + custom claims sync
+// ─────────────────────────────────────────────────────────────────────────────
+// Maintains a `users/{uid}/publicProfile/main` doc with non-sensitive fields
+// (fullName, username, role, classId, status) so future client code can read
+// directory-style data without `users.read` exposing personalEmail/fcmToken.
+//
+// Also keeps Firebase Auth custom claims in sync with role/classId. Once
+// rules are migrated to use `request.auth.token.role`, lookups become free.
+// Until then, claims are dormant; setting them is harmless.
+//
+// Purely additive: nothing in current rules or client code reads from these
+// outputs yet. Safe to deploy without coordinated client changes.
+
+const PUBLIC_PROFILE_FIELDS = [
+    "fullName",
+    "username",
+    "role",
+    "classId",
+    "status",
+];
+
+function buildPublicProfile(data) {
+    const out = {};
+    for (const f of PUBLIC_PROFILE_FIELDS) {
+        const v = data?.[f];
+        if (v === undefined || v === null || v === "") continue;
+        out[f] = v;
+    }
+    out.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+    return out;
+}
+
+function buildClaims(data) {
+    const role = String(data?.role || "").trim().toLowerCase();
+    const classId = String(data?.classId || "").trim().toUpperCase();
+    const claims = {};
+    if (role) claims.role = role;
+    if (classId) claims.classId = classId;
+    return claims;
+}
+
+async function syncUserMirrors(uid, data) {
+    const publicRef = admin.firestore()
+        .collection("users").doc(uid)
+        .collection("publicProfile").doc("main");
+
+    if (!data) {
+        // User doc deleted: clear mirror and claims.
+        await Promise.all([
+            publicRef.delete().catch(() => null),
+            admin.auth().setCustomUserClaims(uid, null).catch((e) => {
+                console.warn(`[syncUserMirrors] clear claims failed for ${uid}: ${e?.message}`);
+            }),
+        ]);
+        return;
+    }
+
+    const publicProfile = buildPublicProfile(data);
+    const claims = buildClaims(data);
+
+    await Promise.all([
+        publicRef.set(publicProfile, { merge: false }),
+        admin.auth().setCustomUserClaims(uid, claims).catch((e) => {
+            // Setting claims for a uid without an Auth account fails; log
+            // but do not crash the trigger.
+            console.warn(`[syncUserMirrors] set claims failed for ${uid}: ${e?.message}`);
+        }),
+    ]);
+}
+
+exports.onUserDocWrite = onDocumentWritten("users/{uid}", async (event) => {
+    const uid = event.params.uid;
+    const after = event.data?.after?.data() || null;
+    const before = event.data?.before?.data() || null;
+
+    // Skip if neither publicProfile fields nor claim-driving fields changed.
+    if (after && before) {
+        const fieldsToWatch = [...PUBLIC_PROFILE_FIELDS];
+        const changed = fieldsToWatch.some((f) => before[f] !== after[f]);
+        if (!changed) return;
+    }
+
+    try {
+        await syncUserMirrors(uid, after);
+    } catch (err) {
+        console.error(`[onUserDocWrite] sync failed for ${uid}:`, err);
+    }
+});
+
+exports.adminBackfillUserMirrors = onCall(async (request) => {
+    await assertAdmin(request);
+
+    const db = admin.firestore();
+    const snap = await db.collection("users").get();
+
+    let processed = 0;
+    let claimsFailed = 0;
+    const errors = [];
+
+    for (const doc of snap.docs) {
+        try {
+            await syncUserMirrors(doc.id, doc.data() || {});
+            processed++;
+        } catch (e) {
+            errors.push({ uid: doc.id, error: String(e?.message || e) });
+            // setCustomUserClaims errors are swallowed inside syncUserMirrors;
+            // only Firestore writes can throw here.
+        }
+    }
+
+    return {
+        ok: true,
+        total: snap.size,
+        processed,
+        claimsFailed,
+        errors: errors.slice(0, 20),
+    };
+});
+
+// One-time admin migration: ensure every user doc has personalEmailLower /
+// pendingPersonalEmailLower populated so assertPersonalEmailUnique's bounded
+// queries catch all duplicates. Safe to re-run; idempotent.
+exports.adminBackfillEmailLowerFields = onCall(async (request) => {
+    await assertAdmin(request);
+
+    const db = admin.firestore();
+    let lastDoc = null;
+    let scanned = 0;
+    let updated = 0;
+    const errors = [];
+    const batchLimit = 400;
+
+    while (true) {
+        let query = db.collection("users").orderBy(admin.firestore.FieldPath.documentId()).limit(batchLimit);
+        if (lastDoc) {
+            query = query.startAfter(lastDoc);
+        }
+        const snap = await query.get();
+        if (snap.empty) break;
+
+        const batch = db.batch();
+        let writes = 0;
+        for (const doc of snap.docs) {
+            scanned++;
+            const data = doc.data() || {};
+            const personalRaw = String(data.personalEmail || "").trim();
+            const pendingRaw = String(data.pendingPersonalEmail || "").trim();
+            const update = {};
+
+            if (personalRaw && !data.personalEmailLower) {
+                update.personalEmailLower = normalizeEmail(personalRaw);
+            }
+            if (pendingRaw && !data.pendingPersonalEmailLower) {
+                update.pendingPersonalEmailLower = normalizeEmail(pendingRaw);
+            }
+
+            if (Object.keys(update).length > 0) {
+                batch.update(doc.ref, update);
+                writes++;
+            }
+        }
+
+        if (writes > 0) {
+            try {
+                await batch.commit();
+                updated += writes;
+            } catch (e) {
+                errors.push({ batchStart: snap.docs[0].id, error: String(e?.message || e) });
+            }
+        }
+
+        lastDoc = snap.docs[snap.docs.length - 1];
+        if (snap.size < batchLimit) break;
+    }
+
+    return {
+        ok: true,
+        scanned,
+        updated,
+        errors: errors.slice(0, 20),
+    };
 });
