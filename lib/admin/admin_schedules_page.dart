@@ -91,7 +91,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Eroare la ștergerea programului: $e')),
+            SnackBar(content: Text('Error deleting schedule: $e')),
           );
         }
       }
@@ -102,7 +102,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
   Widget build(BuildContext context) {
     if (!AppSession.isAdmin) {
       return const Scaffold(
-        body: Center(child: Text("Acces interzis (doar admin).")),
+        body: Center(child: Text("Access denied (admin only).")),
       );
     }
 
@@ -151,7 +151,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                       controller: _classSearchC,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        hintText: 'Caută clasă...',
+                        hintText: 'Search class...',
                         hintStyle: TextStyle(
                           color: Colors.white.withValues(alpha: 0.60),
                         ),
@@ -243,7 +243,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                                     ),
                                     teacherU.isEmpty
                                         ? Text(
-                                            'Diriginte: (nepus)',
+                                            'Homeroom teacher: (not set)',
                                             style: TextStyle(
                                               color: isSelected
                                                   ? const Color(0xFF4A8BBF)
@@ -277,7 +277,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                                                 }
                                               }
                                               return Text(
-                                                'Diriginte: $displayName',
+                                                'Homeroom teacher: $displayName',
                                                 style: TextStyle(
                                                   color: isSelected
                                                       ? const Color(0xFF4A8BBF)
@@ -324,7 +324,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                           ),
                           const SizedBox(height: 24),
                           const Text(
-                            'Selectează o clasă din stânga',
+                            'Select a class from the left',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
@@ -333,7 +333,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            'Alege o clasă din lista din stânga pentru\na vedea orarul.',
+                            'Choose a class from the list on the left\nto view its schedule.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 14,
@@ -372,7 +372,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Orar Clasă',
+          'Class Schedule',
           style: TextStyle(
             color: Colors.white,
             fontSize: 24,
@@ -397,11 +397,11 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
         .toLowerCase();
 
     const dayNames = {
-      '1': 'Luni',
-      '2': 'Marți',
-      '3': 'Miercuri',
-      '4': 'Joi',
-      '5': 'Vineri',
+      '1': 'Monday',
+      '2': 'Tuesday',
+      '3': 'Wednesday',
+      '4': 'Thursday',
+      '5': 'Friday',
     };
 
     return Column(
@@ -415,7 +415,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
               Expanded(
                 child: teacherU.isEmpty
                     ? Text(
-                        'Clasa: $classId  |  Diriginte: (nepus)',
+                        'Class: $classId  |  Homeroom teacher: (not set)',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -438,7 +438,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                             if (fn.isNotEmpty) fullName = fn;
                           }
                           return Text(
-                            'Clasa: $classId  |  Diriginte: $fullName | $teacherU',
+                            'Class: $classId  |  Homeroom teacher: $fullName | $teacherU',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -471,7 +471,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
           child: schedule.isEmpty
               ? Center(
                   child: Text(
-                    'Nu există date pentru orar',
+                    'No schedule data available',
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
                 )
@@ -479,7 +479,7 @@ class _AdminSchedulesPageState extends State<AdminSchedulesPage> {
                   itemCount: schedule.keys.length,
                   itemBuilder: (context, index) {
                     final dayNum = (schedule.keys.toList()..sort())[index];
-                    final dayName = dayNames[dayNum] ?? 'Ziua $dayNum';
+                    final dayName = dayNames[dayNum] ?? 'Day $dayNum';
                     final start = schedule[dayNum]['start'] ?? '--:--';
                     final end = schedule[dayNum]['end'] ?? '--:--';
 

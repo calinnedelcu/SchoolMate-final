@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:school_mate/core/session.dart';
 import 'package:school_mate/student/widgets/no_anim_route.dart';
 import 'package:school_mate/student/widgets/school_decor.dart';
@@ -56,17 +55,10 @@ class _QrAccessPageState extends State<QrAccessPage> {
     if (mounted) setState(() => _loading = true);
 
     try {
-      final random = Random();
-      final tokenId = List.generate(16, (_) => random.nextInt(10)).join();
-      final expiresAt = Timestamp.fromDate(
-        DateTime.now().add(const Duration(seconds: _renewIntervalSeconds + 1)),
-      );
-
-      await FirebaseFirestore.instance.collection('qrTokens').doc(tokenId).set({
-        'userId': uid,
-        'expiresAt': expiresAt,
-        'used': false,
-      });
+      final callable =
+          FirebaseFunctions.instance.httpsCallable('generateQrToken');
+      final res = await callable.call();
+      final tokenId = (res.data as Map?)?['token']?.toString() ?? '';
 
       if (!mounted) return;
       setState(() => _token = tokenId);

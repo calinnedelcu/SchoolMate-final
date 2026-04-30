@@ -54,6 +54,10 @@ CLAUDE.md
 functions/.env
 *.env
 docs/deploy_log.txt
+# Firebase service account credentials (admin-level, never commit)
+**/serviceAccountKey.json
+**/serviceAccount.json
+*-firebase-adminsdk-*.json
 
 # Node modules and root npm leftovers
 node_modules/

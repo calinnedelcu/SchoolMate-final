@@ -1,5 +1,4 @@
-﻿import 'dart:math';
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../core/session.dart';
 import 'services/admin_api.dart';
 import 'services/admin_store.dart';
+import 'utils/admin_ui.dart';
 import 'widgets/admin_create_user_dialog.dart';
 
 class AdminStudentsPage extends StatefulWidget {
@@ -21,7 +21,6 @@ class AdminStudentsPage extends StatefulWidget {
 
 class _AdminStudentsPageState extends State<AdminStudentsPage> {
   final store = AdminStore();
-  final Random _rng = Random.secure();
   final TextEditingController _searchController = TextEditingController();
   int _currentPage = 0;
   static const int _pageSize = 7;
@@ -54,12 +53,6 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  String _randPassword(int len) {
-    const chars =
-        'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#';
-    return List.generate(len, (_) => chars[_rng.nextInt(chars.length)]).join();
   }
 
   @override
@@ -371,7 +364,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                   CircleAvatar(
                                                     radius: 20,
                                                     backgroundColor:
-                                                        _avatarColor(fullName),
+                                                        avatarColor(fullName),
                                                     backgroundImage:
                                                         photoUrl.isNotEmpty
                                                         ? NetworkImage(photoUrl)
@@ -379,7 +372,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                         : null,
                                                     child: photoUrl.isEmpty
                                                         ? Text(
-                                                            _initials(fullName),
+                                                            initials(fullName),
                                                             style:
                                                                 const TextStyle(
                                                                   color: Color(
@@ -450,7 +443,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                               ),
                                                         ),
                                                         child: Text(
-                                                          _formatClassName(
+                                                          formatClassName(
                                                             classId,
                                                           ),
                                                           style:
@@ -646,61 +639,6 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
     }
 
     return pages;
-  }
-
-  String _formatClassName(String classId) {
-    if (classId.isEmpty) return '-';
-    if (classId.toLowerCase().startsWith('grade')) return classId;
-
-    final original = classId.trim();
-    // Match something like "9A", "10 C", "11B", "12"
-    final match = RegExp(r'^(\d+)(.*)$').firstMatch(original);
-
-    if (match != null) {
-      final numStr = match.group(1)!;
-      final letter = match.group(2)!.trim();
-
-      String roman = numStr;
-      if (numStr == '9') {
-        roman = 'IX';
-      } else if (numStr == '10') {
-        roman = 'X';
-      } else if (numStr == '11') {
-        roman = 'XI';
-      } else if (numStr == '12') {
-        roman = 'XII';
-      }
-
-      if (letter.isNotEmpty) {
-        return 'Grade $roman $letter';
-      }
-      return 'Grade $roman';
-    }
-
-    return 'Grade $original';
-  }
-
-  String _initials(String name) {
-    final trimmed = name.trim();
-    final spaceIdx = trimmed.indexOf(' ');
-    if (spaceIdx > 0 && spaceIdx < trimmed.length - 1) {
-      return '${trimmed[0]}${trimmed[spaceIdx + 1]}'.toUpperCase();
-    }
-    return trimmed.isNotEmpty ? trimmed[0].toUpperCase() : '?';
-  }
-
-  Color _avatarColor(String name) {
-    const colors = [
-      Color(0xFF7FA8D9),
-      Color(0xFF7CAAD6),
-      Color(0xFFFF8A65),
-      Color(0xFFADCAE3),
-      Color(0xFFCE93D8),
-      Color(0xFF80DEEA),
-      Color(0xFFFFCC80),
-      Color(0xFF8FAFC4),
-    ];
-    return colors[name.hashCode.abs() % colors.length];
   }
 
   Widget _colHeader(String label) {
@@ -2003,7 +1941,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                     isExpanded: true,
                                                     hint: Text(
                                                       currentClassId.isNotEmpty
-                                                          ? _formatClassName(
+                                                          ? formatClassName(
                                                               currentClassId,
                                                             )
                                                           : 'Select class...',
@@ -2029,7 +1967,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                           ) => DropdownMenuItem(
                                                             value: c,
                                                             child: Text(
-                                                              _formatClassName(
+                                                              formatClassName(
                                                                 c,
                                                               ),
                                                               style: const TextStyle(
@@ -2116,7 +2054,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                         padding: const EdgeInsets.all(5),
                                         child: CircleAvatar(
                                           radius: 63,
-                                          backgroundColor: _avatarColor(
+                                          backgroundColor: avatarColor(
                                             currentFullName,
                                           ),
                                           backgroundImage: photoUrl.isNotEmpty
@@ -2124,7 +2062,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                               : null,
                                           child: photoUrl.isEmpty
                                               ? Text(
-                                                  _initials(currentFullName),
+                                                  initials(currentFullName),
                                                   style: const TextStyle(
                                                     color: Color(0xFF1A1A1A),
                                                     fontWeight: FontWeight.w800,
@@ -2179,7 +2117,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                     onPressed: busy
                                         ? null
                                         : () async {
-                                            final newPass = _randPassword(10);
+                                            final newPass = randPassword(10);
 
                                             setS(() {
                                               busy = true;
@@ -2206,7 +2144,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                 xls.TextCellValue(username),
                                                 xls.TextCellValue(email ?? '-'),
                                                 xls.TextCellValue(
-                                                  _formatClassName(
+                                                  formatClassName(
                                                     currentClassId,
                                                   ),
                                                 ),

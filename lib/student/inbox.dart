@@ -1384,6 +1384,7 @@ class _InboxCardDetailDialog extends StatelessWidget {
               link: link,
               senderName: senderName,
               location: location,
+              imageUrl: imageUrl,
               eventDate: eventDate,
               eventEndDate: eventEndDate,
             ),
@@ -1643,6 +1644,7 @@ class _BookmarkToggleButton extends StatelessWidget {
   final String link;
   final String senderName;
   final String location;
+  final String imageUrl;
   final DateTime? eventDate;
   final DateTime? eventEndDate;
 
@@ -1655,6 +1657,7 @@ class _BookmarkToggleButton extends StatelessWidget {
     this.link = '',
     this.senderName = '',
     this.location = '',
+    this.imageUrl = '',
     this.eventDate,
     this.eventEndDate,
   });
@@ -1683,6 +1686,7 @@ class _BookmarkToggleButton extends StatelessWidget {
                 link: link,
                 senderName: senderName,
                 location: location,
+                imageUrl: imageUrl,
                 eventDate: eventDate,
                 eventEndDate: eventEndDate,
               );

@@ -724,58 +724,146 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1E3CA0), Color(0xFF2848B0), Color(0xFF3460CC)],
+          colors: [Color(0xFF1A2E80), Color(0xFF2848B0), Color(0xFF3460CC)],
         ),
       ),
       child: Stack(
         children: [
           Positioned.fill(child: _buildMathSparkles(opacity: 1.0)),
+          // Decorative book icon in the lower-right corner.
+          Positioned(
+            right: -32,
+            bottom: -36,
+            child: Transform.rotate(
+              angle: -0.18,
+              child: Icon(
+                Icons.menu_book_rounded,
+                size: 220,
+                color: Colors.white.withValues(alpha: 0.06),
+              ),
+            ),
+          ),
+          // Soft top-left glow.
+          Positioned(
+            left: -60,
+            top: -60,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    _pencilYellow.withValues(alpha: 0.18),
+                    _pencilYellow.withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 44, vertical: 48),
+            padding: const EdgeInsets.fromLTRB(52, 56, 52, 56),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                _buildLogo(size: 84),
-                const SizedBox(height: 28),
+                // Top pill badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _pencilYellow,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'STUDENT APP',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 36),
+                _buildLogo(size: 96, framed: false),
+                const SizedBox(height: 32),
                 const Text(
                   'SchoolMate',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 30,
+                    fontSize: 38,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
+                    letterSpacing: -0.6,
+                    height: 1.0,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Container(
                   height: 3,
-                  width: 48,
+                  width: 56,
                   decoration: BoxDecoration(
                     color: _pencilYellow,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 18),
-                const Text(
-                  'Student app',
+                Text(
+                  'School life, organized.',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    height: 1.25,
+                    color: Colors.white.withValues(alpha: 0.92),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 8),
                 Text(
-                  'Schedule, leave requests and school announcements — '
-                  'all in one place. Fast access via dynamic QR and '
-                  'real-time approvals from parents.',
+                  'Schedule, leave requests and announcements — all '
+                  'in one place, with real-time parent approvals.',
                   style: TextStyle(
-                    color: Colors.white.withAlpha(190),
-                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.72),
+                    fontSize: 13.5,
                     height: 1.55,
                   ),
+                ),
+                const SizedBox(height: 36),
+                const _FeatureBullet(
+                  icon: Icons.event_available_rounded,
+                  title: 'Live timetable',
+                  subtitle: 'Always up to date with your class schedule.',
+                ),
+                const SizedBox(height: 14),
+                const _FeatureBullet(
+                  icon: Icons.qr_code_2_rounded,
+                  title: 'Dynamic QR check-in',
+                  subtitle: 'Fast and secure gate access.',
+                ),
+                const SizedBox(height: 14),
+                const _FeatureBullet(
+                  icon: Icons.campaign_rounded,
+                  title: 'Announcements & approvals',
+                  subtitle: 'Stay in sync with school and parents.',
                 ),
               ],
             ),
@@ -1026,18 +1114,13 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
             colors: [Color(0xFF1E3CA0), Color(0xFF2E58D0), Color(0xFF4070E0)],
           ),
         ),
-        child: Stack(
-          children: [
-            Positioned.fill(child: _buildMathSparkles(opacity: 0.55)),
-            Scaffold(
-              backgroundColor: Colors.transparent,
-              extendBody: true,
-              extendBodyBehindAppBar: true,
-              body: SafeArea(
-                child: isWide ? _buildLandscape() : _buildPortrait(),
-              ),
-            ),
-          ],
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          extendBody: true,
+          extendBodyBehindAppBar: true,
+          body: SafeArea(
+            child: isWide ? _buildLandscape() : _buildPortrait(),
+          ),
         ),
       ),
     );
@@ -1046,29 +1129,33 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
   // ── LANDSCAPE: split view ──
   Widget _buildLandscape() {
     return Center(
-      child: Material(
-        color: Colors.transparent,
-        elevation: 24,
-        shadowColor: const Color(0x40000000),
-        borderRadius: BorderRadius.circular(24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 960, maxHeight: 620),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Row(
-              children: [
-                Expanded(child: _buildBrandingPanel()),
-                Expanded(
-                  child: Container(
-                    color: _cardBg,
-                    alignment: Alignment.center,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      child: _buildLoginForm(compact: false),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        child: Material(
+          color: Colors.transparent,
+          elevation: 32,
+          shadowColor: const Color(0x66000000),
+          borderRadius: BorderRadius.circular(28),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1080, maxHeight: 720),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: Row(
+                children: [
+                  Expanded(flex: 6, child: _buildBrandingPanel()),
+                  Expanded(
+                    flex: 5,
+                    child: Container(
+                      color: _cardBg,
+                      alignment: Alignment.center,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        child: _buildLoginForm(compact: false),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -1180,4 +1267,65 @@ class _MathSparklesPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _MathSparklesPainter oldDelegate) =>
       oldDelegate.opacity != opacity;
+}
+
+class _FeatureBullet extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _FeatureBullet({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.18),
+              width: 1,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, color: Colors.white, size: 19),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w800,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 12.5,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }

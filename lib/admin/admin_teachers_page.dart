@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -9,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../core/session.dart';
 import 'services/admin_api.dart';
 import 'services/admin_store.dart';
+import 'utils/admin_ui.dart';
 import 'widgets/admin_create_user_dialog.dart';
 
 class AdminTeachersPage extends StatefulWidget {
@@ -21,7 +21,6 @@ class AdminTeachersPage extends StatefulWidget {
 
 class _AdminTeachersPageState extends State<AdminTeachersPage> {
   final store = AdminStore();
-  final Random _rng = Random.secure();
   int _currentPage = 0;
   static const int _pageSize = 7;
   String _searchQuery = '';
@@ -45,12 +44,6 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
         _currentPage = 0;
       });
     }
-  }
-
-  String _randPassword(int len) {
-    const chars =
-        'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#';
-    return List.generate(len, (_) => chars[_rng.nextInt(chars.length)]).join();
   }
 
   @override
@@ -340,9 +333,9 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                   CircleAvatar(
                                                     radius: 20,
                                                     backgroundColor:
-                                                        _avatarColor(fullName),
+                                                        avatarColor(fullName),
                                                     child: Text(
-                                                      _initials(fullName),
+                                                      initials(fullName),
                                                       style: const TextStyle(
                                                         color: Color(
                                                           0xFF1A2050,
@@ -410,7 +403,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                               ),
                                                         ),
                                                         child: Text(
-                                                          _formatClassName(
+                                                          formatClassName(
                                                             classId,
                                                           ),
                                                           style:
@@ -665,60 +658,6 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
         ],
       ),
     );
-  }
-
-  String _formatClassName(String classId) {
-    if (classId.isEmpty) return '-';
-    if (classId.toLowerCase().startsWith('class')) return classId;
-
-    final original = classId.trim();
-    final match = RegExp(r'^(\d+)(.*)$').firstMatch(original);
-
-    if (match != null) {
-      final numStr = match.group(1)!;
-      final letter = match.group(2)!.trim();
-
-      String roman = numStr;
-      if (numStr == '9') {
-        roman = 'IX';
-      } else if (numStr == '10') {
-        roman = 'X';
-      } else if (numStr == '11') {
-        roman = 'XI';
-      } else if (numStr == '12') {
-        roman = 'XII';
-      }
-
-      if (letter.isNotEmpty) {
-        return 'Class $roman $letter';
-      }
-      return 'Class $roman';
-    }
-
-    return 'Class $original';
-  }
-
-  String _initials(String name) {
-    final trimmed = name.trim();
-    final spaceIdx = trimmed.indexOf(' ');
-    if (spaceIdx > 0 && spaceIdx < trimmed.length - 1) {
-      return '${trimmed[0]}${trimmed[spaceIdx + 1]}'.toUpperCase();
-    }
-    return trimmed.isNotEmpty ? trimmed[0].toUpperCase() : '?';
-  }
-
-  Color _avatarColor(String name) {
-    const colors = [
-      Color(0xFF7FA8D9),
-      Color(0xFF7CAAD6),
-      Color(0xFFFF8A65),
-      Color(0xFFADCAE3),
-      Color(0xFFCE93D8),
-      Color(0xFF84D0E4),
-      Color(0xFFFFCC80),
-      Color(0xFF8FAFC4),
-    ];
-    return colors[name.hashCode.abs() % colors.length];
   }
 
   Widget _colHeader(String label) {
@@ -1403,7 +1342,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                         (c) => DropdownMenuItem(
                                                           value: c,
                                                           child: Text(
-                                                            _formatClassName(c),
+                                                            formatClassName(c),
                                                             style:
                                                                 const TextStyle(
                                                                   fontSize: 16,
@@ -1537,7 +1476,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                                 newClassId
                                                                     .isEmpty
                                                                 ? 'Class assignment removed.'
-                                                                : 'Teacher assigned to ${_formatClassName(newClassId)}.';
+                                                                : 'Teacher assigned to ${formatClassName(newClassId)}.';
                                                             msgIsError = false;
                                                           });
                                                         } catch (e) {
@@ -1567,7 +1506,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                     const SizedBox(height: 8),
                                     CircleAvatar(
                                       radius: 63,
-                                      backgroundColor: _avatarColor(
+                                      backgroundColor: avatarColor(
                                         currentFullName,
                                       ),
                                       backgroundImage: photoUrl.isNotEmpty
@@ -1575,7 +1514,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                           : null,
                                       child: photoUrl.isEmpty
                                           ? Text(
-                                              _initials(currentFullName),
+                                              initials(currentFullName),
                                               style: const TextStyle(
                                                 color: Color(0xFF1A2050),
                                                 fontWeight: FontWeight.w800,
@@ -1628,7 +1567,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                   onPressed: busy
                                       ? null
                                       : () async {
-                                          final newPass = _randPassword(10);
+                                          final newPass = randPassword(10);
 
                                           setS(() {
                                             busy = true;
@@ -1653,7 +1592,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                               xls.TextCellValue(email ?? '-'),
                                               xls.TextCellValue(
                                                 currentClassId.isNotEmpty
-                                                    ? _formatClassName(
+                                                    ? formatClassName(
                                                         currentClassId,
                                                       )
                                                     : '-',

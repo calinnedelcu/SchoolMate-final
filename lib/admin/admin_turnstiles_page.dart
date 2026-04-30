@@ -16,6 +16,7 @@ import 'admin_parents_page.dart';
 import 'admin_students_page.dart';
 import 'admin_teachers_page.dart';
 import 'admin_vacante.dart' as admin_vacante;
+import 'utils/admin_ui.dart';
 
 // --- Helpers -----------------------------------------------------------
 
@@ -34,16 +35,6 @@ String _hhmm(Timestamp ts) {
   final ampm = h >= 12 ? 'PM' : 'AM';
   final h12 = h == 0 ? 12 : (h > 12 ? h - 12 : h);
   return '$h12:$m $ampm';
-}
-
-final Random _passwordRng = Random.secure();
-
-String _randPassword(int len) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#';
-  return List.generate(
-    len,
-    (_) => chars[_passwordRng.nextInt(chars.length)],
-  ).join();
 }
 
 String _humanizeAccessReason(String reason) {
@@ -1151,7 +1142,7 @@ class _GateCardState extends State<_GateCard> {
     }
 
     Future<void> resetPassword(StateSetter setDialogState) async {
-      final newPass = _randPassword(10);
+      final newPass = randPassword(10);
 
       setDialogState(() {
         busy = true;
