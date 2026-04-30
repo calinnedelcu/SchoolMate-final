@@ -176,7 +176,7 @@ class _GateHeader extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(child: CustomPaint(painter: _HeaderDecorPainter())),
-          Padding(
+          Padding( 
             padding: EdgeInsets.fromLTRB(20, topPadding + 12, 14, 16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -223,7 +223,7 @@ class _GateHeader extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.92),
+                                color: Colors.white.withOpacity(0.92),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -253,13 +253,13 @@ class _HeaderDecorPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(size.width - 20, -10),
       52,
-      Paint()..color = Colors.white.withValues(alpha: 0.06),
+      Paint()..color = Colors.white.withOpacity(0.06),
     );
     canvas.drawCircle(
       Offset(size.width - 20, -10),
       52,
       Paint()
-        ..color = Colors.white.withValues(alpha: 0.10)
+        ..color = Colors.white.withOpacity(0.10)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2,
     );
@@ -289,10 +289,10 @@ class _HeaderIconButton extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: Colors.white.withOpacity(0.15),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.25),
+              color: Colors.white.withOpacity(0.25),
               width: 1,
             ),
           ),
@@ -346,10 +346,10 @@ class _ScanHeroCard extends StatelessWidget {
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
+                          color: Colors.white.withOpacity(0.18),
                           borderRadius: BorderRadius.circular(11),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.25),
+                            color: Colors.white.withOpacity(0.25),
                             width: 1,
                           ),
                         ),
@@ -364,7 +364,7 @@ class _ScanHeroCard extends StatelessWidget {
                         child: Text(
                           'GATE SCANNER',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
+                            color: Colors.white.withOpacity(0.7),
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 1.4,
@@ -388,7 +388,7 @@ class _ScanHeroCard extends StatelessWidget {
                           Center(
                             child: Container(
                               width: 150,
-                              height: 150,
+                              height: 150, 
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.95),
                                 borderRadius: BorderRadius.circular(24),
@@ -457,25 +457,25 @@ class _ScanHeroDecorPainter extends CustomPainter {
 
     canvas.drawCircle(
       Offset(size.width + 10, -10),
-      90,
-      Paint()..color = Colors.white.withValues(alpha: 0.06),
+      90, 
+      Paint()..color = Colors.white.withOpacity(0.06),
     );
     canvas.drawCircle(
       Offset(size.width + 10, -10),
-      90,
+      90, 
       Paint()
-        ..color = Colors.white.withValues(alpha: 0.12)
+        ..color = Colors.white.withOpacity(0.12)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
     canvas.drawCircle(
       Offset(-30, size.height + 10),
-      70,
-      Paint()..color = Colors.white.withValues(alpha: 0.05),
+      70, 
+      Paint()..color = Colors.white.withOpacity(0.05),
     );
 
-    final c1 = Colors.white.withValues(alpha: 0.3);
-    final c2 = Colors.white.withValues(alpha: 0.22);
+    final c1 = Colors.white.withOpacity(0.3);
+    final c2 = Colors.white.withOpacity(0.22);
     final cy = kPencilYellow.withValues(alpha: 0.35);
     drawMathSymbol(
         canvas, '∑', Offset(size.width - 28, size.height * 0.18), 14, cy);
@@ -722,17 +722,16 @@ class _RecentItem extends StatelessWidget {
     final timestamp =
         (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now();
     final timeStr =
-        '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+        '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}'; 
     final name = (data['fullName'] ?? 'Unknown').toString();
     final classCode = (data['classId'] ?? '').toString();
-    final status = (data['status'] ?? '').toString().toLowerCase();
-    final isExit = status == 'exit';
-    final isPositive = status == 'entry' || status == 'success' || isExit;
-    final color = isPositive ? _live : _denied;
-    final label = isPositive ? (isExit ? 'EXIT' : 'ENTRY') : 'DENIED';
-    final dirIcon = isPositive
-        ? (isExit ? Icons.logout_rounded : Icons.login_rounded)
-        : Icons.block_rounded;
+    final scanResult = (data['scanResult'] ?? '').toString().toLowerCase();
+
+    final isAllowed = scanResult == 'allowed';
+
+    final color = isAllowed ? _live : _denied;
+    final label = isAllowed ? 'EXIT' : 'DENIED';
+    final dirIcon = isAllowed ? Icons.logout_rounded : Icons.block_rounded;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),

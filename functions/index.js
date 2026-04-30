@@ -1574,9 +1574,7 @@ exports.redeemQrToken = onCall(async (request) => {
     });
 });
 
-exports.cleanupExpiredQrTokens = onSchedule("every 60 minutes", async (event) => {
-    const db = admin.firestore();
-    const cutoff = new Date(Date.now() - 60 * 60 * 1000); // 1 hour ago
+        t cutoff = new Date(Date.now() - 60 * 60 * 1000); // 1 hour ago
     const expiredSnap = await db.collection("qrTokens")
         .where("expiresAt", "<=", cutoff)
         .get();
