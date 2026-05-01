@@ -151,11 +151,6 @@ class _CereriScreenState extends State<CereriScreen> {
     });
   }
 
-  TimeOfDay _parseHHmm(String s) {
-    final parts = s.split(':');
-    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-  }
-
   String _formatDateMmDdYyyy(DateTime dt) {
     final mm = dt.month.toString().padLeft(2, '0');
     final dd = dt.day.toString().padLeft(2, '0');
