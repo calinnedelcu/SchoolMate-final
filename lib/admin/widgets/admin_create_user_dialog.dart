@@ -10,6 +10,7 @@ Future<void> showAdminCreateUserDialog(
   BuildContext context, {
   String? lockedRole,
 }) async {
+  if (lockedRole == 'admin') return;
   final rng = Random.secure();
   final fullNameC = TextEditingController();
 
@@ -331,7 +332,6 @@ Future<void> showAdminCreateUserDialog(
                                                 DropdownMenuItem(value: 'student', child: Text('Student')),
                                                 DropdownMenuItem(value: 'teacher', child: Text('Homeroom Teacher')),
                                                 DropdownMenuItem(value: 'parent', child: Text('Parent')),
-                                                DropdownMenuItem(value: 'admin', child: Text('Admin')),
                                                 DropdownMenuItem(value: 'gate', child: Text('Gate')),
                                               ],
                                               onChanged: (v) => setS(() {
