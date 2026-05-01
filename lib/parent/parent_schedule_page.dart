@@ -36,6 +36,21 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
   String? _selectedChildUid;
   int _weekOffset = 0;
 
+  // Cache the children future so it is not recreated on every StreamBuilder
+  // rebuild (which would reset FutureBuilder back to a "loading / no data"
+  // state and flash the empty placeholder).
+  String? _cachedChildrenKey;
+  Future<List<_ChildEntry>>? _cachedChildrenFuture;
+
+  Future<List<_ChildEntry>> _getOrCreateChildrenFuture(List<String> uids) {
+    final key = uids.join(',');
+    if (key != _cachedChildrenKey || _cachedChildrenFuture == null) {
+      _cachedChildrenKey = key;
+      _cachedChildrenFuture = _loadChildren(uids);
+    }
+    return _cachedChildrenFuture!;
+  }
+
   String _academicYear() {
     final now = DateTime.now();
     final startYear = now.month >= 9 ? now.year : now.year - 1;
@@ -185,8 +200,10 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
                   final childUids = _extractChildUids(parentData);
 
                   return FutureBuilder<List<_ChildEntry>>(
-                    future: _loadChildren(childUids),
+                    future: _getOrCreateChildrenFuture(childUids),
                     builder: (context, childSnap) {
+                      final isLoading =
+                          childUids.isNotEmpty && !childSnap.hasData;
                       final children = childSnap.data ?? const <_ChildEntry>[];
 
                       _ChildEntry? selected;
@@ -204,7 +221,13 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
                         }
                       }
 
-                      return _buildBody(context, children, selected);
+                      return _buildBody(
+                        context,
+                        children,
+                        selected,
+                        hasLinkedChildren: childUids.isNotEmpty,
+                        isLoading: isLoading,
+                      );
                     },
                   );
                 },
@@ -216,8 +239,10 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
   Widget _buildBody(
     BuildContext context,
     List<_ChildEntry> children,
-    _ChildEntry? selected,
-  ) {
+    _ChildEntry? selected, {
+    required bool hasLinkedChildren,
+    required bool isLoading,
+  }) {
     final week = _weekInfo();
     final isOdd = week.weekNumber.isOdd;
 
@@ -246,15 +271,19 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
             ),
             Expanded(
               child: children.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No children linked yet.',
-                        style: TextStyle(
-                          color: _labelColor,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                  ? Center(
+                      child: isLoading
+                          ? const CircularProgressIndicator()
+                          : Text(
+                              hasLinkedChildren
+                                  ? 'Could not load children.'
+                                  : 'No children linked yet.',
+                              style: const TextStyle(
+                                color: _labelColor,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     )
                   : SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
