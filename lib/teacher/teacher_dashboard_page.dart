@@ -583,58 +583,65 @@ class _ShortcutTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasBadge = badgeCount > 0;
-    return Material(
-      color: _surfaceLowest,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
+    return Container(
+      height: 138,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: _surfaceLowest,
         borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Container(
-          height: 138,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x10000000),
-                blurRadius: 14,
-                offset: Offset(0, 4),
-              ),
-            ],
-            border: hasBadge
-                ? const Border(
-                    left: BorderSide(color: _primary, width: 4),
-                  )
-                : null,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x10000000),
+            blurRadius: 14,
+            offset: Offset(0, 4),
           ),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(hasBadge ? 13 : 15, 14, 13, 13),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 45,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            _primary.withValues(alpha: 0.12),
-                            _primary.withValues(alpha: 0.06),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(13),
-                        border: Border.all(
-                          color: _primary.withValues(alpha: 0.10),
-                          width: 1,
-                        ),
-                      ),
-                      child: Icon(icon, color: _primary, size: 23),
-                    ),
+        ],
+        border: hasBadge
+            ? const Border(left: BorderSide(color: _primary, width: 4))
+            : null,
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _WhiteCardDecorPainter(variant: hasBadge ? 1 : 3),
+            ),
+          ),
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: onTap,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(hasBadge ? 13 : 15, 14, 13, 13),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: 45,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  _primary.withValues(alpha: 0.12),
+                                  _primary.withValues(alpha: 0.06),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(13),
+                              border: Border.all(
+                                color: _primary.withValues(alpha: 0.10),
+                                width: 1,
+                              ),
+                            ),
+                            child: Icon(icon, color: _primary, size: 23),
+                          ),
                     if (hasBadge)
                       Positioned(
                         right: -4,
@@ -696,9 +703,12 @@ class _ShortcutTile extends StatelessWidget {
                   ],
                 ),
               ],
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

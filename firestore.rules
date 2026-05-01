@@ -175,6 +175,53 @@ service cloud.firestore {
           request.resource.data.createdAt is timestamp;
     }
 
+    // Teachers may broadcast to their own class OR to the whole school. The
+    // post is locked to source='teacher' so it stays in a separate lane from
+    // secretariat broadcasts, and audienceClassIds must be exactly one entry —
+    // either the teacher's own classId or the school-wide sentinel.
+    function validTeacherSecretariatMessageCreate() {
+      return isTeacher() &&
+          request.resource.data.keys().hasAll([
+            'recipientRole',
+            'recipientUid',
+            'studentUid',
+            'studentName',
+            'classId',
+            'message',
+            'title',
+            'createdAt',
+            'senderUid',
+            'senderName',
+            'broadcastId',
+            'messageType',
+            'source',
+            'audienceClassIds',
+          ]) &&
+          request.resource.data.recipientRole == 'student' &&
+          request.resource.data.recipientUid == '' &&
+          request.resource.data.studentUid == '' &&
+          request.resource.data.source == 'teacher' &&
+          request.resource.data.messageType == 'secretariatGlobal' &&
+          request.resource.data.senderUid == request.auth.uid &&
+          request.resource.data.createdAt is timestamp &&
+          request.resource.data.audienceClassIds is list &&
+          request.resource.data.audienceClassIds.size() == 1 &&
+          (request.resource.data.audienceClassIds[0] == me().classId ||
+              request.resource.data.audienceClassIds[0] == '__ALL__');
+    }
+
+    // Teachers can only flip the status of their own post between active and
+    // archived — no editing of title/body/audience after the fact.
+    function validTeacherSecretariatMessageUpdate() {
+      return isTeacher() &&
+          resource.data.source == 'teacher' &&
+          resource.data.senderUid == request.auth.uid &&
+          request.resource.data.diff(resource.data).changedKeys().hasOnly([
+            'status',
+          ]) &&
+          ['active', 'archived'].hasAny([request.resource.data.status]);
+    }
+
     // ── secretariatMessages read visibility ─────────────────────────────
     // Each helper assumes the caller has already been checked to hold the
     // matching role. Helpers are split per role + per recipientRole so the
@@ -292,8 +339,13 @@ service cloud.firestore {
 
     match /secretariatMessages/{messageId} {
       allow read: if canReadSecretariatMessage();
-      allow create: if validSecretariatMessageCreate();
-      allow update, delete: if isAdmin();
+      allow create: if validSecretariatMessageCreate() ||
+          validTeacherSecretariatMessageCreate();
+      allow update: if isAdmin() || validTeacherSecretariatMessageUpdate();
+      allow delete: if isAdmin() ||
+          (isTeacher() &&
+              resource.data.source == 'teacher' &&
+              resource.data.senderUid == request.auth.uid);
     }
 
     match /secretariatActivity/{activityId} {

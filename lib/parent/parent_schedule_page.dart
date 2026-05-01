@@ -36,7 +36,6 @@ class _ChildEntry {
 
 class _ParentSchedulePageState extends State<ParentSchedulePage> {
   String? _selectedChildUid;
-  int _weekOffset = 0;
 
   // Cache the children future so it is not recreated on every StreamBuilder
   // rebuild (which would reset FutureBuilder back to a "loading / no data"
@@ -73,7 +72,7 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
   }
 
   ({DateTime monday, DateTime friday, int weekNumber}) _weekInfo() {
-    final now = DateTime.now().add(Duration(days: 7 * _weekOffset));
+    final now = DateTime.now();
     final monday = now.subtract(Duration(days: now.weekday - 1));
     final friday = monday.add(const Duration(days: 4));
     final firstJan = DateTime(monday.year, 1, 1);
@@ -320,8 +319,6 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
                             rangeText:
                                 'Week ${_formatDay(week.monday)} — ${_formatDay(week.friday)}',
                             parityText: isOdd ? 'ODD WEEK' : 'EVEN WEEK',
-                            onPrev: () => setState(() => _weekOffset -= 1),
-                            onNext: () => setState(() => _weekOffset += 1),
                           ),
                           const SizedBox(height: 14),
                           ClassTimetable(classId: classId),
@@ -648,20 +645,16 @@ class _ChildPickerTile extends StatelessWidget {
 class _WeekSwitcher extends StatelessWidget {
   final String rangeText;
   final String parityText;
-  final VoidCallback onPrev;
-  final VoidCallback onNext;
 
   const _WeekSwitcher({
     required this.rangeText,
     required this.parityText,
-    required this.onPrev,
-    required this.onNext,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: _surfaceLowest,
         borderRadius: BorderRadius.circular(20),
@@ -674,58 +667,27 @@ class _WeekSwitcher extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          _SwitchArrow(icon: Icons.chevron_left_rounded, onTap: onPrev),
-          Expanded(
-            child: Column(
-              children: [
-                Text(
-                  rangeText,
-                  style: const TextStyle(
-                    color: _onSurface,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  parityText,
-                  style: const TextStyle(
-                    color: _outline,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-              ],
+          Text(
+            rangeText,
+            style: const TextStyle(
+              color: _onSurface,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          _SwitchArrow(icon: Icons.chevron_right_rounded, onTap: onNext),
+          const SizedBox(height: 2),
+          Text(
+            parityText,
+            style: const TextStyle(
+              color: _outline,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+            ),
+          ),
         ],
-      ),
-    );
-  }
-}
-
-class _SwitchArrow extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  const _SwitchArrow({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Container(
-          width: 36,
-          height: 36,
-          alignment: Alignment.center,
-          child: Icon(icon, color: _primary, size: 24),
-        ),
       ),
     );
   }

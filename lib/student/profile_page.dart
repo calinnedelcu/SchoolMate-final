@@ -581,18 +581,17 @@ class _ParentRow extends StatelessWidget {
       stream: FirebaseFirestore.instance
           .collection('users')
           .doc(parentUid)
+          .collection('publicProfile')
+          .doc('main')
           .snapshots(),
       builder: (context, snap) {
         final data = snap.data?.data() ?? const <String, dynamic>{};
         final fullName = (data['fullName'] ?? '').toString().trim();
         final username = (data['username'] ?? '').toString().trim();
-        final email = (data['email'] ?? '').toString().trim();
         final name = fullName.isNotEmpty
             ? fullName
-            : (username.isNotEmpty ? username : parentUid);
-        final detail = email.isNotEmpty
-            ? email
-            : (username.isNotEmpty ? '@$username' : '');
+            : (username.isNotEmpty ? username : 'Parent');
+        final detail = username.isNotEmpty ? '@$username' : '';
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(

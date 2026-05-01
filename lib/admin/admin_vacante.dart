@@ -172,7 +172,7 @@ class _AdminVacantePageState extends State<AdminVacantePage> {
                   onPersonalTap: () =>
                       _openSidebarPage(const AdminTeachersPage()),
                   onTurnichetiTap: () =>
-                      _openSidebarPage(AdminTurnstilesPage()),
+                      _openSidebarPage(const AdminTurnstilesPage()),
                   onClaseTap: () => _openSidebarPage(const AdminClassesPage()),
                   onParintiTap: () =>
                       _openSidebarPage(const AdminParentsPage()),
