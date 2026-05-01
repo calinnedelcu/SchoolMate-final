@@ -22,8 +22,8 @@ Acest folder conține livrabilele cerute de regulamentul concursului.
 
 | Rol | Username | Parolă |
 |-----|----------|--------|
-| Elev | {{DEMO_ELEV}} | {{PAROLA}} |
-| Profesor / Diriginte | {{DEMO_PROFESOR}} | {{PAROLA}} |
-| Secretariat | {{DEMO_ADMIN}} | {{PAROLA}} |
-| Părinte | {{DEMO_PARINTE}} | {{PAROLA}} |
-| Portar | {{DEMO_PORTAR}} | {{PAROLA}} |
+| Elev | `student1894` | `12345678` |
+| Diriginte | `teacher571` | `12345678` |
+| Secretariat | `Daniel` | `12345678` |
+| Părinte | `parent111` | `12345678` |
+| Portar (scanner) | `guardian147` | `iP8mzkpVic` |
