@@ -817,18 +817,39 @@ class _VacanciesContentState extends State<_VacanciesContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'School Vacation Settings',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF2848B0),
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Configure rest periods and manage school vacations.',
-            style: TextStyle(fontSize: 13, color: Color(0xFF7A7E9A)),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'School Vacation Settings',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF2848B0),
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Configure rest periods and manage school vacations.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF7A7E9A),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: 'Refresh',
+                onPressed: () => setState(() {}),
+                icon: const Icon(Icons.refresh_rounded),
+                color: const Color(0xFF2848B0),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           Expanded(

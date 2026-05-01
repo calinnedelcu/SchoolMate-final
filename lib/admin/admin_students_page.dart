@@ -299,11 +299,20 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                             ),
                           ),
                           const SizedBox(width: 12),
+                          IconButton(
+                            tooltip: 'Refresh',
+                            onPressed: _isLoadingPage ? null : _refresh,
+                            icon: const Icon(Icons.refresh_rounded),
+                            color: cs.primary,
+                          ),
                           TextButton(
-                            onPressed: () => showAdminCreateUserDialog(
-                              context,
-                              lockedRole: 'student',
-                            ),
+                            onPressed: () async {
+                              await showAdminCreateUserDialog(
+                                context,
+                                lockedRole: 'student',
+                              );
+                              if (mounted) await _refresh();
+                            },
                             style: TextButton.styleFrom(
                               foregroundColor: cs.primary,
                               padding: const EdgeInsets.symmetric(
@@ -513,22 +522,25 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                             .toString();
 
                                     return InkWell(
-                                      onTap: () => _openStudentDialog(
-                                        context,
-                                        uid: uid,
-                                        username: username,
-                                        fullName: fullName,
-                                        classId: classId,
-                                        status: status,
-                                        onboardingComplete:
-                                            onboardingComplete ||
-                                            passwordChanged,
-                                        emailVerified: emailVerified,
-                                        passwordChanged: passwordChanged,
-                                        email: email,
-                                        parentUsernames: parentUsernames,
-                                        photoUrl: photoUrl,
-                                      ),
+                                      onTap: () async {
+                                        await _openStudentDialog(
+                                          context,
+                                          uid: uid,
+                                          username: username,
+                                          fullName: fullName,
+                                          classId: classId,
+                                          status: status,
+                                          onboardingComplete:
+                                              onboardingComplete ||
+                                              passwordChanged,
+                                          emailVerified: emailVerified,
+                                          passwordChanged: passwordChanged,
+                                          email: email,
+                                          parentUsernames: parentUsernames,
+                                          photoUrl: photoUrl,
+                                        );
+                                        if (mounted) await _refresh();
+                                      },
                                       hoverColor: const Color(0xFFF7F8FA),
                                       child: Padding(
                                         padding: const EdgeInsets.fromLTRB(

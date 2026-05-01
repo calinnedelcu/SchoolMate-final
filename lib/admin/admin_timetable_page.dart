@@ -916,6 +916,17 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              actions: [
+                IconButton(
+                  tooltip: 'Refresh',
+                  icon: const Icon(
+                    Icons.refresh_rounded,
+                    color: Color(0xFF1A2050),
+                  ),
+                  onPressed: () => setState(() {}),
+                ),
+                const SizedBox(width: 8),
+              ],
             ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _classesStream,
@@ -1164,6 +1175,15 @@ class _AdminTimetablePageState extends State<AdminTimetablePage> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    IconButton(
+                      tooltip: 'Refresh',
+                      onPressed: () => setState(() {}),
+                      icon: const Icon(
+                        Icons.refresh_rounded,
+                        color: Color(0xFF2848B0),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
                     OutlinedButton.icon(
                       icon: const Icon(Icons.menu_book_outlined, size: 15, color: Color(0xFF2848B0)),
                       label: const Text('Subjects', style: TextStyle(color: Color(0xFF2848B0))),

@@ -13,6 +13,17 @@ import 'parent_requests_page.dart';
 import 'parent_schedule_page.dart';
 import 'parent_students_page.dart';
 
+bool _leaveRequestAddressedToParent(Map<String, dynamic> data) {
+  final targets = (data['targets'] as List?)
+      ?.map((e) => e.toString())
+      .toList();
+  if (targets != null && targets.isNotEmpty) {
+    return targets.contains('parent');
+  }
+  final legacyRole = (data['targetRole'] ?? '').toString().trim();
+  return legacyRole == 'parent';
+}
+
 const _homeMonths = [
   '',
   'January',
@@ -532,7 +543,9 @@ class _PendingRequestsStat extends StatelessWidget {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: stream,
       builder: (context, snap) {
-        final count = snap.data?.docs.length ?? 0;
+        final count = (snap.data?.docs ?? const [])
+            .where((d) => _leaveRequestAddressedToParent(d.data()))
+            .length;
         return _StatTile(
           icon: Icons.hourglass_top_rounded,
           iconColor: const Color(0xFFC58A00),
@@ -945,7 +958,9 @@ class _ShortcutsRowState extends State<_ShortcutsRow> {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: _pendingStream,
       builder: (context, snap) {
-        final pending = snap.data?.docs.length ?? 0;
+        final pending = (snap.data?.docs ?? const [])
+            .where((d) => _leaveRequestAddressedToParent(d.data()))
+            .length;
         return Row(
           children: [
             Expanded(
@@ -1161,7 +1176,6 @@ class _MesajeCardState extends State<_MesajeCard> {
   }
 
   void _buildStreams(List<String> uids) {
-    final parentUid = (AppSession.uid ?? '').trim();
     _decisionStream = uids.isNotEmpty
         ? FirebaseFirestore.instance
               .collection('leaveRequests')
@@ -1169,17 +1183,17 @@ class _MesajeCardState extends State<_MesajeCard> {
               .where('status', whereIn: ['approved', 'rejected'])
               .snapshots()
         : null;
-    _pendingRequestsStream = parentUid.isNotEmpty
+    _pendingRequestsStream = uids.isNotEmpty
         ? FirebaseFirestore.instance
               .collection('leaveRequests')
-              .where('targetUid', isEqualTo: parentUid)
-              .where('targetRole', isEqualTo: 'parent')
+              .where('studentUid', whereIn: uids)
               .where('status', isEqualTo: 'pending')
               .snapshots()
               .handleError((_) {})
         : null;
     _secretariatStreams = _buildSecretariatStreams(uids);
   }
+
 
   List<Stream<QuerySnapshot<Map<String, dynamic>>>> _buildSecretariatStreams(
     List<String> uids,
@@ -1264,10 +1278,12 @@ class _MesajeCardState extends State<_MesajeCard> {
   ) {
     final lastViewed = widget.inboxLastOpened;
     return docs.where((doc) {
+      final data = doc.data();
+      if (!_leaveRequestAddressedToParent(data)) return false;
       final when =
-          _readDateTime(doc.data()['requestedAt']) ??
-          _readDateTime(doc.data()['createdAt']) ??
-          _readDateTime(doc.data()['updatedAt']);
+          _readDateTime(data['requestedAt']) ??
+          _readDateTime(data['createdAt']) ??
+          _readDateTime(data['updatedAt']);
       if (when == null) {
         return lastViewed == null;
       }

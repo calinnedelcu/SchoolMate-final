@@ -4049,6 +4049,13 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               ],
                             ),
                             Spacer(),
+                            IconButton(
+                              tooltip: 'Refresh',
+                              onPressed: () => setState(() {}),
+                              icon: const Icon(Icons.refresh_rounded),
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
                             FilledButton.icon(
                               onPressed: _showCreateClassDialog,
                               icon: const Icon(Icons.add_rounded, size: 18),
@@ -5193,7 +5200,7 @@ class _ClassListRowState extends State<_ClassListRow> {
         onTap: widget.onOpen,
         borderRadius: BorderRadius.circular(10),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 4),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -5205,8 +5212,8 @@ class _ClassListRowState extends State<_ClassListRow> {
                   child: IntrinsicWidth(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                        horizontal: 14,
+                        vertical: 9,
                       ),
                       decoration: BoxDecoration(
                         color: cs.primary.withValues(alpha: 0.10),
@@ -5218,7 +5225,7 @@ class _ClassListRowState extends State<_ClassListRow> {
                       child: Text(
                         widget.name,
                         style: TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 15,
                           fontWeight: FontWeight.w800,
                           color: cs.primary,
                           letterSpacing: 0.4,
@@ -5239,7 +5246,7 @@ class _ClassListRowState extends State<_ClassListRow> {
                       return Text(
                         '—',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 15,
                           color: cs.onSurfaceVariant,
                         ),
                       );
@@ -5249,11 +5256,11 @@ class _ClassListRowState extends State<_ClassListRow> {
                       return Row(
                         children: [
                           _avatarPlaceholder(cs),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Text(
                             '…',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 15,
                               color: cs.onSurfaceVariant,
                             ),
                           ),
@@ -5263,24 +5270,24 @@ class _ClassListRowState extends State<_ClassListRow> {
                     return Row(
                       children: [
                         CircleAvatar(
-                          radius: 16,
+                          radius: 19,
                           backgroundColor: avatarColor(fullName),
                           child: Text(
                             initials(fullName),
                             style: TextStyle(
                               color: cs.onSurface,
                               fontWeight: FontWeight.w800,
-                              fontSize: 11,
+                              fontSize: 13,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             fullName,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: cs.onSurface,
                             ),
@@ -5302,8 +5309,8 @@ class _ClassListRowState extends State<_ClassListRow> {
                       final count = snap.data;
                       return Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
+                          horizontal: 12,
+                          vertical: 7,
                         ),
                         decoration: BoxDecoration(
                           color: cs.surfaceContainerHighest,
@@ -5314,14 +5321,14 @@ class _ClassListRowState extends State<_ClassListRow> {
                           children: [
                             Icon(
                               Icons.people_alt_rounded,
-                              size: 14,
+                              size: 16,
                               color: cs.onSurfaceVariant,
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 7),
                             Text(
                               count?.toString() ?? '—',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: cs.onSurface,
                               ),
@@ -5341,7 +5348,7 @@ class _ClassListRowState extends State<_ClassListRow> {
                   child: Icon(
                     Icons.chevron_right_rounded,
                     color: cs.outline,
-                    size: 22,
+                    size: 26,
                   ),
                 ),
               ),
@@ -5354,8 +5361,8 @@ class _ClassListRowState extends State<_ClassListRow> {
 
   Widget _avatarPlaceholder(ColorScheme cs) {
     return Container(
-      width: 32,
-      height: 32,
+      width: 38,
+      height: 38,
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         shape: BoxShape.circle,

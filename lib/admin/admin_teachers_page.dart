@@ -268,11 +268,20 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                             ),
                           ),
                           const SizedBox(width: 12),
+                          IconButton(
+                            tooltip: 'Refresh',
+                            onPressed: _isLoadingPage ? null : _refresh,
+                            icon: const Icon(Icons.refresh_rounded),
+                            color: cs.primary,
+                          ),
                           TextButton(
-                            onPressed: () => showAdminCreateUserDialog(
-                              context,
-                              lockedRole: 'teacher',
-                            ),
+                            onPressed: () async {
+                              await showAdminCreateUserDialog(
+                                context,
+                                lockedRole: 'teacher',
+                              );
+                              if (mounted) await _refresh();
+                            },
                             style: TextButton.styleFrom(
                               foregroundColor: cs.primary,
                               padding: const EdgeInsets.symmetric(
@@ -462,17 +471,21 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                 '')
                                             .toString();
                                     return InkWell(
-                                      onTap: () => _openTeacherDialog(
-                                        context,
-                                        uid: uid,
-                                        username: username,
-                                        fullName: fullName,
-                                        classId: classId,
-                                        status: status,
-                                        onboardingComplete: onboardingComplete,
-                                        email: email,
-                                        photoUrl: photoUrl,
-                                      ),
+                                      onTap: () async {
+                                        await _openTeacherDialog(
+                                          context,
+                                          uid: uid,
+                                          username: username,
+                                          fullName: fullName,
+                                          classId: classId,
+                                          status: status,
+                                          onboardingComplete:
+                                              onboardingComplete,
+                                          email: email,
+                                          photoUrl: photoUrl,
+                                        );
+                                        if (mounted) await _refresh();
+                                      },
                                       hoverColor: const Color(0xFFF7F8FA),
                                       child: Padding(
                                         padding: const EdgeInsets.fromLTRB(

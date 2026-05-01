@@ -407,6 +407,12 @@ class _PostsListState extends State<_PostsList> {
               ],
             ),
             const Spacer(),
+            IconButton(
+              tooltip: 'Refresh',
+              onPressed: () => setState(() {}),
+              icon: const Icon(Icons.refresh_rounded),
+              color: _primary,
+            ),
             TextButton(
               onPressed: widget.onNewPost,
               style: TextButton.styleFrom(

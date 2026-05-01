@@ -123,11 +123,24 @@ class _ParentRequestsPageState extends State<ParentRequestsPage> {
             final status = (data['status'] ?? '').toString().trim();
             final source = (data['source'] ?? '').toString().trim();
             final studentUid = (data['studentUid'] ?? '').toString().trim();
-            final isLegacyLinkedRequest = linkedChildIds.contains(studentUid);
+            final isLinkedRequest = linkedChildIds.contains(studentUid);
+
+            final targets = (data['targets'] as List?)
+                ?.map((e) => e.toString())
+                .toList();
+            final bool addressedToParent;
+            if (targets != null && targets.isNotEmpty) {
+              addressedToParent = targets.contains('parent');
+            } else {
+              // Legacy single-recipient docs: only show parent-targeted ones.
+              final legacyRole = (data['targetRole'] ?? '').toString().trim();
+              addressedToParent = legacyRole == 'parent';
+            }
 
             return status == 'pending' &&
                 source != 'secretariat' &&
-              isLegacyLinkedRequest;
+                isLinkedRequest &&
+                addressedToParent;
           }).toList()..sort((a, b) {
             final aTs = a.data()['requestedAt'] as Timestamp?;
             final bTs = b.data()['requestedAt'] as Timestamp?;

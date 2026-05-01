@@ -194,6 +194,7 @@ class _RequestItem {
   final String message;
   final String status;
   final String reviewedByName;
+  final String reviewedByRole;
   final DateTime? requestedForDate;
   final int requestedAtMs;
 
@@ -204,11 +205,27 @@ class _RequestItem {
     required this.message,
     required this.status,
     required this.reviewedByName,
+    required this.reviewedByRole,
     required this.requestedForDate,
     required this.requestedAtMs,
   });
 
   factory _RequestItem.fromData(String id, Map<String, dynamic> data) {
+    final reviewedByUid = (data['reviewedByUid'] ?? '').toString().trim();
+    final teacherUid = (data['targetTeacherUid'] ?? '').toString().trim();
+    final parentUid = (data['targetParentUid'] ?? '').toString().trim();
+    String role = '';
+    if (reviewedByUid.isNotEmpty) {
+      if (reviewedByUid == teacherUid) {
+        role = 'teacher';
+      } else if (reviewedByUid == parentUid) {
+        role = 'parent';
+      }
+    }
+    if (role.isEmpty) {
+      // Legacy single-recipient docs: derive from targetRole.
+      role = (data['targetRole'] ?? '').toString().trim();
+    }
     return _RequestItem(
       id: id,
       dateText: (data['dateText'] ?? '').toString(),
@@ -216,6 +233,7 @@ class _RequestItem {
       message: (data['message'] ?? '').toString(),
       status: (data['status'] ?? 'pending').toString(),
       reviewedByName: (data['reviewedByName'] ?? '').toString(),
+      reviewedByRole: role,
       requestedForDate: (data['requestedForDate'] as Timestamp?)?.toDate(),
       requestedAtMs:
           (data['requestedAt'] as Timestamp?)?.millisecondsSinceEpoch ?? 0,
@@ -244,11 +262,25 @@ class _RequestItem {
       reviewedByName: winner.reviewedByName.isNotEmpty
           ? winner.reviewedByName
           : (reviewedByName.isNotEmpty ? reviewedByName : other.reviewedByName),
+      reviewedByRole: winner.reviewedByRole.isNotEmpty
+          ? winner.reviewedByRole
+          : (reviewedByRole.isNotEmpty ? reviewedByRole : other.reviewedByRole),
       requestedForDate: requestedForDate ?? other.requestedForDate,
       requestedAtMs: requestedAtMs > other.requestedAtMs
           ? requestedAtMs
           : other.requestedAtMs,
     );
+  }
+}
+
+String _roleLabel(String role) {
+  switch (role.toLowerCase()) {
+    case 'teacher':
+      return 'Homeroom teacher';
+    case 'parent':
+      return 'Parent';
+    default:
+      return '';
   }
 }
 
@@ -649,7 +681,7 @@ class _RequestCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              'REVIEWED BY ${item.reviewedByName.trim().toUpperCase()}',
+              _reviewedByLabel(item),
               style: const TextStyle(
                 color: _textMuted,
                 fontSize: 11,
@@ -671,6 +703,15 @@ class _RequestCard extends StatelessWidget {
     if (time.isEmpty) return date;
     return '$date · $time';
   }
+}
+
+String _reviewedByLabel(_RequestItem item) {
+  final name = item.reviewedByName.trim();
+  final role = _roleLabel(item.reviewedByRole);
+  if (role.isEmpty) {
+    return 'REVIEWED BY ${name.toUpperCase()}';
+  }
+  return 'REVIEWED BY ${name.toUpperCase()} · ${role.toUpperCase()}';
 }
 
 class _StatusInfo {

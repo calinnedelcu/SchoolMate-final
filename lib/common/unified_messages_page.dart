@@ -350,6 +350,36 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
     return value;
   }
 
+  String _reviewerLabel(Map<String, dynamic> data, {String? fallback}) {
+    final name = (data['reviewedByName'] ?? '').toString().trim();
+    final reviewedByUid = (data['reviewedByUid'] ?? '').toString().trim();
+    final teacherUid = (data['targetTeacherUid'] ?? '').toString().trim();
+    final parentUid = (data['targetParentUid'] ?? '').toString().trim();
+    String role = '';
+    if (reviewedByUid.isNotEmpty) {
+      if (reviewedByUid == teacherUid) {
+        role = 'teacher';
+      } else if (reviewedByUid == parentUid) {
+        role = 'parent';
+      }
+    }
+    if (role.isEmpty) {
+      // Legacy single-recipient docs.
+      role = (data['targetRole'] ?? '').toString().trim().toLowerCase();
+    }
+    final roleLabel = role == 'teacher'
+        ? 'Homeroom teacher'
+        : role == 'parent'
+            ? 'Parent'
+            : '';
+    if (name.isEmpty && roleLabel.isEmpty) {
+      return fallback ?? 'Reviewer';
+    }
+    if (name.isEmpty) return roleLabel;
+    if (roleLabel.isEmpty) return _normalizeSender(name);
+    return '$name ($roleLabel)';
+  }
+
   void _openDetail(BuildContext context, _UnifiedMessageItem item) {
     showGeneralDialog<void>(
       context: context,
@@ -580,9 +610,14 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           final data = doc.data();
           final status = (data['status'] ?? '').toString().trim();
           final source = (data['source'] ?? '').toString().trim();
-          final targetRole = (data['targetRole'] ?? '').toString().trim();
+          final targets = (data['targets'] as List?)
+              ?.map((e) => e.toString())
+              .toList();
+          final addressedToParent = (targets != null && targets.isNotEmpty)
+              ? targets.contains('parent')
+              : (data['targetRole'] ?? '').toString().trim() == 'parent';
           return source != 'secretariat' &&
-              targetRole == 'parent' &&
+              addressedToParent &&
               (status == 'pending' ||
                   status == 'approved' ||
                   status == 'rejected');
@@ -618,9 +653,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
                 : '${state == _MessageState.approved ? 'Request approved' : 'Request rejected'} - $resolvedStudentName',
             sender: state == _MessageState.pending
                 ? 'Awaiting parent approval'
-                : _normalizeSender(
-                    (data['reviewedByName'] ?? 'Parent').toString(),
-                  ),
+                : _reviewerLabel(data, fallback: 'Parent'),
             message: (data['message'] ?? '').toString().trim(),
             createdAt: when,
             dateLabel: (data['dateText'] ?? '').toString().trim(),
@@ -646,9 +679,12 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           final data = doc.data();
           final status = (data['status'] ?? '').toString().trim();
           final reviewedByUid = (data['reviewedByUid'] ?? '').toString().trim();
-          final sender =
-              usernamesByUid[reviewedByUid] ??
-              (data['reviewedByName'] ?? 'Homeroom teacher').toString();
+          // Prefer the resolved username from users collection if available,
+          // otherwise fall back to whatever was stored in reviewedByName.
+          final resolvedName = usernamesByUid[reviewedByUid];
+          final dataForLabel = resolvedName != null && resolvedName.isNotEmpty
+              ? {...data, 'reviewedByName': resolvedName}
+              : data;
           final reviewedAt = (data['reviewedAt'] as Timestamp?)?.toDate();
           final requestedAt = (data['requestedAt'] as Timestamp?)?.toDate();
           final when =
@@ -662,7 +698,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
             state: approved ? _MessageState.approved : _MessageState.rejected,
             category: _MessageCategory.requests,
             title: approved ? 'Request approved' : 'Request rejected',
-            sender: _normalizeSender(sender),
+            sender: _reviewerLabel(dataForLabel, fallback: 'Reviewer'),
             message: (data['message'] ?? '').toString().trim(),
             createdAt: when,
             dateLabel: (data['dateText'] ?? '').toString().trim(),
@@ -681,7 +717,19 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           final data = doc.data();
           final status = (data['status'] ?? '').toString().trim();
           final source = (data['source'] ?? '').toString().trim();
+          final targets = (data['targets'] as List?)
+              ?.map((e) => e.toString())
+              .toList();
+          final bool addressedToTeacher;
+          if (targets != null && targets.isNotEmpty) {
+            addressedToTeacher = targets.contains('teacher');
+          } else {
+            final legacyRole = (data['targetRole'] ?? '').toString().trim();
+            addressedToTeacher =
+                legacyRole.isEmpty || legacyRole == 'teacher';
+          }
           return source != 'secretariat' &&
+              addressedToTeacher &&
               (status == 'pending' ||
                   status == 'approved' ||
                   status == 'rejected');
@@ -717,9 +765,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
                 : '${state == _MessageState.approved ? 'Request approved' : 'Request rejected'} - $resolved',
             sender: state == _MessageState.pending
                 ? 'Awaiting your decision'
-                : _normalizeSender(
-                    (data['reviewedByName'] ?? 'Homeroom teacher').toString(),
-                  ),
+                : _reviewerLabel(data, fallback: 'Homeroom teacher'),
             message: (data['message'] ?? '').toString().trim(),
             createdAt: when,
             dateLabel: (data['dateText'] ?? '').toString().trim(),

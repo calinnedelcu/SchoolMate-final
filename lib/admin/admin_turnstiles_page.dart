@@ -444,9 +444,25 @@ class _TurnstileBody extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            tooltip: 'Refresh',
+                            onPressed: onRefresh,
+                            icon: const Icon(
+                              Icons.refresh_rounded,
+                              color: Color(0xFF2848B0),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     // --- Stats row -----------------------------------
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
                       child: Row(
                         children: [
                           Expanded(

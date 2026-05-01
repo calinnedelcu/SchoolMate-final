@@ -124,7 +124,20 @@ class _CereriAsteptarePageState extends State<CereriAsteptarePage> {
                             child: CircularProgressIndicator(),
                           );
                         }
-                        final docs = snap.data!.docs;
+                        final docs = snap.data!.docs.where((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          final targets = (data['targets'] as List?)
+                              ?.map((e) => e.toString())
+                              .toList();
+                          if (targets != null && targets.isNotEmpty) {
+                            return targets.contains('teacher');
+                          }
+                          // Legacy doc fallback (single-recipient schema).
+                          final legacyRole =
+                              (data['targetRole'] ?? '').toString();
+                          return legacyRole.isEmpty ||
+                              legacyRole == 'teacher';
+                        }).toList();
                         if (docs.isEmpty) {
                           return Center(
                             child: Padding(
