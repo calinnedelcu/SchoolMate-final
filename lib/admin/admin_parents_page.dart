@@ -446,8 +446,10 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                         avatarColor(fullName),
                                                     child: Text(
                                                       initials(fullName),
-                                                      style: TextStyle(
-                                                        color: cs.onSurface,
+                                                      style: const TextStyle(
+                                                        color: Color(
+                                                          0xFF1A1A1A,
+                                                        ),
                                                         fontWeight:
                                                             FontWeight.w800,
                                                         fontSize: 13,
@@ -456,18 +458,41 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                   ),
                                                   const SizedBox(width: 12),
                                                   Expanded(
-                                                    child: Text(
-                                                      fullName,
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        fontSize: 14,
-                                                        color: Color(
-                                                          0xFF111111,
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          fullName,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                fontSize: 14,
+                                                                color: Color(
+                                                                  0xFF111111,
+                                                                ),
+                                                              ),
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
                                                         ),
-                                                      ),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
+                                                        Text(
+                                                          'Username: $username',
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 12,
+                                                                color: Color(
+                                                                  0xFF8FABC1,
+                                                                ),
+                                                              ),
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ],
@@ -509,9 +534,11 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                       phone.length > 18
                                                           ? '${phone.substring(0, 16)}...'
                                                           : phone,
-                                                      style: TextStyle(
+                                                      style: const TextStyle(
                                                         fontSize: 12,
-                                                        color: cs.onSurfaceVariant,
+                                                        color: Color(
+                                                          0xFF8FABC1,
+                                                        ),
                                                       ),
                                                     ),
                                                 ],
@@ -549,10 +576,9 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                         if (!csnap.hasData) {
                                                           return const SizedBox.shrink();
                                                         }
-                                                        return Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
+                                                        return Wrap(
+                                                          spacing: 6,
+                                                          runSpacing: 6,
                                                           children: csnap.data!.map((
                                                             ds,
                                                           ) {
@@ -572,24 +598,9 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
                                                                 (md['classId'] ??
                                                                         '')
                                                                     .toString();
-                                                            final label =
-                                                                childClass
-                                                                    .isNotEmpty
-                                                                ? '$childName ($childClass)'
-                                                                : childName;
-                                                            return Text(
-                                                              '· $label',
-                                                              style:
-                                                                  const TextStyle(
-                                                                    fontSize:
-                                                                        13,
-                                                                    color: Color(
-                                                                      0xFF333333,
-                                                                    ),
-                                                                  ),
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
+                                                            return _childChip(
+                                                              childName,
+                                                              childClass,
                                                             );
                                                           }).toList(),
                                                         );
@@ -629,8 +640,47 @@ class _AdminParentsPageState extends State<AdminParentsPage> {
       style: const TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
-        color: Colors.black,
+        color: Color(0xFF111111),
         letterSpacing: 1.2,
+      ),
+    );
+  }
+
+  Widget _childChip(String name, String classId) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F4FA),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 220),
+        child: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: name,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF111111),
+                ),
+              ),
+              if (classId.isNotEmpty) ...[
+                const TextSpan(text: '  '),
+                TextSpan(
+                  text: classId,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2848B0),
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }

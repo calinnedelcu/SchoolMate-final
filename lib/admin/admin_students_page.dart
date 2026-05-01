@@ -637,7 +637,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
                                                                     FontWeight
                                                                         .w700,
                                                                 color: Color(
-                                                                  0xFF5094CD,
+                                                                  0xFF2848B0,
                                                                 ),
                                                               ),
                                                         ),
@@ -927,7 +927,7 @@ class _AdminStudentsPageState extends State<AdminStudentsPage> {
         bool busy = false;
         String? msg;
         bool msgIsError = false;
-        List<String> parents = List<String>.from(parentUsernames);
+        final List<String> parents = List<String>.from(parentUsernames);
         final Map<String, String> parentNames = {};
         // Pre-fetch names for already-known parents
         for (final p in parents) {

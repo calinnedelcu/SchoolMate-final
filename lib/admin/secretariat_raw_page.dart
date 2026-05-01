@@ -1190,44 +1190,68 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 24),
+                          const SizedBox(width: 20),
                           Material(
-                            color: Colors.transparent,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(14),
+                            elevation: 4,
+                            shadowColor: Colors.black.withValues(alpha: 0.25),
                             child: InkWell(
                               onTap: _showCreateUserPopup,
                               borderRadius: BorderRadius.circular(14),
-                              splashColor: Colors.white.withValues(alpha: 0.15),
-                              highlightColor: Colors.white.withValues(
-                                alpha: 0.08,
-                              ),
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.22),
-                                    width: 1,
-                                  ),
+                              splashColor: const Color(
+                                0xFF2848B0,
+                              ).withValues(alpha: 0.12),
+                              highlightColor: const Color(
+                                0xFF2848B0,
+                              ).withValues(alpha: 0.06),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 14,
                                 ),
-                                child: const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      Icons.person_rounded,
-                                      color: Colors.white,
-                                      size: 26,
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text(
-                                      'New User',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
+                                    Container(
+                                      width: 36,
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF2848B0),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
+                                      child: const Icon(
+                                        Icons.person_add_alt_1_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    const Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Add user',
+                                          style: TextStyle(
+                                            color: Color(0xFF1B2A4E),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            height: 1.1,
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          'Create account',
+                                          style: TextStyle(
+                                            color: Color(0xFF6B7280),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                            height: 1.1,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -2280,145 +2304,253 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFFF2F4F8),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFC0C4D8)),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFF7F9FC), Color(0xFFEEF2F8)],
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFD7DCEA)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0F1A2A6C),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Global security settings',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF2848B0),
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'ON/OFF for onboarding and 2FA at the application level.',
-                style: TextStyle(color: Color(0xFF7A7E9A), fontSize: 12),
-              ),
-              const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2848B0).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.shield_outlined,
+                      size: 20,
+                      color: Color(0xFF2848B0),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Global onboarding'),
                         Text(
-                          flags.onboardingEnabled ? 'On' : 'Off',
+                          'Global security settings',
                           style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            color: Color(0xFF2848B0),
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'ON/OFF for onboarding and 2FA at the application level.',
+                          style: TextStyle(
+                            color: Color(0xFF7A7E9A),
                             fontSize: 12,
-                            color: flags.onboardingEnabled
-                                ? const Color(0xFF4C8DC1)
-                                : const Color(0xFF7C3A3A),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Switch.adaptive(
-                    activeTrackColor: const Color(0xFF2848B0),
-                    value: flags.onboardingEnabled,
-                    onChanged: _isActionBusy('toggle-onboarding-global')
-                        ? null
-                        : (value) {
-                            _runGuarded('toggle-onboarding-global', () async {
-                              try {
-                                await SecurityFlagsService.setOnboardingEnabled(
-                                  value,
-                                );
-                                _logSuccess(
-                                  'Global onboarding ${value ? 'on' : 'off'}.',
-                                );
-                                unawaited(
-                                  _recordSecretariatActivity(
-                                    message:
-                                        'Global onboarding ${value ? 'enabled' : 'disabled'}',
-                                    detail:
-                                        'Application-level onboarding setting changed.',
-                                  ),
-                                );
-                                _showInfoMessage(
-                                  'Global onboarding ${value ? 'on' : 'off'}.',
-                                );
-                              } catch (_) {
-                                final message = _friendlyError(
-                                  'toggle-onboarding-global',
-                                );
-                                _logFailure(message);
-                                _showInfoMessage(message);
-                              }
-                            });
-                          },
-                  ),
                 ],
               ),
-              const Divider(height: 8, color: Color(0xFFB8D8F0)),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Global 2FA'),
-                        Text(
-                          flags.twoFactorEnabled ? 'On' : 'Off',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: flags.twoFactorEnabled
-                                ? const Color(0xFF4C8DC1)
-                                : const Color(0xFF7C3A3A),
-                          ),
+              const SizedBox(height: 16),
+              _buildSecurityToggleTile(
+                icon: Icons.person_add_alt_1_outlined,
+                label: 'Global onboarding',
+                description: 'Allow new users to complete their first sign-in.',
+                value: flags.onboardingEnabled,
+                busy: _isActionBusy('toggle-onboarding-global'),
+                onChanged: (value) {
+                  _runGuarded('toggle-onboarding-global', () async {
+                    try {
+                      await SecurityFlagsService.setOnboardingEnabled(value);
+                      _logSuccess(
+                        'Global onboarding ${value ? 'on' : 'off'}.',
+                      );
+                      unawaited(
+                        _recordSecretariatActivity(
+                          message:
+                              'Global onboarding ${value ? 'enabled' : 'disabled'}',
+                          detail:
+                              'Application-level onboarding setting changed.',
                         ),
-                      ],
-                    ),
-                  ),
-                  Switch.adaptive(
-                    activeTrackColor: const Color(0xFF2848B0),
-                    value: flags.twoFactorEnabled,
-                    onChanged: _isActionBusy('toggle-2fa-global')
-                        ? null
-                        : (value) {
-                            _runGuarded('toggle-2fa-global', () async {
-                              try {
-                                await SecurityFlagsService.setTwoFactorEnabled(
-                                  value,
-                                );
-                                _logSuccess(
-                                  'Global 2FA ${value ? 'on' : 'off'}.',
-                                );
-                                unawaited(
-                                  _recordSecretariatActivity(
-                                    message:
-                                        'Global 2FA ${value ? 'enabled' : 'disabled'}',
-                                    detail:
-                                        'Application-level two-factor authentication setting changed.',
-                                  ),
-                                );
-                                _showInfoMessage(
-                                  'Global 2FA ${value ? 'on' : 'off'}.',
-                                );
-                              } catch (_) {
-                                final message = _friendlyError(
-                                  'toggle-2fa-global',
-                                );
-                                _logFailure(message);
-                                _showInfoMessage(message);
-                              }
-                            });
-                          },
-                  ),
-                ],
+                      );
+                      _showInfoMessage(
+                        'Global onboarding ${value ? 'on' : 'off'}.',
+                      );
+                    } catch (_) {
+                      final message = _friendlyError(
+                        'toggle-onboarding-global',
+                      );
+                      _logFailure(message);
+                      _showInfoMessage(message);
+                    }
+                  });
+                },
+              ),
+              const SizedBox(height: 10),
+              _buildSecurityToggleTile(
+                icon: Icons.lock_outline,
+                label: 'Global 2FA',
+                description: 'Require two-factor authentication for all users.',
+                value: flags.twoFactorEnabled,
+                busy: _isActionBusy('toggle-2fa-global'),
+                onChanged: (value) {
+                  _runGuarded('toggle-2fa-global', () async {
+                    try {
+                      await SecurityFlagsService.setTwoFactorEnabled(value);
+                      _logSuccess('Global 2FA ${value ? 'on' : 'off'}.');
+                      unawaited(
+                        _recordSecretariatActivity(
+                          message:
+                              'Global 2FA ${value ? 'enabled' : 'disabled'}',
+                          detail:
+                              'Application-level two-factor authentication setting changed.',
+                        ),
+                      );
+                      _showInfoMessage(
+                        'Global 2FA ${value ? 'on' : 'off'}.',
+                      );
+                    } catch (_) {
+                      final message = _friendlyError('toggle-2fa-global');
+                      _logFailure(message);
+                      _showInfoMessage(message);
+                    }
+                  });
+                },
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSecurityToggleTile({
+    required IconData icon,
+    required String label,
+    required String description,
+    required bool value,
+    required bool busy,
+    required ValueChanged<bool> onChanged,
+  }) {
+    final accent = value
+        ? const Color(0xFF2848B0)
+        : const Color(0xFF8A8FA8);
+    final pillBg = value
+        ? const Color(0xFF2848B0).withOpacity(0.10)
+        : const Color(0xFF7C3A3A).withOpacity(0.08);
+    final pillFg = value
+        ? const Color(0xFF2848B0)
+        : const Color(0xFF7C3A3A);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: value
+              ? const Color(0xFF2848B0).withOpacity(0.35)
+              : const Color(0xFFE2E5EE),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 20, color: accent),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        label,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Color(0xFF1F2547),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: pillBg,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        value ? 'On' : 'Off',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: pillFg,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF7A7E9A),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          busy
+              ? const SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: Center(
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF2848B0),
+                      ),
+                    ),
+                  ),
+                )
+              : Switch.adaptive(
+                  activeTrackColor: const Color(0xFF2848B0),
+                  value: value,
+                  onChanged: onChanged,
+                ),
+        ],
+      ),
     );
   }
 }

@@ -17,7 +17,13 @@ class TimetableLesson {
   final String subject;
   final String teacher;
   final String? shortLabel;
-  const TimetableLesson(this.subject, this.teacher, {this.shortLabel});
+  final String? teacherFull;
+  const TimetableLesson(
+    this.subject,
+    this.teacher, {
+    this.shortLabel,
+    this.teacherFull,
+  });
 }
 
 const kTimetableSlots = <TimetableSlot>[
@@ -304,7 +310,7 @@ void _showLessonDetail(BuildContext context, TimetableLesson lesson) {
           ),
           const SizedBox(height: 6),
           Text(
-            'Teacher: ${lesson.teacher}',
+            'Teacher: ${(lesson.teacherFull?.trim().isNotEmpty ?? false) ? lesson.teacherFull!.trim() : lesson.teacher}',
             style: const TextStyle(
               color: _outline,
               fontSize: 14,

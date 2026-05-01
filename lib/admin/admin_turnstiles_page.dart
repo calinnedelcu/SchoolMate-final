@@ -37,8 +37,22 @@ String _hhmm(Timestamp ts) {
   return '$h12:$m $ampm';
 }
 
+bool _isDeniedEvent(Map<String, dynamic> data) {
+  final scanResult = (data['scanResult'] ?? '').toString().trim().toLowerCase();
+  if (scanResult == 'denied') return true;
+  if (scanResult == 'allowed') return false;
+  return (data['type'] ?? '').toString() == 'deny';
+}
+
 String _humanizeAccessReason(String reason) {
   switch (reason.trim().toUpperCase()) {
+    case 'LEAVE_REQUEST':
+      return 'Approved leave request — exit allowed.';
+    case 'DAY_FINISHED':
+      return 'School day finished — exit allowed.';
+    case 'NO_ACTIVE_LEAVE':
+    case 'NO_ACTIVE_LEAVE_REQUEST':
+      return 'No approved leave request for today.';
     case 'ALREADY_IN_SCHOOL':
       return 'The student was already in school.';
     case 'ALREADY_USED':
@@ -65,17 +79,14 @@ String _humanizeAccessReason(String reason) {
 }
 
 String _eventActionLabel(Map<String, dynamic> data) {
+  if (_isDeniedEvent(data)) return 'Access denied';
+  final reason = (data['reason'] ?? '').toString().trim().toUpperCase();
+  if (reason == 'LEAVE_REQUEST') return 'Exit on leave request';
+  if (reason == 'DAY_FINISHED') return 'Exit after school';
   final type = (data['type'] ?? '').toString();
-  switch (type) {
-    case 'entry':
-      return 'Student entered';
-    case 'exit':
-      return 'Student exited';
-    case 'deny':
-      return 'Access denied';
-    default:
-      return 'Access processed';
-  }
+  if (type == 'entry') return 'Student entered';
+  if (type == 'exit') return 'Student exited';
+  return 'Access granted';
 }
 
 String _eventReasonText(Map<String, dynamic> data) {
@@ -83,26 +94,23 @@ String _eventReasonText(Map<String, dynamic> data) {
   if (reason.isNotEmpty) {
     return _humanizeAccessReason(reason);
   }
-
+  if (_isDeniedEvent(data)) return 'Access denied without additional details.';
   final type = (data['type'] ?? '').toString();
   if (type == 'entry') return 'Access granted for entry into school.';
   if (type == 'exit') return 'Access granted for exit from school.';
-  return 'Event recorded without additional details.';
+  return 'Access granted.';
 }
 
 String _eventMetaText(Map<String, dynamic> data, {String? fallbackClassId}) {
   final parts = <String>[];
   final classId = (data['classId'] ?? '').toString().trim();
-  final scanResult = (data['scanResult'] ?? '').toString().trim();
 
   final effectiveClassId = classId.isNotEmpty
       ? classId
       : (fallbackClassId ?? '');
 
   if (effectiveClassId.isNotEmpty) parts.add('Class $effectiveClassId');
-  if (scanResult.isNotEmpty) {
-    parts.add(scanResult == 'allowed' ? 'Scan accepted' : 'Scan denied');
-  }
+  parts.add(_isDeniedEvent(data) ? 'Scan denied' : 'Scan accepted');
 
   return parts.join(' · ');
 }
@@ -350,12 +358,16 @@ class _TurnstileBody extends StatelessWidget {
                   eventSnap.data?.docs ?? [],
                 );
 
-                // gate UID -> name map
+                // gate UID -> display name map (prefer fullName so the
+                // real-time scans card shows a human name, not the login).
                 final gateMap = <String, String>{};
                 for (final g in gates) {
                   final d = g.data() as Map<String, dynamic>;
-                  gateMap[g.id] = (d['username'] ?? d['fullName'] ?? g.id)
-                      .toString();
+                  final fullName = (d['fullName'] ?? '').toString().trim();
+                  final username = (d['username'] ?? '').toString().trim();
+                  gateMap[g.id] = fullName.isNotEmpty
+                      ? fullName
+                      : (username.isNotEmpty ? username : g.id);
                 }
 
                 final studentClassMap = <String, String>{};
@@ -390,12 +402,15 @@ class _TurnstileBody extends StatelessWidget {
                   return !ts.toDate().isBefore(todayStart);
                 }).length;
 
-                final exitsTodayCount = allEvents.where((e) {
+                final approvedTodayCount = allEvents.where((e) {
                   final d = e.data() as Map<String, dynamic>;
                   final ts = d['timestamp'] as Timestamp?;
                   if (ts == null) return false;
                   if (ts.toDate().isBefore(todayStart)) return false;
-                  return (d['type'] ?? '').toString() == 'exit';
+                  final scanResult = (d['scanResult'] ?? '')
+                      .toString()
+                      .toLowerCase();
+                  return scanResult == 'allowed';
                 }).length;
 
                 final deniedTodayCount = allEvents.where((e) {
@@ -436,20 +451,20 @@ class _TurnstileBody extends StatelessWidget {
                         children: [
                           Expanded(
                             child: _statCard(
-                              icon: Icons.door_front_door_rounded,
+                              icon: Icons.qr_code_scanner_rounded,
                               iconBg: const Color(0xFFEEF1FB),
                               iconColor: const Color(0xFF2848B0),
-                              label: 'TURNSTILE GATES',
+                              label: 'SCANNERS',
                               value: loaded ? '${gates.length}' : '—',
-                              subtitle: 'Active access points',
+                              subtitle: 'Active scanners',
                             ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: _statCard(
-                              icon: Icons.qr_code_scanner_rounded,
-                              iconBg: const Color(0xFFEDF7F0),
-                              iconColor: const Color(0xFF2E8B57),
+                              icon: Icons.history_rounded,
+                              iconBg: const Color(0xFFEDF3FB),
+                              iconColor: const Color(0xFF3F77D8),
                               label: "TODAY'S SCANS",
                               value: loaded ? '$todayCount' : '—',
                               subtitle: 'Total scan events',
@@ -458,12 +473,14 @@ class _TurnstileBody extends StatelessWidget {
                           const SizedBox(width: 14),
                           Expanded(
                             child: _statCard(
-                              icon: Icons.logout_rounded,
-                              iconBg: const Color(0xFFF3EDFB),
-                              iconColor: const Color(0xFF7B4FCC),
-                              label: 'EXITS TODAY',
-                              value: loaded ? '$exitsTodayCount' : '—',
-                              subtitle: 'Students exited',
+                              icon: Icons.check_circle_rounded,
+                              iconBg: const Color(0xFFEDF7F0),
+                              iconColor: const Color(0xFF2E8B57),
+                              label: 'APPROVED TODAY',
+                              value: loaded ? '$approvedTodayCount' : '—',
+                              subtitle: approvedTodayCount == 0
+                                  ? 'No approvals yet'
+                                  : 'Scans approved',
                             ),
                           ),
                           const SizedBox(width: 14),
@@ -2076,7 +2093,7 @@ class _LiveTrafficPanel extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'Real-time traffic',
+                  'Real-time scans',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -2109,8 +2126,7 @@ class _LiveTrafficPanel extends StatelessWidget {
                       final fallbackName = studentNameMap[userId] ?? '';
                       final fallbackClassId = studentClassMap[userId] ?? '';
                       final ts = d['timestamp'] as Timestamp?;
-                      final isDenied =
-                          (d['type'] ?? '') == 'deny' || fullName.isEmpty;
+                      final isDenied = _isDeniedEvent(d);
 
                       return _TrafficEntry(
                         gateName: gateName,
@@ -2680,8 +2696,7 @@ void _showAllLogsDialog(
                       final fallbackName = studentNameMap[userId] ?? '';
                       final fallbackClassId = studentClassMap[userId] ?? '';
                       final ts = d['timestamp'] as Timestamp?;
-                      final isDenied =
-                          (d['type'] ?? '') == 'deny' || fullName.isEmpty;
+                      final isDenied = _isDeniedEvent(d);
                       final personName = fullName.isEmpty
                           ? (fallbackName.isEmpty
                                 ? 'Unregistered subject detected'

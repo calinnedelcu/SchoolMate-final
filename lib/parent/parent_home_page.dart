@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../auth/login_page_firestore.dart';
 import '../services/admin_api.dart';
 import '../common/linked_children_resolver.dart';
 import '../core/session.dart';
@@ -1507,12 +1506,6 @@ class ParentProfilePage extends StatelessWidget {
     if (!shouldLogout) return;
     await FirebaseAuth.instance.signOut();
     AppSession.clear();
-    if (context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginPageFirestore()),
-        (_) => false,
-      );
-    }
   }
 
   @override
@@ -1537,7 +1530,14 @@ class ParentProfilePage extends StatelessWidget {
                 builder: (context, snap) {
                   final data = snap.data?.data() ?? <String, dynamic>{};
                   final fullName = (data['fullName'] ?? '').toString().trim();
-                  final email = FirebaseAuth.instance.currentUser?.email ?? '';
+                  final personalEmail = (data['personalEmail'] ?? '')
+                      .toString()
+                      .trim();
+                  final authEmail =
+                      FirebaseAuth.instance.currentUser?.email ?? '';
+                  final email = personalEmail.isNotEmpty
+                      ? personalEmail
+                      : (authEmail.endsWith('@school.local') ? '' : authEmail);
                   final rawChildren = data['children'];
                   final childCount = rawChildren is List
                       ? rawChildren.length

@@ -112,7 +112,7 @@ class AdminPostsAnnouncementsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _StatsRow(),
+            const _StatsRow(),
             const SizedBox(height: 28),
             _PostsList(onNewPost: () => _openComposer(context)),
           ],
@@ -162,7 +162,22 @@ class _StatsRow extends StatelessWidget {
             })
             .length;
 
-        final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+        final archivedCount = allDocs
+            .where((d) =>
+                (d.data()['status'] ?? 'active').toString() == 'archived')
+            .length;
+
+        final now = DateTime.now();
+        final todayStart = DateTime(now.year, now.month, now.day);
+        final todayCount = allDocs
+            .where((d) {
+              final ts = d.data()['createdAt'] as Timestamp?;
+              final dt = ts?.toDate();
+              return dt != null && !dt.isBefore(todayStart);
+            })
+            .length;
+
+        final weekAgo = now.subtract(const Duration(days: 7));
         final recentCount = allDocs
             .where((d) {
               final ts = d.data()['createdAt'] as Timestamp?;
@@ -183,20 +198,20 @@ class _StatsRow extends StatelessWidget {
               sub: 'This school year',
             ),
             _StatCard(
-              icon: Icons.drafts_outlined,
+              icon: Icons.inventory_2_outlined,
               iconBg: const Color(0xFFEDF7F0),
               iconColor: const Color(0xFF2E8B57),
-              label: 'DRAFTS',
-              value: '0',
-              sub: 'Unpublished',
+              label: 'ARCHIVED',
+              value: snap.hasData ? '$archivedCount' : '—',
+              sub: 'Hidden from feed',
             ),
             _StatCard(
-              icon: Icons.bar_chart_rounded,
+              icon: Icons.today_rounded,
               iconBg: const Color(0xFFF3EDFB),
               iconColor: const Color(0xFF7B4FCC),
-              label: 'AVG READ RATE',
-              value: '—',
-              sub: 'Not tracked',
+              label: 'TODAY',
+              value: snap.hasData ? '$todayCount' : '—',
+              sub: 'Posts created today',
             ),
             _StatCard(
               icon: Icons.access_time_rounded,
@@ -1460,7 +1475,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
 
         // Message / description
         if (message.isNotEmpty) ...[
-          _SectionLabel('Message'),
+          const _SectionLabel('Message'),
           const SizedBox(height: 8),
           Container(
             width: double.infinity,
@@ -1563,7 +1578,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionLabel('Title'),
+        const _SectionLabel('Title'),
         const SizedBox(height: 6),
         _Field(label: '', controller: _titleCtrl),
         if (cat != 'vacation') ...[
@@ -1574,7 +1589,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
         ],
         if (cat != 'announcement' && cat != 'vacation') ...[
           const SizedBox(height: 14),
-          _SectionLabel('Location'),
+          const _SectionLabel('Location'),
           const SizedBox(height: 6),
           _Field(label: '', controller: _locationCtrl),
         ],
@@ -1601,7 +1616,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionLabel('Hours'),
+                    const _SectionLabel('Hours'),
                     const SizedBox(height: 6),
                     _Field(label: '', controller: _hoursCtrl, keyboardType: TextInputType.number),
                   ],
@@ -1612,7 +1627,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionLabel('Max participants'),
+                    const _SectionLabel('Max participants'),
                     const SizedBox(height: 6),
                     _Field(label: '', controller: _maxCtrl, keyboardType: TextInputType.number),
                   ],
@@ -1622,7 +1637,7 @@ class _PostDetailDialogState extends State<_PostDetailDialog> {
           ),
         ],
         const SizedBox(height: 14),
-        _SectionLabel('Link'),
+        const _SectionLabel('Link'),
         const SizedBox(height: 6),
         _Field(label: '', controller: _linkCtrl),
         const SizedBox(height: 4),

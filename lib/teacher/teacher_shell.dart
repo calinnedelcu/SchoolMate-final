@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../auth/login_page_firestore.dart';
 import '../core/session.dart';
 import '../common/widgets/maniubara.dart';
+import '../student/logout_dialog.dart';
+import '../student/widgets/no_anim_route.dart';
 import '../student/widgets/school_decor.dart' as decor;
 import 'account_bottom_sheet.dart';
 import 'statuselevi.dart';
@@ -61,14 +62,17 @@ class TeacherProfilePage extends StatelessWidget {
   const TeacherProfilePage({super.key, this.showBack = true});
 
   Future<void> _signOut(BuildContext context) async {
+    final shouldLogout = await showStudentLogoutDialog(
+      context,
+      accentColor: _primary,
+      surfaceColor: _surfaceLowest,
+      softSurfaceColor: _surface,
+      titleColor: _onSurface,
+      messageColor: _outline,
+    );
+    if (!shouldLogout) return;
     await FirebaseAuth.instance.signOut();
     AppSession.clear();
-    if (context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginPageFirestore()),
-        (_) => false,
-      );
-    }
   }
 
   @override
@@ -93,7 +97,13 @@ class TeacherProfilePage extends StatelessWidget {
                 builder: (context, snap) {
                   final data = snap.data?.data() ?? <String, dynamic>{};
                   final fullName = (data['fullName'] ?? '').toString().trim();
-                  final email = FirebaseAuth.instance.currentUser?.email ?? '';
+                  final personalEmail =
+                      (data['personalEmail'] ?? '').toString().trim();
+                  final authEmail =
+                      FirebaseAuth.instance.currentUser?.email ?? '';
+                  final email = personalEmail.isNotEmpty
+                      ? personalEmail
+                      : (authEmail.endsWith('@school.local') ? '' : authEmail);
                   final classId = (data['classId'] ?? '').toString().trim();
                   final displayName = fullName.isNotEmpty
                       ? fullName
@@ -112,6 +122,17 @@ class TeacherProfilePage extends StatelessWidget {
                         ),
                         const SizedBox(height: 22),
                         const _ProfileSectionLabel('ACCOUNT'),
+                        const SizedBox(height: 10),
+                        _ProfileTile(
+                          icon: Icons.group_rounded,
+                          title: 'My class',
+                          subtitle: classId.isNotEmpty
+                              ? 'Class $classId roster'
+                              : 'Open class roster',
+                          onTap: () => Navigator.of(context).push(
+                            noAnimRoute((_) => const StatusEleviPage()),
+                          ),
+                        ),
                         const SizedBox(height: 10),
                         _ProfileTile(
                           icon: Icons.edit_outlined,
