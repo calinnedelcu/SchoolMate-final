@@ -784,7 +784,7 @@ class _RecentRequestsCard extends StatelessWidget {
           }
           final items = byKey.values.take(5).toList();
           if (items.isEmpty) {
-            return _EmptyHint(text: 'No leave requests yet.');
+            return const _EmptyHint(text: 'No leave requests yet.');
           }
           return Column(
             children: [

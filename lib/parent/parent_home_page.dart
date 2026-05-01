@@ -5,6 +5,7 @@ import '../auth/login_page_firestore.dart';
 import '../services/admin_api.dart';
 import '../common/linked_children_resolver.dart';
 import '../core/session.dart';
+import '../student/logout_dialog.dart';
 import '../student/widgets/no_anim_route.dart';
 import '../student/widgets/school_decor.dart' as decor;
 import '../student/widgets/school_decor.dart' show WaveHeroHeader;
@@ -994,34 +995,40 @@ class _ShortcutTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasBadge = badgeCount > 0;
-    return Material(
-      color: _surfaceLowest,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
+    return Container(
+      height: 138,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: _surfaceLowest,
         borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Container(
-          height: 138,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x10000000),
-                blurRadius: 14,
-                offset: Offset(0, 4),
-              ),
-            ],
-            border: hasBadge
-                ? Border(
-                    left: BorderSide(color: _primary, width: 4),
-                  )
-                : null,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x10000000),
+            blurRadius: 14,
+            offset: Offset(0, 4),
           ),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(hasBadge ? 13 : 15, 14, 13, 13),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        ],
+        border: hasBadge
+            ? const Border(left: BorderSide(color: _primary, width: 4))
+            : null,
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _WhiteCardDecorPainter(variant: hasBadge ? 1 : 3),
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: onTap,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(hasBadge ? 13 : 15, 14, 13, 13),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Stack(
                   clipBehavior: Clip.none,
@@ -1110,6 +1117,8 @@ class _ShortcutTile extends StatelessWidget {
             ),
           ),
         ),
+      ),
+        ],
       ),
     );
   }
@@ -1485,6 +1494,15 @@ class ParentProfilePage extends StatelessWidget {
   const ParentProfilePage({super.key, this.showBack = true});
 
   Future<void> _signOut(BuildContext context) async {
+    final shouldLogout = await showStudentLogoutDialog(
+      context,
+      accentColor: _primary,
+      surfaceColor: _surfaceLowest,
+      softSurfaceColor: _surfaceContainerLow,
+      titleColor: _onSurface,
+      messageColor: _outline,
+    );
+    if (!shouldLogout) return;
     await FirebaseAuth.instance.signOut();
     AppSession.clear();
     if (context.mounted) {
