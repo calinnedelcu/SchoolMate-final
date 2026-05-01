@@ -239,6 +239,18 @@ class _MyAppState extends State<MyApp> {
             '/gateScan': (context) => const GateScanPage(),
             '/gateScanResult': (context) => const GateScanResultPage(),
           },
+          builder: (context, child) {
+            final mq = MediaQuery.of(context);
+            return MediaQuery(
+              data: mq.copyWith(
+                textScaler: mq.textScaler.clamp(
+                  minScaleFactor: 0.9,
+                  maxScaleFactor: 1.05,
+                ),
+              ),
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
           home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {

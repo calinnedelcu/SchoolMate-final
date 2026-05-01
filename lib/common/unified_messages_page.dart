@@ -339,9 +339,9 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
 
   String _normalizeSender(String sender) {
     final value = sender.trim();
-    if (value.isEmpty) return 'Secretariat';
+    if (value.isEmpty) return 'Admin';
     final lower = value.toLowerCase();
-    if (lower.contains('secretariat')) return 'Secretariat';
+    if (lower.contains('secretariat')) return 'Admin';
     if (lower.contains('dirigin') || lower.contains('prof') ||
         lower.contains('teacher') || lower.contains('homeroom')) {
       return 'Homeroom teacher';
@@ -572,7 +572,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
       final data = doc.data();
       final title = (data['title'] ?? 'Office message').toString().trim();
       final sender = _normalizeSender(
-        (data['senderName'] ?? 'Secretariat').toString(),
+        (data['senderName'] ?? 'Admin').toString(),
       );
       final message = (data['message'] ?? '').toString().trim();
       final createdAt =
@@ -1101,7 +1101,7 @@ class _MessageCard extends StatelessWidget {
                                     : scheme.badgeIcon,
                                 label: isSystem
                                     ? (item.sender.isEmpty
-                                        ? 'Secretariat'
+                                        ? 'Admin'
                                         : item.sender)
                                     : scheme.badgeLabel,
                                 bg: isSystem

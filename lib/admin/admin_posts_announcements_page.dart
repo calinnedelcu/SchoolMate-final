@@ -14,6 +14,13 @@ const _textMid = Color(0xFF3A4A80);
 const _textMuted = Color(0xFF7A7E9A);
 const _pinColor = Color(0xFFB07A00);
 
+String _normalizeSenderName(String raw) {
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) return '';
+  if (trimmed.toLowerCase().contains('secretariat')) return 'Admin';
+  return trimmed;
+}
+
 // Category colors
 Color _categoryColor(String cat) {
   switch (cat) {
@@ -509,7 +516,8 @@ class _PostsListState extends State<_PostsList> {
                 category: (data['category'] ?? 'announcement').toString(),
                 createdAt: dt,
                 audienceLabel: audience,
-                senderName: (data['senderName'] ?? '').toString(),
+                senderName: _normalizeSenderName(
+                    (data['senderName'] ?? '').toString()),
                 pinned: data['pinned'] == true,
                 imageUrl: (data['imageUrl'] ?? '').toString(),
               ));
@@ -538,7 +546,8 @@ class _PostsListState extends State<_PostsList> {
                 category: 'volunteer',
                 createdAt: dt,
                 audienceLabel: audience,
-                senderName: (data['createdByName'] ?? '').toString(),
+                senderName: _normalizeSenderName(
+                    (data['createdByName'] ?? '').toString()),
                 pinned: data['pinned'] == true,
                 imageUrl: (data['imageUrl'] ?? '').toString(),
               ));

@@ -21,6 +21,13 @@ const _danger = Color(0xFFB03040);
 /// Audience sentinel for school-wide broadcasts.
 const String kAudienceAll = '__ALL__';
 
+String _normalizeSenderName(String raw) {
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) return '';
+  if (trimmed.toLowerCase().contains('secretariat')) return 'Admin';
+  return trimmed;
+}
+
 enum PostKind { announcement, competition, camp, volunteer, vacation }
 
 extension PostKindLabel on PostKind {
@@ -1439,7 +1446,8 @@ class _PostsManagementList extends StatelessWidget {
                       createdAt: created,
                       archived:
                           (d['status'] ?? 'active').toString() == 'archived',
-                      senderName: (d['senderName'] ?? '').toString(),
+                      senderName: _normalizeSenderName(
+                          (d['senderName'] ?? '').toString()),
                     ),
                   );
                 }
@@ -1462,7 +1470,8 @@ class _PostsManagementList extends StatelessWidget {
                       createdAt: created,
                       archived:
                           (d['status'] ?? 'active').toString() == 'archived',
-                      senderName: (d['createdByName'] ?? '').toString(),
+                      senderName: _normalizeSenderName(
+                          (d['createdByName'] ?? '').toString()),
                     ),
                   );
                 }

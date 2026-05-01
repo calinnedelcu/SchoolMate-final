@@ -152,7 +152,7 @@ class _AdminVacantePageState extends State<AdminVacantePage> {
         ? AppSession.fullName!.trim()
         : ((AppSession.username?.trim().isNotEmpty == true)
               ? AppSession.username!.trim()
-              : 'Secretariat');
+              : 'Admin');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F8),
@@ -226,7 +226,7 @@ class _Sidebar extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
             child: Text(
-              'Secretariat',
+              'Admin',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 26,

@@ -248,16 +248,16 @@ class _MeniuScreenState extends State<MeniuScreen> {
                         Expanded(
                           child: SingleChildScrollView(
                             physics: const _DampedScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                             child: Column(
                               children: [
                                 _AziHeroCard(schedule: todaySchedule),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 _QuickActionsRow(
                                   onQr: () => _showQrSheet(context),
                                   onLeaveRequests: _openCereri,
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 _InboxPreviewCard(
                                   studentUid:
                                       FirebaseAuth.instance.currentUser?.uid ??
@@ -343,15 +343,15 @@ class _AziHeroCard extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(22, 20, 22, 24),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Container(
-                      width: 42,
-                      height: 42,
+                      width: 38,
+                      height: 38,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(13),
@@ -417,7 +417,7 @@ class _AziHeroCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 14),
                 Text(
                   'Current day',
                   style: TextStyle(
@@ -432,12 +432,12 @@ class _AziHeroCard extends StatelessWidget {
                   dayName,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 28,
+                    fontSize: 22,
                     fontWeight: FontWeight.w900,
                     height: 1.15,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Container(
                   width: 32,
                   height: 2.5,
@@ -446,13 +446,13 @@ class _AziHeroCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 Container(
                   width: double.infinity,
                   height: 1,
                   color: Colors.white.withValues(alpha: 0.12),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
                 Text(
                   'Class interval',
                   style: TextStyle(
@@ -467,7 +467,7 @@ class _AziHeroCard extends StatelessWidget {
                   intervalText,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 28,
+                    fontSize: 22,
                     fontWeight: FontWeight.w900,
                     height: 1.15,
                   ),
@@ -651,7 +651,7 @@ class _InboxPreviewCard extends StatelessWidget {
                       children: [
                         Positioned.fill(
                           child: CustomPaint(
-                            painter: _WhiteCardDecorPainter(variant: 4),
+                            painter: const _WhiteCardDecorPainter(variant: 4),
                           ),
                         ),
                         Positioned(
@@ -920,24 +920,24 @@ class _QuickActionTile extends StatelessWidget {
               child: CustomPaint(painter: _QuickTileDecorPainter()),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              padding: const EdgeInsets.symmetric(vertical: 14),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 42,
+                    height: 42,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: gradientColors,
                       ),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(13),
                     ),
-                    child: Icon(icon, color: Colors.white, size: 22),
+                    child: Icon(icon, color: Colors.white, size: 20),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Text(
                     label,
                     style: const TextStyle(

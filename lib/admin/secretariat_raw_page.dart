@@ -555,7 +555,7 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       const Text(
-                                        'Secretariat',
+                                        'Admin',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 24,

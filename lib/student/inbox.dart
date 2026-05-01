@@ -284,7 +284,11 @@ class _InboxScreenState extends State<InboxScreen> {
     final data = doc.data() ?? const <String, dynamic>{};
     final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
     final message = (data['message'] ?? '').toString().trim();
-    final senderName = (data['senderName'] ?? 'Secretariat').toString().trim();
+    final rawSender = (data['senderName'] ?? '').toString().trim();
+    final senderName = rawSender.isEmpty ||
+            rawSender.toLowerCase().contains('secretariat')
+        ? 'Admin'
+        : rawSender;
     final docTitle = (data['title'] ?? '').toString().trim();
     final categoryKey = (data['category'] ?? '').toString().trim();
 
@@ -343,7 +347,7 @@ class _InboxScreenState extends State<InboxScreen> {
       leadingBackground: iconBg,
       leadingForeground: iconFg,
       statusIcon: Icons.mark_chat_read_rounded,
-      statusLabel: senderName.isEmpty ? 'Secretariat' : senderName,
+      statusLabel: senderName.isEmpty ? 'Admin' : senderName,
       statusBackground: iconBg,
       statusForeground: iconFg,
       sortAt: createdAt ?? DateTime.fromMillisecondsSinceEpoch(0),
@@ -1350,7 +1354,10 @@ class _InboxCardDetailDialog extends StatelessWidget {
     final requestedAt = (raw['requestedAt'] as Timestamp?)?.toDate();
     final location = (raw['location'] ?? '').toString().trim();
     final link = (raw['link'] ?? '').toString().trim();
-    final senderName = (raw['senderName'] ?? '').toString().trim();
+    final rawDetailSender = (raw['senderName'] ?? '').toString().trim();
+    final senderName = rawDetailSender.toLowerCase().contains('secretariat')
+        ? 'Admin'
+        : rawDetailSender;
     final audienceLabel = (raw['audienceLabel'] ?? '').toString().trim();
 
     final accent = data.leadingForeground;

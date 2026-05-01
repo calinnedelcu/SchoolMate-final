@@ -1,5 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+String _normalizeSenderName(String raw) {
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) return '';
+  if (trimmed.toLowerCase().contains('secretariat')) return 'Admin';
+  return trimmed;
+}
+
 class BookmarkItem {
   final String itemId;
   final String itemType;
@@ -44,7 +51,7 @@ class BookmarkItem {
       title: (data['title'] ?? '').toString(),
       message: (data['message'] ?? '').toString(),
       link: (data['link'] ?? '').toString(),
-      senderName: (data['senderName'] ?? '').toString(),
+      senderName: _normalizeSenderName((data['senderName'] ?? '').toString()),
       location: (data['location'] ?? '').toString(),
       imageUrl: (data['imageUrl'] ?? '').toString(),
       eventDate: (data['eventDate'] as Timestamp?)?.toDate(),
