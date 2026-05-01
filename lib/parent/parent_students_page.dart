@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../core/session.dart';
 import '../student/widgets/no_anim_route.dart';
 import '../student/widgets/school_decor.dart';
-import '../common/widgets/timetable.dart';
+import '../common/class_timetable.dart';
 
 const _kPrimary = Color(0xFF2848B0);
 const _kOnSurface = Color(0xFF1A2050);
@@ -719,7 +719,7 @@ class _StudentDetailPage extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                const TimetableGrid(),
+                                ClassTimetable(classId: classId),
                               ],
                             ),
                           ),

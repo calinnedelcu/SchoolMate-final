@@ -72,28 +72,22 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
   }
 
   Future<_TeacherStats> _loadTeacherStats() async {
-    final teachersBase = FirebaseFirestore.instance
+    // Teachers are a small bounded set (school staff), so a single fetch
+    // and local counting keeps us free of composite-index requirements.
+    final snap = await FirebaseFirestore.instance
         .collection('users')
-        .where('role', isEqualTo: 'teacher');
-
-    final totalAgg = await teachersBase.count().get();
-    final total = totalAgg.count ?? 0;
-
-    final configuredAgg = await teachersBase
-        .where('onboardingComplete', isEqualTo: true)
-        .count()
+        .where('role', isEqualTo: 'teacher')
         .get();
-    final configured = configuredAgg.count ?? 0;
 
-    // `isGreaterThan: ''` matches non-empty strings and excludes both missing
-    // fields and empty strings without needing a separate index beyond the
-    // composite (role asc, classId asc) Firestore creates on
-    // demand if missing.
-    final withClassAgg = await teachersBase
-        .where('classId', isGreaterThan: '')
-        .count()
-        .get();
-    final withClass = withClassAgg.count ?? 0;
+    var configured = 0;
+    var withClass = 0;
+    for (final d in snap.docs) {
+      final data = d.data();
+      if (data['onboardingComplete'] == true) configured++;
+      final classId = (data['classId'] ?? '').toString();
+      if (classId.isNotEmpty) withClass++;
+    }
+    final total = snap.docs.length;
 
     return _TeacherStats(
       total: total,
@@ -307,10 +301,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                             flex: 5,
                             child: _colHeader('HOMEROOM TEACHER NAME'),
                           ),
-                          Expanded(
-                            flex: 2,
-                            child: Center(child: _colHeader('CLASS')),
-                          ),
+                          Expanded(flex: 2, child: _colHeader('CLASS')),
                           Expanded(
                             flex: 4,
                             child: Center(child: _colHeader('EMAIL')),
@@ -504,8 +495,10 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                         avatarColor(fullName),
                                                     child: Text(
                                                       initials(fullName),
-                                                      style: TextStyle(
-                                                        color: cs.onSurface,
+                                                      style: const TextStyle(
+                                                        color: Color(
+                                                          0xFF1A1A1A,
+                                                        ),
                                                         fontWeight:
                                                             FontWeight.w800,
                                                         fontSize: 13,
@@ -535,9 +528,11 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                         Text(
                                                           'Username: $username',
                                                           style:
-                                                              TextStyle(
+                                                              const TextStyle(
                                                                 fontSize: 12,
-                                                                color: cs.onSurfaceVariant,
+                                                                color: Color(
+                                                                  0xFF8FABC1,
+                                                                ),
                                                               ),
                                                         ),
                                                       ],
@@ -549,16 +544,19 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                             Expanded(
                                               flex: 2,
                                               child: Align(
-                                                alignment: Alignment.center,
+                                                alignment:
+                                                    Alignment.centerLeft,
                                                 child: classId.isNotEmpty
                                                     ? Container(
                                                         padding:
                                                             const EdgeInsets.symmetric(
-                                                              horizontal: 16,
-                                                              vertical: 7,
+                                                              horizontal: 12,
+                                                              vertical: 5,
                                                             ),
                                                         decoration: BoxDecoration(
-                                                          color: cs.outlineVariant,
+                                                          color: const Color(
+                                                            0xFFD9E6F1,
+                                                          ),
                                                           borderRadius:
                                                               BorderRadius.circular(
                                                                 20,
@@ -569,12 +567,14 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                             classId,
                                                           ),
                                                           style:
-                                                              TextStyle(
+                                                              const TextStyle(
                                                                 fontSize: 12,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w700,
-                                                                color: cs.primary,
+                                                                color: Color(
+                                                                  0xFF2848B0,
+                                                                ),
                                                               ),
                                                         ),
                                                       )
@@ -589,9 +589,9 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
                                                     ? email
                                                     : '-',
                                                 textAlign: TextAlign.center,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   fontSize: 13,
-                                                  color: cs.primary,
+                                                  color: Color(0xFF111111),
                                                 ),
                                               ),
                                             ),
@@ -775,7 +775,7 @@ class _AdminTeachersPageState extends State<AdminTeachersPage> {
     return Text(
       label,
       style: const TextStyle(
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: FontWeight.w700,
         color: Color(0xFF111111),
         letterSpacing: 1.2,

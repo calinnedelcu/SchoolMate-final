@@ -4049,29 +4049,27 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                               ],
                             ),
                             Spacer(),
-                            TextButton(
+                            FilledButton.icon(
                               onPressed: _showCreateClassDialog,
-                              style: TextButton.styleFrom(
-                                foregroundColor: Theme.of(context).colorScheme.primary,
-                                backgroundColor: Colors.transparent,
+                              icon: const Icon(Icons.add_rounded, size: 18),
+                              label: const Text('Create new class'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 22,
-                                  vertical: 16,
+                                  horizontal: 18,
+                                  vertical: 14,
                                 ),
-                                textStyle: TextStyle(
+                                textStyle: const TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 15,
+                                  fontSize: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 elevation: 0,
-                                shadowColor: Colors.transparent,
-                              ),
-                              child: Text(
-                                '+ Create new class',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
                               ),
                             ),
                           ],
@@ -4092,18 +4090,20 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 'CLASS',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 13,
+                                  fontSize: 12,
+                                  letterSpacing: 1.0,
                                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ),
                             Expanded(
-                              flex: 3,
+                              flex: 4,
                               child: Text(
                                 'FORM MASTER',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 13,
+                                  fontSize: 12,
+                                  letterSpacing: 1.0,
                                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                               ),
@@ -4114,13 +4114,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 'STUDENTS',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 13,
+                                  fontSize: 12,
+                                  letterSpacing: 1.0,
                                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
                             ),
-                            SizedBox(width: 80),
+                            const SizedBox(width: 48),
                           ],
                         ),
                       ),
@@ -4175,13 +4176,43 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 .toList();
 
                             if (visibleDocs.isEmpty) {
+                              final cs = Theme.of(context).colorScheme;
                               return Center(
-                                child: Text(
-                                  'No classes configured.',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                  ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 64,
+                                      height: 64,
+                                      decoration: BoxDecoration(
+                                        color: cs.surfaceContainerHighest,
+                                        borderRadius:
+                                            BorderRadius.circular(20),
+                                      ),
+                                      child: Icon(
+                                        Icons.school_outlined,
+                                        size: 30,
+                                        color: cs.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 14),
+                                    Text(
+                                      'No classes configured',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: cs.onSurface,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Create your first class to get started.',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: cs.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               );
                             }
@@ -4203,6 +4234,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
                                 final teacherUsername =
                                     (data['teacherUsername'] ?? '').toString();
                                 return _ClassListRow(
+                                  key: ValueKey(classId),
                                   classId: classId,
                                   name: name,
                                   teacherUsername: teacherUsername,
@@ -5092,13 +5124,14 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
   }
 }
 
-class _ClassListRow extends StatelessWidget {
+class _ClassListRow extends StatefulWidget {
   final String classId;
   final String name;
   final String teacherUsername;
   final VoidCallback onOpen;
 
-  _ClassListRow({
+  const _ClassListRow({
+    super.key,
     required this.classId,
     required this.name,
     required this.teacherUsername,
@@ -5106,127 +5139,226 @@ class _ClassListRow extends StatelessWidget {
   });
 
   @override
+  State<_ClassListRow> createState() => _ClassListRowState();
+}
+
+class _ClassListRowState extends State<_ClassListRow> {
+  static final Map<String, String> _teacherNameCache = {};
+
+  late final Stream<int> _studentCountStream;
+  late Future<String> _teacherNameFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _studentCountStream = FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'student')
+        .where('classId', isEqualTo: widget.classId)
+        .snapshots()
+        .map((s) => s.docs.length);
+    _teacherNameFuture = _resolveTeacherName(widget.teacherUsername);
+  }
+
+  @override
+  void didUpdateWidget(_ClassListRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.teacherUsername != widget.teacherUsername) {
+      _teacherNameFuture = _resolveTeacherName(widget.teacherUsername);
+    }
+  }
+
+  Future<String> _resolveTeacherName(String username) async {
+    if (username.isEmpty) return '';
+    final cached = _teacherNameCache[username];
+    if (cached != null) return cached;
+    final snap = await FirebaseFirestore.instance
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .limit(1)
+        .get();
+    final name = snap.docs.isEmpty
+        ? username
+        : (snap.docs.first.data()['fullName'] ?? username).toString();
+    _teacherNameCache[username] = name;
+    return name;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Class badge
-          Expanded(
-            flex: 2,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: IntrinsicWidth(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF2848B0), Color(0xFF4070E0)],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      color: Theme.of(context).colorScheme.surface,
-                      letterSpacing: 0.4,
+    final cs = Theme.of(context).colorScheme;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: widget.onOpen,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Class badge
+              Expanded(
+                flex: 2,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: IntrinsicWidth(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: cs.primary.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: cs.primary.withValues(alpha: 0.18),
+                        ),
+                      ),
+                      child: Text(
+                        widget.name,
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                          color: cs.primary,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-          // Teacher name
-          Expanded(
-            flex: 4,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: FutureBuilder<String>(
-                future: teacherUsername.isNotEmpty
-                    ? FirebaseFirestore.instance
-                          .collection('users')
-                          .where('username', isEqualTo: teacherUsername)
-                          .limit(1)
-                          .get()
-                          .then(
-                            (s) => s.docs.isEmpty
-                                ? teacherUsername
-                                : (s.docs.first.data()['fullName'] ??
-                                          teacherUsername)
-                                      .toString(),
-                          )
-                    : Future.value('—'),
-                builder: (_, snap) {
-                  return Text(
-                    snap.data ?? '…',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  );
-                },
+              // Teacher (avatar + name)
+              Expanded(
+                flex: 4,
+                child: FutureBuilder<String>(
+                  future: _teacherNameFuture,
+                  builder: (_, snap) {
+                    final hasTeacher = widget.teacherUsername.isNotEmpty;
+                    if (!hasTeacher) {
+                      return Text(
+                        '—',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: cs.onSurfaceVariant,
+                        ),
+                      );
+                    }
+                    final fullName = snap.data;
+                    if (fullName == null) {
+                      return Row(
+                        children: [
+                          _avatarPlaceholder(cs),
+                          const SizedBox(width: 10),
+                          Text(
+                            '…',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                    return Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: avatarColor(fullName),
+                          child: Text(
+                            initials(fullName),
+                            style: TextStyle(
+                              color: cs.onSurface,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            fullName,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
-            ),
-          ),
-          // Student count
-          Expanded(
-            flex: 2,
-            child: Align(
-              alignment: Alignment.center,
-              child: StreamBuilder<int>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .where('role', isEqualTo: 'student')
-                    .where('classId', isEqualTo: classId)
-                    .snapshots()
-                    .map((s) => s.docs.length),
-                builder: (_, snap) {
-                  return Text(
-                    snap.data?.toString() ?? '—',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          // Open button
-          SizedBox(
-            width: 80,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: OutlinedButton(
-                onPressed: onOpen,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                  side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+              // Student count chip
+              Expanded(
+                flex: 2,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: StreamBuilder<int>(
+                    stream: _studentCountStream,
+                    builder: (_, snap) {
+                      final count = snap.data;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.people_alt_rounded,
+                              size: 14,
+                              color: cs.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              count?.toString() ?? '—',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: cs.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
-                child: const Text('Open'),
               ),
-            ),
+              // Chevron
+              SizedBox(
+                width: 48,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    color: cs.outline,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _avatarPlaceholder(ColorScheme cs) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        shape: BoxShape.circle,
       ),
     );
   }

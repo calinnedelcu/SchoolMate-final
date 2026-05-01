@@ -1052,31 +1052,60 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
   Widget _buildAudienceSelector() {
     if (widget.mode == PostComposerMode.teacher) {
       final classId = (AppSession.classId ?? '').trim();
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: _fieldBg,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.lock_rounded, size: 16, color: _outline),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                classId.isEmpty
-                    ? 'Audience: your class (not configured)'
-                    : 'Audience: class $classId',
-                style: const TextStyle(
-                  color: _onSurface,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+      if (classId.isEmpty) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: _fieldBg,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.lock_rounded, size: 16, color: _outline),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Audience: your class (not configured)',
+                  style: TextStyle(
+                    color: _onSurface,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
+            ],
+          ),
+        );
+      }
+      final wholeSchool = _selectedClassIds == null;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'AUDIENCE',
+            style: TextStyle(
+              color: _outline,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          _TeacherAudienceOption(
+            icon: Icons.groups_rounded,
+            label: 'My class · $classId',
+            selected: !wholeSchool,
+            onTap: () => setState(() => _selectedClassIds = {classId}),
+          ),
+          const SizedBox(height: 8),
+          _TeacherAudienceOption(
+            icon: Icons.public_rounded,
+            label: 'Whole school',
+            selected: wholeSchool,
+            onTap: () => setState(() => _selectedClassIds = null),
+          ),
+        ],
       );
     }
 
@@ -1200,6 +1229,62 @@ class _ClassOption {
   final String id;
   final String name;
   const _ClassOption({required this.id, required this.name});
+}
+
+class _TeacherAudienceOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _TeacherAudienceOption({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? _primary : _fieldBg,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              selected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              size: 18,
+              color: selected ? Colors.white : _outline,
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              icon,
+              size: 18,
+              color: selected ? Colors.white : _onSurface,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: selected ? Colors.white : _onSurface,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // COMPOSER INPUT
@@ -1428,14 +1513,10 @@ class _PostsManagementList extends StatelessWidget {
 
   bool _canSee(Map<String, dynamic> d) {
     if (mode == PostComposerMode.secretariat) return true;
-    // Teacher: only posts targeted at their class OR created by them.
+    // Teacher: only posts they created themselves. Secretariat broadcasts that
+    // happen to target their class are not theirs to archive or delete.
     final senderUid = (d['createdBy'] ?? d['senderUid'] ?? '').toString();
-    if (senderUid == ownerUid) return true;
-    final audience = List<String>.from(
-      (d['audienceClassIds'] ?? const []) as List,
-    );
-    if (audience.contains(ownerClassId)) return true;
-    return false;
+    return senderUid == ownerUid;
   }
 
   String _legacyAudienceLabel(Map<String, dynamic> d) {

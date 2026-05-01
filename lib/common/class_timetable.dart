@@ -100,6 +100,7 @@ class ClassTimetable extends StatelessWidget {
             subject,
             teacher,
             shortLabel: _abbreviateSubject(subject),
+            teacherFull: storedTeacherName.isNotEmpty ? storedTeacherName : null,
           );
         }
         return null;
