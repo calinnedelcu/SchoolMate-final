@@ -1052,8 +1052,8 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                       (d.data() as Map<String, dynamic>)['role'] == 'teacher',
                 )
                 .length;
-            final totalClase = classesSnap.data?.docs.length ?? 0;
-            final totalParinti = users
+            final totalClasses = classesSnap.data?.docs.length ?? 0;
+            final totalParents = users
                 .where(
                   (d) => (d.data() as Map<String, dynamic>)['role'] == 'parent',
                 )
@@ -1177,12 +1177,12 @@ class _SecretariatRawPageState extends State<SecretariatRawPage> {
                                       ),
                                       _bannerStat(
                                         Icons.menu_book_rounded,
-                                        '$totalClase',
+                                        '$totalClasses',
                                         'classes',
                                       ),
                                       _bannerStat(
                                         Icons.family_restroom_rounded,
-                                        '$totalParinti',
+                                        '$totalParents',
                                         'parent accounts',
                                       ),
                                     ],

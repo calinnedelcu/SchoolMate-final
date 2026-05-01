@@ -276,7 +276,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
                     _buildStepIndicator(),
                     const SizedBox(height: 22),
                     const Text(
-                      'Imagine Profil',
+                      'Profile Picture',
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
@@ -318,7 +318,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
     return Row(
       children: [
         const Text(
-          'PASUL 3 DIN 3',
+          'STEP 3 OF 3',
           style: TextStyle(
             fontSize: 11,
             letterSpacing: 1.6,
@@ -497,7 +497,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
               color: Color(0xFF333333),
             ),
             label: const Text(
-              'Pasul anterior',
+              'Previous step',
               style: TextStyle(
                 color: Color(0xFF333333),
                 fontWeight: FontWeight.w500,

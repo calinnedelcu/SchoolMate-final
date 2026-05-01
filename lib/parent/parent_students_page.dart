@@ -511,7 +511,7 @@ class _StudentDetailPage extends StatelessWidget {
               child: FutureBuilder<String>(
                 future: _resolveHomeroomTeacher(classId),
                 builder: (context, snap) {
-                  final diriginte = (snap.data ?? '').trim();
+                  final homeroomTeacher = (snap.data ?? '').trim();
 
                   return SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
@@ -628,8 +628,8 @@ class _StudentDetailPage extends StatelessWidget {
                                     _PersonMetaRow(
                                       icon: Icons.person_rounded,
                                       label: 'HOMEROOM TEACHER',
-                                      value: diriginte.isNotEmpty
-                                          ? diriginte
+                                      value: homeroomTeacher.isNotEmpty
+                                          ? homeroomTeacher
                                           : 'Not set',
                                     ),
                                     const SizedBox(height: 12),

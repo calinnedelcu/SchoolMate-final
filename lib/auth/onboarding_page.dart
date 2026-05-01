@@ -110,7 +110,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Cod trimis pe email. Verifica inbox-ul.'),
+            content: Text('Code sent to your email. Check your inbox.'),
           ),
         );
       }
@@ -172,7 +172,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     final confirmPass = _confirmPasswordC.text.trim();
     if (newPass.isEmpty || newPass.length < 8) {
       setState(
-        () => _errorMsg = 'Parola trebuie sa aiba cel putin 8 caractere',
+        () => _errorMsg = 'Password must be at least 8 characters',
       );
       return;
     }
@@ -451,7 +451,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     return Row(
       children: [
         Text(
-          'PASUL $n DIN 3',
+          'STEP $n OF 3',
           style: const TextStyle(
             fontSize: 11,
             letterSpacing: 1.6,
@@ -494,7 +494,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   List<Widget> _emailStepWidgets() => [
     const Text(
-      'Configurare Email',
+      'Email Configuration',
       style: TextStyle(
         fontSize: 30,
         fontWeight: FontWeight.bold,
@@ -513,7 +513,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     const SizedBox(height: 6),
     _field(
       controller: _emailC,
-      hint: 'nume@scoala.edu.ro',
+      hint: 'name@school.edu.ro',
       keyboard: TextInputType.emailAddress,
       suffix: const Icon(
         Icons.alternate_email,
@@ -574,7 +574,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   List<Widget> _passwordStepWidgets() => [
     const Text(
-      'Setare Parola',
+      'Password Setup',
       style: TextStyle(
         fontSize: 30,
         fontWeight: FontWeight.bold,
@@ -825,13 +825,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
     child: Column(
       children: [
         const Text(
-          'Ai nevoie de ajutor?',
+          'Do you need help?',
           style: TextStyle(fontSize: 13, color: Color(0xFF888888)),
         ),
         GestureDetector(
           onTap: () {},
           child: const Text(
-            'Contacteaza suportul IT',
+            'Contact IT support',
             style: TextStyle(
               fontSize: 13,
               color: _primaryGreen,
@@ -874,7 +874,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 ),
                 SizedBox(height: 24),
                 Text(
-                  'Profil Configurat!',
+                  'Profile Configured!',
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -883,7 +883,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  'Poti accesa aplicatia.\nBun venit!',
+                  'You can now access the app.\nWelcome!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,

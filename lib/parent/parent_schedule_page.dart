@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -46,7 +48,19 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
     final key = uids.join(',');
     if (key != _cachedChildrenKey || _cachedChildrenFuture == null) {
       _cachedChildrenKey = key;
-      _cachedChildrenFuture = _loadChildren(uids);
+      final future = _loadChildren(uids);
+      _cachedChildrenFuture = future;
+      // Invalidate the cache slot if this attempt fails so a later rebuild
+      // can retry the load instead of being pinned to a rejected future.
+      unawaited(
+        future.catchError((Object _) {
+          if (_cachedChildrenFuture == future) {
+            _cachedChildrenKey = null;
+            _cachedChildrenFuture = null;
+          }
+          return const <_ChildEntry>[];
+        }),
+      );
     }
     return _cachedChildrenFuture!;
   }
@@ -202,8 +216,8 @@ class _ParentSchedulePageState extends State<ParentSchedulePage> {
                   return FutureBuilder<List<_ChildEntry>>(
                     future: _getOrCreateChildrenFuture(childUids),
                     builder: (context, childSnap) {
-                      final isLoading =
-                          childUids.isNotEmpty && !childSnap.hasData;
+                      final isLoading = childUids.isNotEmpty &&
+                          childSnap.connectionState == ConnectionState.waiting;
                       final children = childSnap.data ?? const <_ChildEntry>[];
 
                       _ChildEntry? selected;
