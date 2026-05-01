@@ -14,7 +14,7 @@
 
 ## Ce este SchoolMate
 
-SchoolMate este o aplicație Flutter + Firebase (mobile Android + web) care unifică toate fluxurile de comunicare ale unei școli — anunțuri, concursuri, tabere, voluntariat, cereri, orar, identificare la poartă — într-o singură experiență accesibilă, gratuită pentru elev și părinte. Versiunea web ([schoolmate-portal.web.app](https://schoolmate-portal.web.app/)) e folosită în special de personalul de secretariat. Interfața este în engleză, cu arhitectură pregătită pentru a fi extinsă multilingv.
+SchoolMate este o aplicație Flutter + Firebase (mobile Android + web) care unifică toate fluxurile de comunicare ale unei școli — anunțuri, concursuri, tabere, cereri, orar, identificare la poartă — într-o singură experiență accesibilă, gratuită pentru elev și părinte. Versiunea web ([schoolmate-portal.web.app](https://schoolmate-portal.web.app/)) e folosită în special de personalul de secretariat. Interfața este în engleză, cu arhitectură pregătită pentru a fi extinsă multilingv.
 
 Aplicația are roluri distincte pentru **elev**, **profesor**, **diriginte**, **secretariat**, **părinte** și **portar**, fiecare cu surface-ul propriu.
 
@@ -22,7 +22,7 @@ Aplicația are roluri distincte pentru **elev**, **profesor**, **diriginte**, **
 
 SchoolMate țintește direct două Obiective de Dezvoltare Durabilă ONU, în linie cu business-planul ([livrabile/business-plan.pdf](livrabile/business-plan.pdf)):
 
-- **Quality Education (SDG 4)** — un canal oficial unic pentru anunțuri, orar și cereri elimină comunicarea fragmentată (WhatsApp, fluturași, emailuri pierdute) și asigură că niciun elev nu pierde informații despre olimpiade, burse, tabere sau voluntariat.
+- **Quality Education (SDG 4)** — un canal oficial unic pentru anunțuri, orar și cereri elimină comunicarea fragmentată (WhatsApp, fluturași, emailuri pierdute) și asigură că niciun elev nu pierde informații despre olimpiade, burse sau tabere.
 - **Reduced Inequalities (SDG 10)** — gratuit pentru elev și părinte, model B2B2C subvenționabil prin ONG-uri pentru școlile rurale; interfață în engleză deschisă către părinți non-vorbitori de română, cu arhitectură pregătită pentru extindere multilingvă (țintă: EN, RO, ES, FR).
 
 ## Livrabile pentru juriu
@@ -39,7 +39,7 @@ Toate materialele cerute de regulament sunt în [livrabile/](livrabile/):
 
 ### Elev
 Bottom nav cu 5 tab-uri: Home, Orar, Cereri, Inbox, Profil.
-- **Inbox** cu filtre pe categorii: toate, cereri, anunțuri, concursuri, tabere, voluntariat.
+- **Inbox** cu filtre pe categorii: toate, cereri, anunțuri, concursuri, tabere.
 - **Orar săptămânal** generat din configurația dirigintelui.
 - **Cereri digitale** către diriginte sau secretariat (motivare absențe / învoire), cu dată, oră și mesaj; ecran dedicat de istoric cu statusuri (în așteptare / aprobat / respins).
 - **QR personal** afișat dintr-un bottom sheet pentru identificare la poarta școlii.
@@ -51,17 +51,17 @@ Bottom nav cu 5 tab-uri: Home, Orar, Cereri, Inbox, Profil.
 Bottom nav cu 3 tab-uri: Dashboard, Clasa mea, Profil.
 - **Dashboard** cu clasa proprie, cereri în așteptare și ultima vizită în inbox.
 - **Cereri în așteptare** — aprobă / respinge cererile elevilor din clasă.
-- **Compunere postări** (anunț, concurs, tabără, voluntariat) — audiența e fixată automat pe propria clasă.
+- **Compunere postări** (anunț, concurs, tabără) — audiența e fixată automat pe propria clasă.
 - **Inbox dirigintelui** — postările trimise în clasă, cu opțiunea de a compune unele noi.
 - **Status elevi** — listă cu elevii din clasă.
 
 ### Secretariat / Admin
-Portal cu sidebar (`secretariat_raw_page.dart`) și versiune web la [schoolmate-portal.web.app](https://schoolmate-portal.web.app/).
-- **Compositor unificat** pentru anunțuri, concursuri, tabere, voluntariat și vacanțe — audiență „toată școala" sau listă explicită de clase, cu imagine, dată eveniment și link.
+Portal cu sidebar și versiune web la [schoolmate-portal.web.app](https://schoolmate-portal.web.app/).
+- **Compositor unificat** pentru anunțuri, concursuri, tabere și vacanțe — audiență „toată școala" sau listă explicită de clase, cu imagine, dată eveniment și link.
 - **Management conturi**: elevi, profesori, părinți, admini — creare, căutare, reset parolă, mutare între clase, asociere părinte-copil.
 - **Management clase** și **configurare orar** (ore de start, durate sloturi, layout pe zile).
 - **Calendar de vacanțe**.
-- **Audit log porți** (`admin_turnstiles_page`) — istoric scanări QR cu nume elev, clasă, rezultat (allowed / denied), motiv și timestamp.
+- **Istoric scanări QR la poartă** — nume elev, clasă, rezultat (allowed / denied), motiv și timestamp.
 
 ### Părinte
 Bottom nav cu 3 tab-uri: Home, Children, Profil. De pe Home se navighează spre:
@@ -114,12 +114,9 @@ Regulile Firestore: [firestore.rules](firestore.rules). Indexurile: [firestore.i
 
 ## Modelul de postări
 
-Postările au un compositor unic dar sunt salvate în două colecții:
+Postările sunt salvate în colecția `secretariatMessages`, cu audiența descrisă prin `audienceClassIds` (`['__ALL__']` pentru toată școala sau listă explicită de class IDs) și un `audienceLabel` lizibil.
 
-- `secretariatMessages` — anunțuri, concursuri, tabere. Audiența este descrisă prin `audienceClassIds` (`['__ALL__']` pentru toată școala sau listă explicită de class IDs) și un `audienceLabel` lizibil.
-- `volunteerOpportunities` — voluntariat, ținut separat pentru că gestionează înscrieri și ore de muncă.
-
-Fiecare postare are: `category`, `senderRole`, `eventDate`, `eventEndDate` (opțional, pentru tabere), `link`, `location`, `status` (`active` / `archived`).
+Fiecare postare are: `category` (announcement / competition / camp / vacation), `senderRole`, `eventDate`, `eventEndDate` (opțional, pentru tabere), `link`, `location`, `status` (`active` / `archived`).
 
 ## Rulare locală
 
