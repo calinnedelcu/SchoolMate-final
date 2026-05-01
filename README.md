@@ -3,14 +3,18 @@
 **Hardcore Entrepreneur 6.0 — categoria liceu**
 **Tema concursului:** *„Incluziune pentru toți. Viitor durabil pentru fiecare."*
 **Echipa:** TransylvanianBears
-**Membri:** Nedelcu Călin, Buloi Cristian, Boștină Vlad, Cheroiu Andrei (clasa 11i)
+**Membri (clasa 11i):**
+- Nedelcu Călin — [@calinnedelcu](https://github.com/calinnedelcu)
+- Buloi Cristian — [@oldbulai](https://github.com/oldbulai)
+- Boștină Vlad — [@Vladfromstars](https://github.com/Vladfromstars), [@BosRegele](https://github.com/BosRegele)
+- Cheroiu Andrei — [@ache12345](https://github.com/ache12345)
 **Mentor:** fără mentor
 
 ---
 
 ## Ce este SchoolMate
 
-SchoolMate este o aplicație Flutter + Firebase (mobile Android + web) care unifică toate fluxurile de comunicare ale unei școli — anunțuri, concursuri, tabere, voluntariat, meditații, cereri, orar, identificare la poartă — într-o singură experiență accesibilă, gratuită pentru elev și părinte. Versiunea web ([schoolmate-portal.web.app](https://schoolmate-portal.web.app/)) e folosită în special de personalul de secretariat. Interfața este în engleză, cu arhitectură pregătită pentru a fi extinsă multilingv.
+SchoolMate este o aplicație Flutter + Firebase (mobile Android + web) care unifică toate fluxurile de comunicare ale unei școli — anunțuri, concursuri, tabere, voluntariat, cereri, orar, identificare la poartă — într-o singură experiență accesibilă, gratuită pentru elev și părinte. Versiunea web ([schoolmate-portal.web.app](https://schoolmate-portal.web.app/)) e folosită în special de personalul de secretariat. Interfața este în engleză, cu arhitectură pregătită pentru a fi extinsă multilingv.
 
 Aplicația are roluri distincte pentru **elev**, **profesor**, **diriginte**, **secretariat**, **părinte** și **portar**, fiecare cu surface-ul propriu.
 
@@ -34,7 +38,7 @@ Toate materialele cerute de regulament sunt în [livrabile/](livrabile/):
 ## Funcționalități principale
 
 ### Elev
-- Inbox cu filtre pe categorii: cereri, anunțuri, concursuri, tabere, voluntariat, meditații.
+- Inbox cu filtre pe categorii: cereri, anunțuri, concursuri, tabere, voluntariat.
 - Orar săptămânal cu evidențierea orei curente.
 - Cereri digitale: motivare absențe, învoire, adeverință.
 - QR personal de identificare la poarta școlii.
@@ -43,7 +47,7 @@ Toate materialele cerute de regulament sunt în [livrabile/](livrabile/):
 
 ### Profesor / Diriginte
 - Dashboard cu clasa proprie, cereri în așteptare, acces rapid la orar.
-- Compunere postări (anunțuri, tabere, meditații, voluntariat) cu audiență configurabilă.
+- Compunere postări (anunțuri, tabere, voluntariat) cu audiență configurabilă.
 - Gestionare voluntariat și înscrieri elevi.
 - Răspuns la cereri elev/părinte.
 
