@@ -26,14 +26,16 @@
 - Quality Education
 - Reduced Inequalities
 
+**Social impact:** free for students and parents; subsidized by NGOs for rural schools to bridge the digital communication gap.
+
 ## 3. SMART objectives
 
-- Pilot in 3 high schools (Ilfov & Bucharest)
-- Reach 1000+ active users
-- Launch 5 languages: EN, RO, ES, FR
-- Achieve self-sustainability (cover costs ~€80/month)
-- Ensure GDPR compliance
-- Expand to 10+ schools in 2 years
+- Pilot in 3 high schools (Ilfov & Bucharest) — by Q4 2026
+- Reach 1000+ active users — by end of Year 1
+- Launch 4 languages (EN, RO, ES, FR) — by month 12
+- Achieve self-sustainability (cover ~€80/month) — by Year 2
+- Ensure GDPR compliance — at launch
+- Expand to 10+ schools — within 2 years
 
 ## 4. Price
 
