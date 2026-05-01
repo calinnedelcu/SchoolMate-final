@@ -64,6 +64,14 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
+    applicationVariants.all {
+        val variant = this
+        outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            output.outputFileName = "SchoolMate-v${variant.versionName}-${variant.buildType.name}.apk"
+        }
+    }
 }
 
 flutter {

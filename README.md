@@ -10,20 +10,16 @@
 
 ## Ce este SchoolMate
 
-SchoolMate este o aplicație mobilă (Flutter + Firebase) care unifică toate fluxurile de comunicare ale unei școli — anunțuri, concursuri, tabere, voluntariat, meditații, cereri, orar, identificare la poartă — într-o singură experiență accesibilă, gratuită pentru elev și părinte. Interfața principală este în engleză, cu arhitectură pregătită pentru a fi extinsă multilingv (vezi roadmap).
+SchoolMate este o aplicație Flutter + Firebase (mobile Android + web) care unifică toate fluxurile de comunicare ale unei școli — anunțuri, concursuri, tabere, voluntariat, meditații, cereri, orar, identificare la poartă — într-o singură experiență accesibilă, gratuită pentru elev și părinte. Versiunea web ([schoolmate-portal.web.app](https://schoolmate-portal.web.app/)) e folosită în special de personalul de secretariat. Interfața este în engleză, cu arhitectură pregătită pentru a fi extinsă multilingv.
 
 Aplicația are roluri distincte pentru **elev**, **profesor**, **diriginte**, **secretariat**, **părinte** și **portar**, fiecare cu surface-ul propriu.
 
-## Cum respectă tema concursului
+## SDG-uri vizate
 
-Aplicația țintește direct pilonul *„Incluziune pentru toți. Viitor durabil pentru fiecare."* prin:
+SchoolMate țintește direct două Obiective de Dezvoltare Durabilă ONU, în linie cu business-planul ([livrabile/business-plan.md](livrabile/business-plan.md)):
 
-- **Incluziune digitală** — elevii din zone defavorizate primesc același acces la informații despre olimpiade, burse, tabere și voluntariat ca elevii din școli de top, prin canalul oficial al școlii.
-- **Incluziune lingvistică (planificat)** — interfața principală este în engleză și deschide app-ul către părinți non-vorbitori de română (expați, refugiați); pe roadmap este suport multi-limbă (RO + UA) prin ARB files, pentru a acoperi complet comunitățile vulnerabile.
-- **Accesibilitate (planificat)** — pe roadmap intră setări dedicate pentru scalare font, contrast ridicat și reducerea animațiilor, pentru elevi cu deficiențe de vedere, dislexie sau sensibilități motorii.
-- **Reziliență în criză** — un canal unic, oficial, fără dependență de WhatsApp/grupuri neoficiale, util în pandemii, valuri de refugiați, evenimente meteo extreme.
-- **Sustenabilitate ecologică** — eliminarea complet a fluturașilor și formularelor pe hârtie (~12 kg hârtie/elev/an).
-- **Sustenabilitate economică** — model freemium B2B2C: gratuit pentru elev și părinte, subvenționabil prin ONG-uri pentru școlile rurale (vezi `livrabile/business-plan.md`).
+- **Quality Education (SDG 4)** — un canal oficial unic pentru anunțuri, orar și cereri elimină comunicarea fragmentată (WhatsApp, fluturași, emailuri pierdute) și asigură că niciun elev nu pierde informații despre olimpiade, burse, tabere sau voluntariat.
+- **Reduced Inequalities (SDG 10)** — gratuit pentru elev și părinte, model B2B2C subvenționabil prin ONG-uri pentru școlile rurale; interfață în engleză deschisă către părinți non-vorbitori de română, cu arhitectură pregătită pentru extindere multilingvă (țintă: EN, RO, ES, FR).
 
 ## Livrabile pentru juriu
 
@@ -31,8 +27,9 @@ Toate materialele cerute de regulament sunt în [livrabile/](livrabile/):
 
 - [livrabile/business-plan.md](livrabile/business-plan.md) — plan de afaceri (cu obiective SMART, grup-țintă, sustenabilitate, monetizare).
 - `livrabile/app-release.apk` — APK Android release (generat cu `flutter build apk --release`).
-- **Pitch video (max 3 min, în engleză):** _link YouTube unlisted — va fi adăugat înainte de 1 mai_
-- **Demo video (max 3 min):** _link YouTube unlisted — va fi adăugat înainte de 1 mai_
+- **Pitch video (max 3 min, în engleză):** https://www.youtube.com/watch?v=-88aeGVd3Fg
+- **Demo video (max 3 min):** https://www.youtube.com/watch?v=wNU1WhSMBKU
+- **Web app (portal secretariat):** https://schoolmate-portal.web.app/
 
 ## Funcționalități principale
 
@@ -70,27 +67,30 @@ Toate materialele cerute de regulament sunt în [livrabile/](livrabile/):
   - Cloud Functions (validare server-side + operațiuni admin)
   - Cloud Messaging + notificări locale
   - Storage (poze de profil)
-- **Pachete:** `qr_flutter`, `mobile_scanner`, `google_fonts`, `excel`, `file_saver`, `share_plus`, `image_picker`, `audioplayers`, `shared_preferences`.
+- **Pachete:** `qr_flutter`, `mobile_scanner`, `google_fonts`, `excel`, `file_saver`, `share_plus`, `image_picker`, `audioplayers`, `shared_preferences`, `url_launcher`, `cached_network_image`, `flutter_local_notifications`, `path_provider`, `crypto`, `cryptography`.
 
 ## Structura proiectului
 
 ```
 lib/
 ├── main.dart
-├── core/                    # firebase_options, session, modele partajate
-├── Auth/                    # login, onboarding, 2FA
-├── student/                 # inbox, orar, cereri, profil, QR personal
+├── core/                    # firebase_options, session
+├── auth/                    # login, onboarding, 2FA, add photo
+├── student/                 # inbox, orar, cereri, profil, QR personal, bookmarks
 │   └── widgets/
 ├── teacher/                 # dashboard, cereri, mesaje diriginte, status elevi
 │   └── widgets/
-├── parent/                  # home părinte, inbox, cereri, copii
-├── admin/                   # secretariat: composer, useri, clase, orar
+├── parent/                  # home, inbox, orar, cereri, lista copii
+├── admin/                   # secretariat: composer, useri, clase, orar, vacanțe, portari
+│   ├── models/
 │   ├── services/
+│   ├── utils/
 │   └── widgets/
 ├── gate/                    # modul portar (scanner QR)
 ├── common/                  # pagini și componente partajate între roluri
-├── services/                # wrappers Firebase, glue notificări
-└── utils/                   # CSV download (mobile + web)
+│   └── widgets/
+├── services/                # wrappers Firebase (admin API, security flags)
+└── utils/                   # password hashing
 ```
 
 Regulile Firestore: [firestore.rules](firestore.rules). Indexurile: [firestore.indexes.json](firestore.indexes.json). Cloud Functions: [functions/](functions/).
@@ -118,7 +118,6 @@ Pentru Cloud Functions:
 ```bash
 cd functions
 npm install
-npm run build
 firebase deploy --only functions
 ```
 

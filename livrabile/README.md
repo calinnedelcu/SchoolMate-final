@@ -8,8 +8,9 @@ Acest folder conține livrabilele cerute de regulamentul concursului.
 |--------|-----------|
 | `business-plan.md` | Plan de afaceri (1 pagină extinsă) cu obiective SMART, grup-țintă, sustenabilitate, monetizare și legătura cu tema concursului. Generează PDF din acest fișier înainte de submisie. |
 | `app-release.apk` | Executabilul aplicației pentru Android (build release). |
-| `video-pitch.mp4` *(sau link în README principal)* | Pitch de maximum 3 minute, în engleză. |
-| `video-demo.mp4` *(sau link în README principal)* | Demo funcțional al aplicației, maximum 3 minute. |
+| Pitch video (YouTube) | https://www.youtube.com/watch?v=-88aeGVd3Fg — pitch de maximum 3 minute, în engleză. |
+| Demo video (YouTube) | https://www.youtube.com/watch?v=wNU1WhSMBKU — demo funcțional al aplicației, maximum 3 minute. |
+| Web app (portal secretariat) | https://schoolmate-portal.web.app/ — versiunea web pentru contul de secretariat. |
 
 ## Cum se rulează aplicația din APK
 

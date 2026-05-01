@@ -1,88 +1,55 @@
 # SchoolMate — Business Plan
 
-**Concurs:** Hardcore Entrepreneur 6.0
-**Tema:** Incluziune pentru toți. Viitor durabil pentru fiecare.
-**Categorie:** liceu
-**Echipa:** TransylvanianBears
-**Membri:** Nedelcu Călin, Buloi Cristian, Boștină Vlad, Cheroiu Andrei (clasa 11i)
-**Mentor:** fără mentor
+**Hardcore Entrepreneur hackathon 6.0**
+
+| | |
+|---|---|
+| **Project name** | SchoolMate |
+| **Team members** | Nedelcu Călin, Buloi Cristian, Boștină Vlad, Cheroiu Andrei |
+| **Idea in short** | All-in-one school app for announcements, schedule and leave requests integrated with QR access |
 
 ---
 
-## 1. Problema
+## 1. Product — Problem we solve
 
-În școlile din România, comunicarea școală–elev–părinte este fragmentată: anunțuri pe grupuri WhatsApp neoficiale, fluturași imprimați, emailuri pierdute, catalog separat de orar, formulare pe hârtie pentru cereri de motivare/învoiri. Rezultatul:
+- Scattered announcements (clubs, competitions), leading to missed opportunities for students
+- No secure system to track or approve student departures
+- Lack of synchronized scheduling between staff and students
 
-- **Elevii din zone defavorizate** pierd informații despre olimpiade, burse, tabere și voluntariat pentru că nu sunt în „grupul potrivit" sau nu au părinți activi în comunitate.
-- **Părinții care nu vorbesc fluent româna** (comunități rome, ucrainene, expați) sunt excluși din circuitul de informații al școlii.
-- **Elevii cu dizabilități** (deficiențe de vedere, dislexie, sensibilități motorii) nu au interfețe de comunicare adaptate.
-- În **perioade de criză** (pandemii, conflict armat, dezastre), absența unui canal oficial unic produce dezinformare și inegalitate de acces la educație.
+## 2. Our target group & SDGs
 
-## 2. Soluția — SchoolMate
+**Target groups:**
+- Students & parents
+- Teachers & school staff
 
-Aplicație mobilă Flutter + Firebase, multi-rol, care unifică toate fluxurile de comunicare ale unei școli într-o experiență accesibilă, gratuită pentru elev și părinte. Interfața este în engleză, arhitectura fiind pregătită pentru extindere multilingvă (RO + UA pe roadmap).
+**SDGs:**
+- Quality Education
+- Reduced Inequalities
 
-**Module:**
-- **Inbox unificat** cu filtre pe categorii (anunțuri, concursuri, tabere, voluntariat, meditații, cereri).
-- **Orar săptămânal** cu evidențierea orei curente și sincronizare cu modificările dirigintelui.
-- **Cereri digitale** — motivări, învoiri, adeverințe; trimise instant către diriginte/secretariat.
-- **QR personal** pentru identificare la poarta școlii (modul „portar" cu scanner).
-- **Compunere de postări** pentru profesori și secretariat, cu audiență configurabilă (toată școala sau clase selectate).
-- **Vizualizare părinte** — un cont, mai mulți copii.
-- **Notificări push** (FCM) pentru fiecare anunț relevant.
+## 3. SMART objectives
 
-**Funcționalități de incluziune (legate direct de tema concursului):**
-- (Roadmap) Setări de accesibilitate: scalare font, contrast ridicat, reducere animații, screen-reader friendly.
-- Interfață în engleză, deschisă pentru părinți non-vorbitori de română (expați, refugiați); arhitectură pregătită pentru localizare în RO + UA.
-- Conținut text-only + linkuri (fără upload de fișiere mari) → funcționează pe conexiuni 3G slabe.
-- Audiențe segmentate → niciun elev nu „rămâne pe dinafară" indiferent de clasă/profil.
+- Pilot in 3 high schools (Ilfov & Bucharest)
+- Reach 1000+ active users
+- Launch 5 languages: EN, RO, ES, FR
+- Achieve self-sustainability (cover costs ~€80/month)
+- Ensure GDPR compliance
+- Expand to 10+ schools in 2 years
 
-## 3. Grup-țintă
+## 4. Price
 
-**Primar:** elevii (gimnaziu și liceu) și părinții lor din școlile de stat și particulare din România — ~2,5 milioane elevi (sursa INS).
+- Public schools: €1.5 / student / year
+- Private schools: €3 / student / year
+- Sponsorships (~€500/month)
 
-**Secundar:** profesori, diriginți, secretariate școlare, administrație — ~280.000 cadre didactice.
+**Year 2 estimate:**
+- Revenue: ~€40,000
+- Costs: ~€5,000
+- Profit: ~€35,000
 
-**Segment de încălzire (pilot):** licee din mediul rural și suburban din județele Ilfov, Dâmbovița, Argeș (acces digital existent, dar fără platformă oficială unificată).
+## 5. Promotion
 
-## 4. Obiective SMART
-
-| # | Obiectiv | Specific | Măsurabil | Asignat | Realist | Timp |
-|---|----------|----------|-----------|---------|---------|------|
-| 1 | **Pilot în 3 licee** | Implementare în 3 unități școlare pilot din Ilfov | 3 școli, ≥500 conturi active | Echipa SchoolMate + un mentor ISJ | Da — există deja contact cu o școală | Sept 2026 — Dec 2026 |
-| 2 | **1.000 utilizatori activi lunar** | Elevi + părinți care deschid app ≥1×/săptămână | MAU ≥ 1.000 măsurat în Firebase Analytics | PM tehnic | Da — la 3 școli pilot e atins | Iunie 2027 |
-| 3 | **Suport 3 limbi** | RO, EN, UA (refugiați) | 3 fișiere ARB complete, traduceri verificate | Dev frontend | Da — arhitectura e pregătită | Decembrie 2026 |
-| 4 | **Auto-finanțare** | Acoperirea costurilor Firebase din venituri | Venit lunar ≥ cost lunar (~80 EUR/lună la 1.000 MAU) | Co-fondatori | Da, pe modelul B2B școală | Septembrie 2027 |
-| 5 | **Conformitate GDPR** | Datele elevilor minori protejate | Audit GDPR + consimțământ parental digital | Mentor juridic | Da — Firebase EU region | Iunie 2026, înainte de pilot |
-
-## 5. Sustenabilitate & dezvoltare
-
-- **Stack scalabil:** Firebase scalează automat; cost ≈ 0,02 EUR/utilizator/lună la volum mediu.
-- **Cod open-source pentru modulul de bază** → adopție rapidă, contribuții comunitare, reducere cost mentenanță.
-- **Roadmap 12 luni:** integrare catalog electronic, modul note + medii, integrare cu ARGES (sistemul național), modul meditații peer-to-peer.
-- **Componenta socială:** parteneriat cu ONG-uri (Salvați Copiii, World Vision) pentru subvenționarea licenței în școli rurale.
-
-## 6. Monetizare
-
-Model **B2B2C** — gratuit pentru elev/părinte, plătit de școală sau finanțator.
-
-| Sursă | Tarif | Volum țintă (an 2) | Venit anual |
-|-------|-------|---------------------|-------------|
-| Licență școală (stat, prin asociația părinților) | 1,5 EUR/elev/an | 50 școli × 600 elevi | 45.000 EUR |
-| Licență școală privată | 4 EUR/elev/an | 10 școli × 300 elevi | 12.000 EUR |
-| Sponsorizări corporate (modul carieră) | 500 EUR/lună | 4 sponsori | 24.000 EUR |
-| Granturi UE/ONG (incluziune digitală) | one-shot | 1 grant Erasmus+ | 30.000 EUR |
-| **Total estimat An 2** | | | **~111.000 EUR** |
-
-**Costuri estimate An 2:** infra Firebase ~3.500 EUR + dezvoltare part-time ~60.000 EUR + juridic/marketing ~10.000 EUR = **~73.500 EUR**.
-
-**Profit estimat An 2:** ~37.500 EUR, reinvestit în extindere națională.
-
-## 7. De ce SchoolMate respectă tema „Incluziune pentru toți. Viitor durabil pentru fiecare."
-
-- **Incluziune digitală:** elevii din medii defavorizate primesc același acces la informații (olimpiade, burse, tabere) ca cei din școli de top.
-- **Incluziune lingvistică:** interfață multilingvă pentru părinți non-vorbitori de română.
-- **Incluziune pentru dizabilități (roadmap apropiat):** setări de accesibilitate (font scale, contrast, motion, screen-reader) — prioritizate în primele 3 luni de pilot.
-- **Reziliență în criză:** un canal unic, oficial, pentru pandemii, refugiați (modulul UA), evenimente meteo extreme.
-- **Sustenabilitate financiară:** model freemium care nu lasă școlile rurale pe dinafară (subvenționare ONG).
-- **Sustenabilitate de mediu:** zero hârtie pentru cereri/anunțuri (~12 kg hârtie/elev/an economisită).
+- Direct partnerships with schools (pilot launch)
+- Collaboration with NGOs (digital inclusion)
+- Social media presence (Instagram)
+- Live demos in schools & events
+- Word-of-mouth between institutions
