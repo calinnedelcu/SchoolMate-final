@@ -20,7 +20,7 @@ Aplicația are roluri distincte pentru **elev**, **profesor**, **diriginte**, **
 
 ## SDG-uri vizate
 
-SchoolMate țintește direct două Obiective de Dezvoltare Durabilă ONU, în linie cu business-planul ([livrabile/business-plan.md](livrabile/business-plan.md)):
+SchoolMate țintește direct două Obiective de Dezvoltare Durabilă ONU, în linie cu business-planul ([livrabile/business-plan.pdf](livrabile/business-plan.pdf)):
 
 - **Quality Education (SDG 4)** — un canal oficial unic pentru anunțuri, orar și cereri elimină comunicarea fragmentată (WhatsApp, fluturași, emailuri pierdute) și asigură că niciun elev nu pierde informații despre olimpiade, burse, tabere sau voluntariat.
 - **Reduced Inequalities (SDG 10)** — gratuit pentru elev și părinte, model B2B2C subvenționabil prin ONG-uri pentru școlile rurale; interfață în engleză deschisă către părinți non-vorbitori de română, cu arhitectură pregătită pentru extindere multilingvă (țintă: EN, RO, ES, FR).
@@ -29,7 +29,7 @@ SchoolMate țintește direct două Obiective de Dezvoltare Durabilă ONU, în li
 
 Toate materialele cerute de regulament sunt în [livrabile/](livrabile/):
 
-- [livrabile/business-plan.md](livrabile/business-plan.md) — plan de afaceri (cu obiective SMART, grup-țintă, sustenabilitate, monetizare).
+- [livrabile/business-plan.pdf](livrabile/business-plan.pdf) — planul de afaceri trimis (forma oficială pentru juriu); varianta sursă în Markdown: [livrabile/business-plan.md](livrabile/business-plan.md).
 - `livrabile/app-release.apk` — APK Android release (generat cu `flutter build apk --release`).
 - **Pitch video (max 3 min, în engleză):** https://www.youtube.com/watch?v=-88aeGVd3Fg
 - **Demo video (max 3 min):** https://www.youtube.com/watch?v=wNU1WhSMBKU
@@ -38,29 +38,42 @@ Toate materialele cerute de regulament sunt în [livrabile/](livrabile/):
 ## Funcționalități principale
 
 ### Elev
-- Inbox cu filtre pe categorii: cereri, anunțuri, concursuri, tabere, voluntariat.
-- Orar săptămânal cu evidențierea orei curente.
-- Cereri digitale: motivare absențe, învoire, adeverință.
-- QR personal de identificare la poarta școlii.
-- Notificări push (Firebase Cloud Messaging) + notificări locale.
-- Profil personal cu poză și informații de contact.
+Bottom nav cu 5 tab-uri: Home, Orar, Cereri, Inbox, Profil.
+- **Inbox** cu filtre pe categorii: toate, cereri, anunțuri, concursuri, tabere, voluntariat.
+- **Orar săptămânal** generat din configurația dirigintelui.
+- **Cereri digitale** către diriginte sau secretariat (motivare absențe / învoire), cu dată, oră și mesaj; ecran dedicat de istoric cu statusuri (în așteptare / aprobat / respins).
+- **QR personal** afișat dintr-un bottom sheet pentru identificare la poarta școlii.
+- **Bookmarks** — salvare locală a postărilor relevante, cu același set de filtre ca inbox-ul.
+- **Notificări push** (Firebase Cloud Messaging) + notificări locale (`flutter_local_notifications`).
+- **Profil** cu poză, nume, clasă, listă de părinți asociați.
 
 ### Profesor / Diriginte
-- Dashboard cu clasa proprie, cereri în așteptare, acces rapid la orar.
-- Compunere postări (anunțuri, tabere, voluntariat) cu audiență configurabilă.
-- Gestionare voluntariat și înscrieri elevi.
-- Răspuns la cereri elev/părinte.
+Bottom nav cu 3 tab-uri: Dashboard, Clasa mea, Profil.
+- **Dashboard** cu clasa proprie, cereri în așteptare și ultima vizită în inbox.
+- **Cereri în așteptare** — aprobă / respinge cererile elevilor din clasă.
+- **Compunere postări** (anunț, concurs, tabără, voluntariat) — audiența e fixată automat pe propria clasă.
+- **Inbox dirigintelui** — postările trimise în clasă, cu opțiunea de a compune unele noi.
+- **Status elevi** — listă cu elevii din clasă.
 
 ### Secretariat / Admin
-- Compunere unificată pentru anunțuri școlare, concursuri, tabere, voluntariat — audiență „toată școala" sau listă de clase.
-- Management conturi: elevi, profesori, părinți, admini.
-- Management clase, orar, calendar de vacanțe, mesaje globale.
+Portal cu sidebar (`secretariat_raw_page.dart`) și versiune web la [schoolmate-portal.web.app](https://schoolmate-portal.web.app/).
+- **Compositor unificat** pentru anunțuri, concursuri, tabere, voluntariat și vacanțe — audiență „toată școala" sau listă explicită de clase, cu imagine, dată eveniment și link.
+- **Management conturi**: elevi, profesori, părinți, admini — creare, căutare, reset parolă, mutare între clase, asociere părinte-copil.
+- **Management clase** și **configurare orar** (ore de start, durate sloturi, layout pe zile).
+- **Calendar de vacanțe**.
+- **Audit log porți** (`admin_turnstiles_page`) — istoric scanări QR cu nume elev, clasă, rezultat (allowed / denied), motiv și timestamp.
 
 ### Părinte
-- Vizualizare unificată pentru toți copiii: inbox, cereri, profil.
+Bottom nav cu 3 tab-uri: Home, Children, Profil. De pe Home se navighează spre:
+- **Inbox** cu postările relevante pentru clasele copiilor.
+- **Cereri** — aprobă sau respinge cererile copiilor.
+- **Orar** — selector de copil + orarul clasei alese.
+- **Lista copii** cu poză, nume, clasă, link către detalii fiecărui copil.
 
 ### Portar
-- Modul scanare QR la intrarea în școală.
+- **Meniu portar** cu ceas live.
+- **Scanner QR** (camera + lanternă, feedback sonor la scanare).
+- **Pagina de rezultat** — afișează numele elevului, clasa, „Exit recorded" sau „Access denied" cu motiv (ex: nu există cerere aprobată, deja folosit, ziua s-a încheiat); fiecare scanare e logată în Firestore pentru audit-ul din portalul admin.
 
 ## Stack tehnic
 
