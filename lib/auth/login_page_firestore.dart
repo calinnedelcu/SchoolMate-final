@@ -20,7 +20,7 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
   final userC = TextEditingController();
   final passC = TextEditingController();
   bool loading = false;
-  bool passwordVisible = false; // control vizibilitate parola
+  bool passwordVisible = false; // control password visibility
   DateTime? _blockedUntil;
   Timer? _countdownTimer;
   String _actorKey = '';

@@ -1019,105 +1019,107 @@ class _ShortcutTile extends StatelessWidget {
               painter: _WhiteCardDecorPainter(variant: hasBadge ? 1 : 3),
             ),
           ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: onTap,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(hasBadge ? 13 : 15, 14, 13, 13),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 45,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            _primary.withValues(alpha: 0.12),
-                            _primary.withValues(alpha: 0.06),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(13),
-                        border: Border.all(
-                          color: _primary.withValues(alpha: 0.10),
-                          width: 1,
-                        ),
-                      ),
-                      child: Icon(icon, color: _primary, size: 23),
-                    ),
-                    if (hasBadge)
-                      Positioned(
-                        right: -4,
-                        top: -4,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 5,
-                            vertical: 1,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 18,
-                            minHeight: 18,
-                          ),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: _pencilYellow,
-                            borderRadius: BorderRadius.circular(9),
-                            border: Border.all(
-                              color: Colors.white,
-                              width: 1.5,
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: onTap,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(hasBadge ? 13 : 15, 14, 13, 13),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: 45,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  _primary.withValues(alpha: 0.12),
+                                  _primary.withValues(alpha: 0.06),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(13),
+                              border: Border.all(
+                                color: _primary.withValues(alpha: 0.10),
+                                width: 1,
+                              ),
                             ),
+                            child: Icon(icon, color: _primary, size: 23),
                           ),
-                          child: Text(
-                            badgeCount > 9 ? '9+' : '$badgeCount',
+                          if (hasBadge)
+                            Positioned(
+                              right: -4,
+                              top: -4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5,
+                                  vertical: 1,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: _pencilYellow,
+                                  borderRadius: BorderRadius.circular(9),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Text(
+                                  badgeCount > 9 ? '9+' : '$badgeCount',
+                                  style: const TextStyle(
+                                    color: _onSurface,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            title,
                             style: const TextStyle(
                               color: _onSurface,
-                              fontSize: 10,
+                              fontSize: 17,
                               fontWeight: FontWeight.w800,
+                              height: 1.15,
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 3),
+                          Text(
+                            subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: hasBadge ? _primary : _labelColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
-                  ],
+                    ],
+                  ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: _onSurface,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        height: 1.15,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: hasBadge ? _primary : _labelColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
         ],
       ),
     );

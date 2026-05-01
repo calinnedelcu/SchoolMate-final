@@ -2981,7 +2981,7 @@ class _TurnstilesSidebar extends StatelessWidget {
           _SidebarTile(
             label: 'Holidays',
             icon: Icons.event_available_rounded,
-            selected: selected == 'vacante',
+            selected: selected == 'holidays',
             onTap: onVacanteTap,
           ),
           _SidebarTile(
