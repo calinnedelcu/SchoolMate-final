@@ -740,8 +740,11 @@ class _RecentItem extends StatelessWidget {
 
     final scanResult = (data['scanResult'] ?? '').toString().toLowerCase();
     final isAllowed = scanResult == 'allowed';
-    final displayedName =
-        isAllowed ? name : (reason.isNotEmpty ? reason : 'Denied');
+    final displayedName = isAllowed
+        ? name
+        : (rawReasonRaw == 'NO_ACTIVE_LEAVE'
+            ? '$name - $reason'
+            : (reason.isNotEmpty ? reason : 'Denied'));
     final classCode = (data['classId'] ?? '').toString();
     final color = isAllowed ? _live : _denied;
     final label = isAllowed ? 'ALLOWED' : 'DENIED';

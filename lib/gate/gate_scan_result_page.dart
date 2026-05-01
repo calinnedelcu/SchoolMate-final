@@ -826,7 +826,7 @@ class _StatusBanner extends StatelessWidget {
     title = ok ? 'EXIT GRANTED' : 'ACCESS DENIED';
     if (ok) {
       desc = args.hasActiveLeave
-          ? 'Approved leave on file.'
+          ? 'Approved leave request.'
           : (isDayFinished ? 'Classes for today are finished.' : 'Student access verified.');
     } else {
       final rawReason = (args.reason == 'NO_ACTIVE_LEAVE')

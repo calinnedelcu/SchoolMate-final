@@ -59,9 +59,7 @@ class _GateScanPageState extends State<GateScanPage> {
       final reason = (res['reason'] ?? '').toString(); // Will be null if ok is true
       final hasActiveLeave = (res['hasActiveLeave'] ?? false) as bool;
 
-      if (ok) {
-        await _playScanSound();
-      }
+      await _playScanSound();
 
       if (!mounted) return;
       await Navigator.of(context).pushNamed(
