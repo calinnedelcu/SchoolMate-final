@@ -13,6 +13,7 @@ const _kPrimary = Color(0xFF2848B0);
 const _kPageBg = Color(0xFFF2F4F8);
 const _kTextPrimary = Color(0xFF1A2050);
 const _kTextMuted = Color(0xFF7A7E9A);
+const _kAudienceAll = '__ALL__';
 
 enum UnifiedInboxRole { student, parent, teacher }
 
@@ -41,6 +42,7 @@ class UnifiedMessagesPage extends StatefulWidget {
 class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
   bool _loadingChildren = false;
   List<String> _childrenUids = const <String>[];
+  List<String> _childrenClassIds = const <String>[];
   Map<String, String> _childNames = const <String, String>{};
   String _teacherClassId = '';
   bool _loadingTeacherClass = false;
@@ -88,6 +90,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
         setState(() {
           _loadingChildren = false;
           _childrenUids = const <String>[];
+          _childrenClassIds = const <String>[];
           _childNames = const <String, String>{};
         });
       }
@@ -102,11 +105,13 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
       final parentData = parentDoc.data() ?? const <String, dynamic>{};
       final childIds = await _loadLinkedChildrenUids(uid, parentData);
       final childNames = await _loadUserLabels(childIds.toSet());
+      final childClassIds = _readStringList(parentData['childrenClassIds']);
 
       if (mounted) {
         setState(() {
           _loadingChildren = false;
           _childrenUids = childIds;
+          _childrenClassIds = childClassIds;
           _childNames = childNames;
         });
       }
@@ -115,10 +120,50 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
         setState(() {
           _loadingChildren = false;
           _childrenUids = const <String>[];
+          _childrenClassIds = const <String>[];
           _childNames = const <String, String>{};
         });
       }
     }
+  }
+
+  List<String> _readStringList(dynamic value) {
+    if (value is! List) return const <String>[];
+    final out = value
+        .map((v) => v.toString().trim())
+        .where((v) => v.isNotEmpty)
+        .toSet()
+        .toList();
+    out.sort();
+    return out;
+  }
+
+  List<String> _audienceFilterForClass(String classId) => <String>[
+        _kAudienceAll,
+        if (classId.trim().isNotEmpty) classId.trim(),
+      ];
+
+  List<String> _audienceFilterForParent() => <String>[
+        _kAudienceAll,
+        ..._childrenClassIds,
+      ];
+
+  List<Stream<QuerySnapshot<Map<String, dynamic>>>> _studentBroadcastStreams(
+    CollectionReference<Map<String, dynamic>> base,
+    List<String> audienceIds,
+  ) {
+    final ids = audienceIds
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    return [
+      for (final id in ids)
+        base
+            .where('recipientRole', isEqualTo: 'student')
+            .where('recipientUid', isEqualTo: '')
+            .where('audienceClassIds', arrayContains: id)
+            .snapshots(),
+    ];
   }
 
   Future<List<String>> _loadLinkedChildrenUids(
@@ -147,10 +192,10 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
     switch (widget.role) {
       case UnifiedInboxRole.student:
         return [
-          base
-              .where('recipientRole', isEqualTo: 'student')
-              .where('recipientUid', isEqualTo: '')
-              .snapshots(),
+          ..._studentBroadcastStreams(
+            base,
+            _audienceFilterForClass(AppSession.classId ?? ''),
+          ),
           base
               .where('recipientRole', isEqualTo: 'student')
               .where('recipientUid', isEqualTo: uid)
@@ -168,10 +213,10 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
               .where('recipientUid', isEqualTo: uid)
               .snapshots(),
           // Same student-broadcasts the teacher's class sees
-          base
-              .where('recipientRole', isEqualTo: 'student')
-              .where('recipientUid', isEqualTo: '')
-              .snapshots(),
+          ..._studentBroadcastStreams(
+            base,
+            _audienceFilterForClass(_teacherClassId),
+          ),
         ];
       case UnifiedInboxRole.parent:
         return [
@@ -188,10 +233,7 @@ class _UnifiedMessagesPageState extends State<UnifiedMessagesPage> {
           ),
           // Student-targeted: parents see school-wide broadcasts and
           // messages addressed to any of their children.
-          base
-              .where('recipientRole', isEqualTo: 'student')
-              .where('recipientUid', isEqualTo: '')
-              .snapshots(),
+          ..._studentBroadcastStreams(base, _audienceFilterForParent()),
           ..._childrenUids.map(
             (childUid) => base
                 .where('recipientRole', isEqualTo: 'student')

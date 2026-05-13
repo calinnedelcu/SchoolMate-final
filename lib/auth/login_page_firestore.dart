@@ -275,11 +275,11 @@ class _LoginPageFirestoreState extends State<LoginPageFirestore> {
                             );
                             return;
                           }
-                          if (newPass.length < 6) {
+                          if (newPass.length < 8) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                  'Password must be at least 6 characters.',
+                                  'Password must be at least 8 characters.',
                                 ),
                               ),
                             );

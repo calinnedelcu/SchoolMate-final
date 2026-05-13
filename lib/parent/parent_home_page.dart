@@ -51,6 +51,7 @@ const _onSurface = Color(0xFF1A2050);
 const _labelColor = Color(0xFF7A7E9A);
 const _pencilYellow = Color(0xFFF5C518);
 const _danger = Color(0xFFB03040);
+const _kAudienceAll = '__ALL__';
 
 void _drawSymbol(
   Canvas canvas,
@@ -217,6 +218,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
                       .where((s) => s.isNotEmpty)
                       .toList()
                 : <String>[];
+            final childrenClassIds = _readStringList(data['childrenClassIds']);
             final serverInboxLastOpened =
                 (data['inboxLastOpenedAt'] as Timestamp?)?.toDate();
             final inboxLastOpened = _effectiveLastOpened(
@@ -273,6 +275,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
                             _ParentAnnouncementsCard(
                               parentUid: uid,
                               childrenUids: childrenUids,
+                              childrenClassIds: childrenClassIds,
                               inboxLastOpened: inboxLastOpened,
                               onTap: () async {
                                 await _openInbox(context, uid);
@@ -296,6 +299,17 @@ class _ParentHomePageState extends State<ParentHomePage> {
     if (serverValue == null) return localValue;
     if (localValue == null) return serverValue;
     return localValue.isAfter(serverValue) ? localValue : serverValue;
+  }
+
+  List<String> _readStringList(dynamic value) {
+    if (value is! List) return const <String>[];
+    final out = value
+        .map((v) => v.toString().trim())
+        .where((v) => v.isNotEmpty)
+        .toSet()
+        .toList();
+    out.sort();
+    return out;
   }
 
   Future<void> _openInbox(BuildContext context, String uid) async {
@@ -617,12 +631,14 @@ class _UnreadInboxStat extends StatelessWidget {
 class _ParentAnnouncementsCard extends StatelessWidget {
   final String parentUid;
   final List<String> childrenUids;
+  final List<String> childrenClassIds;
   final DateTime? inboxLastOpened;
   final VoidCallback onTap;
 
   const _ParentAnnouncementsCard({
     required this.parentUid,
     required this.childrenUids,
+    required this.childrenClassIds,
     required this.inboxLastOpened,
     required this.onTap,
   });
@@ -636,6 +652,10 @@ class _ParentAnnouncementsCard extends StatelessWidget {
 
   List<Stream<QuerySnapshot<Map<String, dynamic>>>> _buildSecretariatStreams() {
     final base = FirebaseFirestore.instance.collection('secretariatMessages');
+    final audienceFilter = <String>[
+      _kAudienceAll,
+      ...childrenClassIds,
+    ];
     return [
       // Parent-targeted: broadcasts + per-child messages
       base
@@ -654,6 +674,7 @@ class _ParentAnnouncementsCard extends StatelessWidget {
       base
           .where('recipientRole', isEqualTo: 'student')
           .where('recipientUid', isEqualTo: '')
+          .where('audienceClassIds', arrayContainsAny: audienceFilter)
           .limit(20)
           .snapshots(),
       ...childrenUids.map(

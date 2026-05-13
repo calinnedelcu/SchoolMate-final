@@ -1,5 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
+import org.gradle.api.GradleException
 
 plugins {
     id("com.android.application")
@@ -15,6 +16,14 @@ val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+val releaseTaskRequested = gradle.startParameter.taskNames.any {
+    it.contains("Release", ignoreCase = true)
+}
+if (releaseTaskRequested && !keystorePropertiesFile.exists()) {
+    throw GradleException(
+        "Missing android/key.properties. Release builds must be signed with a real release keystore."
+    )
 }
 
 android {
@@ -44,9 +53,9 @@ android {
     }
 
     defaultConfig {
-        // TODO: rename applicationId to a real package (e.g. "ro.schoolmate.app").
-        // Renaming requires updating Firebase OAuth client IDs, SHA-1 fingerprints in Firebase console,
-        // and re-downloading google-services.json. Do not change without coordinating those updates.
+        // Launch note: this package currently matches google-services.json.
+        // Rename only together with Firebase Android app config, OAuth clients,
+        // SHA fingerprints, and a freshly downloaded google-services.json.
         applicationId = "com.example.firster"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.

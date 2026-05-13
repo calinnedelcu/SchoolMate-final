@@ -34,6 +34,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: functions/package-lock.json
       - run: npm ci
+      - run: npm run check
       - run: npm run lint --if-present
 
   rules:

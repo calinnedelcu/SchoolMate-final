@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../common/link_utils.dart';
 import '../common/storage_image.dart';
+import '../core/session.dart';
 import 'admin_post_composer_page.dart';
 
 const _bg = Color(0xFFF2F4F8);
@@ -119,9 +120,12 @@ class AdminPostsAnnouncementsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _StatsRow(),
+            _StatsRow(mode: mode),
             const SizedBox(height: 28),
-            _PostsList(onNewPost: () => _openComposer(context)),
+            _PostsList(
+              mode: mode,
+              onNewPost: () => _openComposer(context),
+            ),
           ],
         ),
       ),
@@ -142,7 +146,29 @@ class AdminPostsAnnouncementsPage extends StatelessWidget {
 // Stats Row
 
 class _StatsRow extends StatelessWidget {
-  const _StatsRow();
+  final PostComposerMode mode;
+  const _StatsRow({required this.mode});
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> _postsStream() {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance
+        .collection('secretariatMessages')
+        .where('messageType', isEqualTo: 'secretariatGlobal')
+        .where('recipientRole', isEqualTo: 'student')
+        .where('recipientUid', isEqualTo: '');
+
+    if (mode == PostComposerMode.teacher) {
+      final classId = (AppSession.classId ?? '').trim();
+      query = query.where(
+        'audienceClassIds',
+        arrayContainsAny: [
+          kAudienceAll,
+          if (classId.isNotEmpty) classId,
+        ],
+      );
+    }
+
+    return query.snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,12 +178,7 @@ class _StatsRow extends StatelessWidget {
         1);
 
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('secretariatMessages')
-          .where('messageType', isEqualTo: 'secretariatGlobal')
-          .where('recipientRole', isEqualTo: 'student')
-          .where('recipientUid', isEqualTo: '')
-          .snapshots(),
+      stream: _postsStream(),
       builder: (context, snap) {
         final allDocs = snap.data?.docs ?? [];
         final publishedCount = allDocs
@@ -351,8 +372,12 @@ class _StatCard extends StatelessWidget {
 const _kFilterAll = 'all';
 
 class _PostsList extends StatefulWidget {
+  final PostComposerMode mode;
   final VoidCallback onNewPost;
-  const _PostsList({required this.onNewPost});
+  const _PostsList({
+    required this.mode,
+    required this.onNewPost,
+  });
 
   @override
   State<_PostsList> createState() => _PostsListState();
@@ -369,6 +394,27 @@ class _PostsListState extends State<_PostsList> {
     ('volunteer', 'Volunteer', Icons.volunteer_activism_rounded),
     ('vacation', 'Vacation', Icons.beach_access_rounded),
   ];
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> _schoolPostsStream() {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance
+        .collection('secretariatMessages')
+        .where('messageType', isEqualTo: 'secretariatGlobal')
+        .where('recipientRole', isEqualTo: 'student')
+        .where('recipientUid', isEqualTo: '');
+
+    if (widget.mode == PostComposerMode.teacher) {
+      final classId = (AppSession.classId ?? '').trim();
+      query = query.where(
+        'audienceClassIds',
+        arrayContainsAny: [
+          kAudienceAll,
+          if (classId.isNotEmpty) classId,
+        ],
+      );
+    }
+
+    return query.limit(80).snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -463,13 +509,7 @@ class _PostsListState extends State<_PostsList> {
         ),
         const SizedBox(height: 14),
         StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('secretariatMessages')
-              .where('messageType', isEqualTo: 'secretariatGlobal')
-              .where('recipientRole', isEqualTo: 'student')
-              .where('recipientUid', isEqualTo: '')
-              .limit(80)
-              .snapshots(),
+          stream: _schoolPostsStream(),
           builder: (context, msgSnap) {
             return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
