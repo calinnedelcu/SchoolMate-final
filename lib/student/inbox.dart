@@ -48,6 +48,7 @@ class _InboxScreenState extends State<InboxScreen> {
   Stream<QuerySnapshot<Map<String, dynamic>>>? _leaveStream;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _secretariatStream;
   Stream<QuerySnapshot<Map<String, dynamic>>>? _secretariatGlobalStream;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _secretariatClassStream;
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _itemKeys = {};
   String? _activeHighlightId;
@@ -73,12 +74,25 @@ class _InboxScreenState extends State<InboxScreen> {
           .limit(50)
           .snapshots();
 
+      final classId = (AppSession.classId ?? '').trim();
+
       _secretariatGlobalStream = FirebaseFirestore.instance
           .collection('secretariatMessages')
           .where('recipientUid', isEqualTo: '')
           .where('recipientRole', isEqualTo: 'student')
+          .where('audienceClassIds', arrayContains: _kAudienceAll)
           .limit(50)
           .snapshots();
+
+      if (classId.isNotEmpty) {
+        _secretariatClassStream = FirebaseFirestore.instance
+            .collection('secretariatMessages')
+            .where('recipientUid', isEqualTo: '')
+            .where('recipientRole', isEqualTo: 'student')
+            .where('audienceClassIds', arrayContains: classId)
+            .limit(50)
+            .snapshots();
+      }
 
     }
   }
@@ -182,7 +196,6 @@ class _InboxScreenState extends State<InboxScreen> {
     final diff = today.difference(msgDay).inDays;
     if (diff == 0) return time;
     if (diff == 1) return 'Yesterday';
-    if (diff > 10) return null;
     return '${sentAt.day}.${sentAt.month.toString().padLeft(2, '0')}.${sentAt.year}';
   }
 
@@ -445,11 +458,23 @@ class _InboxScreenState extends State<InboxScreen> {
                   return const _InboxErrorView();
                 }
 
-                return _buildLoadedBody(
-                  leaveDocs: snapshot.data!.docs,
-                  secretariatDocs:
-                      secretariatSnap.data?.docs ?? const [],
-                  globalDocs: globalSnap.data?.docs ?? const [],
+                return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  stream: _secretariatClassStream,
+                  builder: (context, classSnap) {
+                    if (classSnap.hasError) {
+                      return const _InboxErrorView();
+                    }
+
+                    return _buildLoadedBody(
+                      leaveDocs: snapshot.data!.docs,
+                      secretariatDocs:
+                          secretariatSnap.data?.docs ?? const [],
+                      globalDocs: [
+                        ...?globalSnap.data?.docs,
+                        ...?classSnap.data?.docs,
+                      ],
+                    );
+                  },
                 );
               },
             );
@@ -484,7 +509,10 @@ class _InboxScreenState extends State<InboxScreen> {
         .toList();
     // Broadcasts (recipientUid == ''): may be announcement / competition / camp.
     // Filter by audience client-side for backward compat.
-    final announcementItems = globalDocs
+    final broadcastDocsById = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{
+      for (final doc in globalDocs) doc.id: doc,
+    };
+    final announcementItems = broadcastDocsById.values
         .where((doc) {
           final data = doc.data();
           final status = (data['status'] ?? 'active').toString();

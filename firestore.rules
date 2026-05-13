@@ -148,7 +148,34 @@ service cloud.firestore {
     }
 
     function validSecretariatMessageCreate() {
-      return isAdmin() &&
+      return request.resource.data.keys().hasOnly([
+            'recipientRole',
+            'recipientUid',
+            'studentUid',
+            'studentUsername',
+            'studentName',
+            'classId',
+            'recipientName',
+            'recipientUsername',
+            'message',
+            'title',
+            'category',
+            'audienceClassIds',
+            'audienceLabel',
+            'location',
+            'link',
+            'eventDate',
+            'eventEndDate',
+            'createdAt',
+            'senderUid',
+            'senderName',
+            'senderRole',
+            'broadcastId',
+            'messageType',
+            'source',
+            'status',
+            'imageUrl',
+          ]) &&
           request.resource.data.keys().hasAll([
             'recipientRole',
             'recipientUid',
@@ -157,22 +184,45 @@ service cloud.firestore {
             'classId',
             'message',
             'title',
+            'category',
+            'audienceClassIds',
+            'audienceLabel',
             'createdAt',
             'senderUid',
             'senderName',
+            'senderRole',
             'broadcastId',
             'messageType',
             'source',
+            'status',
           ]) &&
-          ['student', 'parent', 'teacher'].hasAny([
-            request.resource.data.recipientRole,
-          ]) &&
+          request.resource.data.recipientRole == 'student' &&
           request.resource.data.recipientUid == '' &&
           request.resource.data.studentUid == '' &&
-          request.resource.data.source == 'secretariat' &&
           request.resource.data.messageType == 'secretariatGlobal' &&
           request.resource.data.senderUid == request.auth.uid &&
+          request.resource.data.status == 'active' &&
           request.resource.data.createdAt is timestamp;
+    }
+
+    function validPostCategory() {
+      return ['announcement', 'competition', 'camp', 'volunteer', 'vacation']
+          .hasAny([request.resource.data.category]);
+    }
+
+    function validAudienceList() {
+      return request.resource.data.audienceClassIds is list &&
+          request.resource.data.audienceClassIds.size() > 0 &&
+          request.resource.data.audienceClassIds.size() <= 12;
+    }
+
+    function validAdminSecretariatMessageCreate() {
+      return isAdmin() &&
+          validSecretariatMessageCreate() &&
+          validPostCategory() &&
+          validAudienceList() &&
+          request.resource.data.source == 'secretariat' &&
+          request.resource.data.senderRole == 'admin';
     }
 
     // Teachers may broadcast to their own class OR to the whole school. The
@@ -181,29 +231,10 @@ service cloud.firestore {
     // either the teacher's own classId or the school-wide sentinel.
     function validTeacherSecretariatMessageCreate() {
       return isTeacher() &&
-          request.resource.data.keys().hasAll([
-            'recipientRole',
-            'recipientUid',
-            'studentUid',
-            'studentName',
-            'classId',
-            'message',
-            'title',
-            'createdAt',
-            'senderUid',
-            'senderName',
-            'broadcastId',
-            'messageType',
-            'source',
-            'audienceClassIds',
-          ]) &&
-          request.resource.data.recipientRole == 'student' &&
-          request.resource.data.recipientUid == '' &&
-          request.resource.data.studentUid == '' &&
+          validSecretariatMessageCreate() &&
+          validPostCategory() &&
           request.resource.data.source == 'teacher' &&
-          request.resource.data.messageType == 'secretariatGlobal' &&
-          request.resource.data.senderUid == request.auth.uid &&
-          request.resource.data.createdAt is timestamp &&
+          request.resource.data.senderRole == 'teacher' &&
           request.resource.data.audienceClassIds is list &&
           request.resource.data.audienceClassIds.size() == 1 &&
           (request.resource.data.audienceClassIds[0] == me().classId ||
@@ -229,10 +260,25 @@ service cloud.firestore {
     // visibility for "X reads Y-targeted message" must be tightened.
 
     function secretariatStudentReadsStudentMsg() {
-      // Student reads a student-targeted message when it is addressed to
-      // them directly OR is a school-wide student broadcast.
+      // Student reads a student-targeted message when it is addressed to them
+      // directly OR when the broadcast audience includes their class.
       return resource.data.recipientUid == request.auth.uid ||
-          resource.data.recipientUid == '';
+          (resource.data.recipientUid == '' &&
+              audienceVisibleToClass(me().classId));
+    }
+
+    function audienceVisibleToClass(classId) {
+      return resource.data.audienceClassIds is list &&
+          (resource.data.audienceClassIds.hasAny(['__ALL__']) ||
+              (classId is string && classId != '' &&
+                  resource.data.audienceClassIds.hasAny([classId])));
+    }
+
+    function audienceVisibleToParentChildren() {
+      return resource.data.audienceClassIds is list &&
+          (resource.data.audienceClassIds.hasAny(['__ALL__']) ||
+              (me().childrenClassIds is list &&
+                  resource.data.audienceClassIds.hasAny(me().childrenClassIds)));
     }
 
     function secretariatParentReadsParentMsg() {
@@ -244,9 +290,10 @@ service cloud.firestore {
 
     function secretariatParentReadsStudentMsg() {
       // Parent also sees student-targeted announcements that touch their
-      // children: school-wide student broadcasts, or messages tied to a
-      // specific student/parent uid that resolves to one of their children.
-      return resource.data.recipientUid == '' ||
+      // children: class/school broadcasts matching their children's classes,
+      // or direct messages tied to one of their children.
+      return (resource.data.recipientUid == '' &&
+              audienceVisibleToParentChildren()) ||
           isParentOfStudent(resource.data.recipientUid) ||
           isParentOfStudent(resource.data.studentUid);
     }
@@ -259,10 +306,10 @@ service cloud.firestore {
     }
 
     function secretariatTeacherReadsStudentMsg() {
-      // Teachers see school-wide student broadcasts so they get the same
-      // announcements as their students. Direct/per-class targeting is not
-      // implemented here intentionally.
-      return resource.data.recipientUid == '';
+      // Teachers see student broadcasts only when the post is for their class
+      // or the whole school.
+      return resource.data.recipientUid == '' &&
+          audienceVisibleToClass(me().classId);
     }
 
     function canReadSecretariatMessage() {
@@ -277,6 +324,23 @@ service cloud.firestore {
               secretariatTeacherReadsTeacherMsg()) ||
           (isTeacher() && resource.data.recipientRole == 'student' &&
               secretariatTeacherReadsStudentMsg());
+    }
+
+    function canListSecretariatMessages() {
+      return isAdmin() ||
+          (isStudent() &&
+              resource.data.recipientRole == 'student' &&
+              (resource.data.recipientUid == request.auth.uid ||
+                  resource.data.recipientUid == '')) ||
+          (isTeacher() &&
+              ((resource.data.recipientRole == 'teacher' &&
+                    (resource.data.recipientUid == request.auth.uid ||
+                        resource.data.recipientUid == '')) ||
+                  (resource.data.recipientRole == 'student' &&
+                      resource.data.recipientUid == ''))) ||
+          (isParent() &&
+              (resource.data.recipientRole == 'parent' ||
+                  resource.data.recipientRole == 'student'));
     }
 
     match /users/{userId} {
@@ -317,6 +381,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /publicProfilesByUsername/{username} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
     match /classes/{classId} {
       // Secretariat UI reads class lists directly from Firestore.
       // Keep writes admin-only, but allow reads for authenticated users.
@@ -338,8 +407,9 @@ service cloud.firestore {
     }
 
     match /secretariatMessages/{messageId} {
-      allow read: if canReadSecretariatMessage();
-      allow create: if validSecretariatMessageCreate() ||
+      allow get: if canReadSecretariatMessage();
+      allow list: if canListSecretariatMessages();
+      allow create: if validAdminSecretariatMessageCreate() ||
           validTeacherSecretariatMessageCreate();
       allow update: if isAdmin() || validTeacherSecretariatMessageUpdate();
       allow delete: if isAdmin() ||

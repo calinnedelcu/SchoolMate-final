@@ -570,7 +570,22 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
           ),
           GestureDetector(
             onTap: () {
-              // TODO: open IT support link / dialog
+              showDialog<void>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text('IT support'),
+                  content: const Text(
+                    'For account or photo upload help, contact the school IT '
+                    'support team or the secretariat.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
             },
             child: const Text(
               'Contact IT support',

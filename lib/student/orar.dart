@@ -1908,11 +1908,11 @@ class _PersonInfoBox extends StatelessWidget {
       return _ProfileDetailRow(label: label, value: 'Not set', icon: icon);
     }
 
-    if (teacherUid.isNotEmpty) {
+    if (teacherUsername.isNotEmpty) {
       return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(teacherUid)
+            .collection('publicProfilesByUsername')
+            .doc(teacherUsername.toLowerCase())
             .snapshots(),
         builder: (context, snapshot) {
           final teacherData = snapshot.data?.data() ?? <String, dynamic>{};
@@ -1927,16 +1927,15 @@ class _PersonInfoBox extends StatelessWidget {
       );
     }
 
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
           .collection('users')
-          .where('username', isEqualTo: teacherUsername.toLowerCase())
-          .limit(1)
+          .doc(teacherUid)
+          .collection('publicProfile')
+          .doc('main')
           .snapshots(),
       builder: (context, snapshot) {
-        final teacherData = snapshot.hasData && snapshot.data!.docs.isNotEmpty
-            ? snapshot.data!.docs.first.data()
-            : const <String, dynamic>{};
+        final teacherData = snapshot.data?.data() ?? const <String, dynamic>{};
         final teacherName = _resolveDisplayName(
           fullName: teacherData['fullName'],
           username: teacherData['username'],

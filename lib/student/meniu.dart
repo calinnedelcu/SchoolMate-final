@@ -590,6 +590,11 @@ class _InboxPreviewCard extends StatelessWidget {
                       .limit(20)
                       .snapshots(),
             builder: (context, secretariatSnapshot) {
+              final audienceFilter = <String>[
+                '__ALL__',
+                if ((AppSession.classId ?? '').trim().isNotEmpty)
+                  (AppSession.classId ?? '').trim(),
+              ];
               return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                 stream: studentUid.isEmpty
                     ? null
@@ -597,6 +602,10 @@ class _InboxPreviewCard extends StatelessWidget {
                           .collection('secretariatMessages')
                           .where('recipientUid', isEqualTo: '')
                           .where('recipientRole', isEqualTo: 'student')
+                          .where(
+                            'audienceClassIds',
+                            arrayContainsAny: audienceFilter,
+                          )
                           .limit(20)
                           .snapshots(),
                 builder: (context, globalSnapshot) {

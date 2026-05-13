@@ -376,7 +376,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           'startDate': Timestamp.fromDate(_eventDate!),
           'endDate': Timestamp.fromDate(_eventEndDate!),
           'createdAt': FieldValue.serverTimestamp(),
-          'imageUrl': ?imageUrl,
+          if (imageUrl != null) 'imageUrl': imageUrl,
         });
         // Broadcast to students; parents see student-targeted broadcasts via
         // Firestore rules.
@@ -408,7 +408,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           'messageType': 'secretariatGlobal',
           'source': 'secretariat',
           'status': 'active',
-          'imageUrl': ?imageUrl,
+          if (imageUrl != null) 'imageUrl': imageUrl,
         });
       } else {
         // Announcement / Competition / Camp → secretariatMessages broadcast.
@@ -443,7 +443,7 @@ class _AdminPostComposerPageState extends State<AdminPostComposerPage> {
           'messageType': 'secretariatGlobal',
           'source': senderRole == 'teacher' ? 'teacher' : 'secretariat',
           'status': 'active',
-          'imageUrl': ?imageUrl,
+          if (imageUrl != null) 'imageUrl': imageUrl,
         });
       }
 
@@ -1405,13 +1405,7 @@ class _PostsManagementList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('secretariatMessages')
-              .where('messageType', isEqualTo: 'secretariatGlobal')
-              .where('recipientRole', isEqualTo: 'student')
-              .where('recipientUid', isEqualTo: '')
-              .limit(80)
-              .snapshots(),
+          stream: _schoolPostsStream(),
           builder: (context, msgSnap) {
             return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
@@ -1526,6 +1520,26 @@ class _PostsManagementList extends StatelessWidget {
     // happen to target their class are not theirs to archive or delete.
     final senderUid = (d['createdBy'] ?? d['senderUid'] ?? '').toString();
     return senderUid == ownerUid;
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> _schoolPostsStream() {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance
+        .collection('secretariatMessages')
+        .where('messageType', isEqualTo: 'secretariatGlobal')
+        .where('recipientRole', isEqualTo: 'student')
+        .where('recipientUid', isEqualTo: '');
+
+    if (mode == PostComposerMode.teacher) {
+      query = query.where(
+        'audienceClassIds',
+        arrayContainsAny: [
+          kAudienceAll,
+          if (ownerClassId.isNotEmpty) ownerClassId,
+        ],
+      );
+    }
+
+    return query.limit(80).snapshots();
   }
 
   String _legacyAudienceLabel(Map<String, dynamic> d) {

@@ -19,7 +19,7 @@ function buildEmailHtml({ preheader, title, subtitle, code, expiryText, footerNo
 
         <!-- HEADER -->
         <tr><td style="background:linear-gradient(135deg,#1E3CA0 0%,#2E58D0 60%,#4070E0 100%);border-radius:16px 16px 0 0;padding:32px 40px 28px;text-align:center;">
-          <p style="margin:0 0 6px;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.3px;">MyStudentApp</p>
+          <p style="margin:0 0 6px;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.3px;">SchoolMate</p>
           <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:0.4px;">Digital School Platform</p>
         </td></tr>
 
@@ -41,7 +41,7 @@ function buildEmailHtml({ preheader, title, subtitle, code, expiryText, footerNo
         <!-- FOOTER NOTE -->
         <tr><td style="background:#F7F9FE;border:1px solid #E2E8F4;border-top:none;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;">
           <p style="margin:0;font-size:12px;color:#9BA5C0;line-height:1.6;">${footerNote}</p>
-          <p style="margin:12px 0 0;font-size:11px;color:#BFC6D8;">© ${new Date().getFullYear()} MyStudentApp · All rights reserved</p>
+          <p style="margin:12px 0 0;font-size:11px;color:#BFC6D8;">© ${new Date().getFullYear()} SchoolMate · All rights reserved</p>
         </td></tr>
 
       </table>
@@ -184,13 +184,16 @@ async function removeStudentFromParentChildren(studentUid) {
     if (parentsSnap.empty) return;
 
     const batch = db.batch();
+    const parentUids = [];
     for (const doc of parentsSnap.docs) {
+        parentUids.push(doc.id);
         batch.update(doc.ref, {
             children: admin.firestore.FieldValue.arrayRemove(studentUid),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
     }
     await batch.commit();
+    await Promise.all(parentUids.map((uid) => rebuildParentChildrenClassIds(uid)));
 }
 
 async function removeParentFromStudentParents(parentUid) {
@@ -206,6 +209,80 @@ async function removeParentFromStudentParents(parentUid) {
         });
     }
     await batch.commit();
+}
+
+async function getClassIdsForChildren(childUids) {
+    const ids = Array.from(new Set(
+        (childUids || [])
+            .map((uid) => String(uid || "").trim())
+            .filter(Boolean)
+    ));
+    if (ids.length === 0) return [];
+
+    const db = admin.firestore();
+    const classIds = new Set();
+    for (const uid of ids) {
+        const snap = await db.collection("users").doc(uid).get();
+        if (!snap.exists) continue;
+        const data = snap.data() || {};
+        if (String(data.role || "").trim() !== "student") continue;
+        const classId = String(data.classId || "").trim().toUpperCase();
+        if (classId) classIds.add(classId);
+    }
+    return Array.from(classIds).sort();
+}
+
+async function rebuildParentChildrenClassIds(parentUid) {
+    const uid = String(parentUid || "").trim();
+    if (!uid) return;
+
+    const db = admin.firestore();
+    const parentRef = db.collection("users").doc(uid);
+    const parentSnap = await parentRef.get();
+    if (!parentSnap.exists) return;
+
+    const parentData = parentSnap.data() || {};
+    if (String(parentData.role || "").trim() !== "parent") return;
+
+    const children = Array.isArray(parentData.children)
+        ? parentData.children.map((v) => String(v || "").trim()).filter(Boolean)
+        : [];
+    const classIds = await getClassIdsForChildren(children);
+    await parentRef.set({
+        childrenClassIds: classIds,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+}
+
+async function refreshParentsForStudent(studentUid) {
+    const uid = String(studentUid || "").trim();
+    if (!uid) return;
+
+    const db = admin.firestore();
+    const parentUids = new Set();
+
+    const studentSnap = await db.collection("users").doc(uid).get();
+    const parents = studentSnap.exists && Array.isArray(studentSnap.data()?.parents)
+        ? studentSnap.data().parents
+        : [];
+    for (const parentUid of parents) {
+        const clean = String(parentUid || "").trim();
+        if (clean) parentUids.add(clean);
+    }
+
+    const linkedParentsSnap = await db
+        .collection("users")
+        .where("children", "array-contains", uid)
+        .get();
+    for (const doc of linkedParentsSnap.docs) {
+        parentUids.add(doc.id);
+    }
+
+    await Promise.all(
+        Array.from(parentUids).map((parentUid) =>
+            rebuildParentChildrenClassIds(parentUid)
+        )
+    );
 }
 
 async function deleteByQueryInChunks(query, chunkSize = 400) {
@@ -547,7 +624,7 @@ exports.authRequestPasswordReset = onCall(async (request) => {
     const smtpUser = String(process.env.SMTP_USER || "").trim();
     const smtpPass = String(process.env.SMTP_PASS || "").trim();
     const smtpFromEmail = String(process.env.SMTP_FROM || smtpUser).trim();
-    const smtpFromName = String(process.env.SMTP_FROM_NAME || "MyStudentApp").trim();
+    const smtpFromName = String(process.env.SMTP_FROM_NAME || "SchoolMate").trim();
     const smtpFrom = `"${smtpFromName}" <${smtpFromEmail}>`;
 
     if (!smtpHost || !smtpUser || !smtpPass || !smtpFromEmail) {
@@ -571,10 +648,10 @@ exports.authRequestPasswordReset = onCall(async (request) => {
     await transporter.sendMail({
         from: smtpFrom,
         to: toEmail,
-        subject: "Resetare parolă — MyStudentApp",
+        subject: "Resetare parolă — SchoolMate",
         text: `Codul tau pentru resetarea parolei este ${code}. Codul expira in 30 de minute.`,
         html: buildEmailHtml({
-            preheader: `Your MyStudentApp password reset code is ${code}. Expires in 30 minutes.`,
+            preheader: `Your SchoolMate password reset code is ${code}. Expires in 30 minutes.`,
             title: "Password Reset",
             subtitle: "You requested a password reset for your account. Use the code below to continue.",
             code,
@@ -595,8 +672,8 @@ exports.authConfirmPasswordReset = onCall(async (request) => {
     if (!input || !code || !newPassword) {
         throw new HttpsError("invalid-argument", "Input, cod si parola noua sunt obligatorii");
     }
-    if (newPassword.length < 6) {
-        throw new HttpsError("invalid-argument", "Parola trebuie sa aiba minim 6 caractere");
+    if (newPassword.length < 8) {
+        throw new HttpsError("invalid-argument", "Parola trebuie sa aiba minim 8 caractere");
     }
 
     const resolved = await resolveUserByLoginInput(input);
@@ -642,8 +719,8 @@ exports.adminCreateUser = onCall(async (request) => {
     if (!USERNAME_RE.test(username)) {
         throw new HttpsError("invalid-argument", "Username invalid. Foloseste 3-30 caractere: litere mici, cifre, . _ -");
     }
-    if (password.length < 6) {
-        throw new HttpsError("invalid-argument", "Parola trebuie sa aiba minim 6 caractere");
+    if (password.length < 8) {
+        throw new HttpsError("invalid-argument", "Parola trebuie sa aiba minim 8 caractere");
     }
     if (fullName.length < 3) {
         throw new HttpsError("invalid-argument", "Numele complet este prea scurt");
@@ -827,8 +904,8 @@ exports.adminResetPassword = onCall(async (request) => {
 
     const username = String(request.data.username || "").trim().toLowerCase();
     const newPass = String(request.data.newPassword || "");
-    if (!newPass || newPass.length < 6) {
-        throw new HttpsError("invalid-argument", "Parola noua trebuie sa aiba minim 6 caractere");
+    if (!newPass || newPass.length < 8) {
+        throw new HttpsError("invalid-argument", "Parola noua trebuie sa aiba minim 8 caractere");
     }
 
     const uid = await getUidByUsername(username);
@@ -989,6 +1066,7 @@ exports.adminMoveStudentClass = onCall(async (request) => {
     const db = admin.firestore();
     const userRef = db.collection("users").doc(uid);
     const classRef = db.collection("classes").doc(newClassId);
+    let shouldRefreshParentClasses = false;
 
     await db.runTransaction(async (tx) => {
         const userSnap = await tx.get(userRef);
@@ -1001,6 +1079,7 @@ exports.adminMoveStudentClass = onCall(async (request) => {
         if (role !== "student" && role !== "teacher") {
             throw new HttpsError("failed-precondition", "Doar student/teacher poate fi mutat");
         }
+        shouldRefreshParentClasses = role === "student";
 
         const classSnap = await tx.get(classRef);
         if (!classSnap.exists) {
@@ -1044,6 +1123,10 @@ exports.adminMoveStudentClass = onCall(async (request) => {
             }, { merge: true });
         }
     });
+
+    if (shouldRefreshParentClasses) {
+        await refreshParentsForStudent(uid);
+    }
 
     return { ok: true, uid };
 });
@@ -1242,7 +1325,7 @@ exports.adminAssignParentToStudent = onCall(async (request) => {
     const studentRef = db.collection("users").doc(studentUid);
     const parentRef = db.collection("users").doc(parentUid);
 
-    return db.runTransaction(async (tx) => {
+    const result = await db.runTransaction(async (tx) => {
         const [studentSnap, parentSnap] = await Promise.all([tx.get(studentRef), tx.get(parentRef)]);
         if (!studentSnap.exists) {
             throw new HttpsError("not-found", "Elev inexistent");
@@ -1262,6 +1345,13 @@ exports.adminAssignParentToStudent = onCall(async (request) => {
 
         const parents = Array.isArray(studentData.parents) ? studentData.parents.map(String) : [];
         if (parents.includes(parentUid)) {
+            const studentClassId = String(studentData.classId || "").trim().toUpperCase();
+            if (studentClassId) {
+                tx.update(parentRef, {
+                    childrenClassIds: admin.firestore.FieldValue.arrayUnion(studentClassId),
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                });
+            }
             return { ok: true, changed: false };
         }
         if (parents.length >= 2) {
@@ -1274,11 +1364,20 @@ exports.adminAssignParentToStudent = onCall(async (request) => {
         });
         tx.update(parentRef, {
             children: admin.firestore.FieldValue.arrayUnion(studentUid),
+            ...(String(studentData.classId || "").trim()
+                ? {
+                    childrenClassIds: admin.firestore.FieldValue.arrayUnion(
+                        String(studentData.classId || "").trim().toUpperCase()
+                    ),
+                }
+                : {}),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
         return { ok: true, changed: true };
     });
+
+    return result;
 });
 
 exports.adminRemoveParentFromStudent = onCall(async (request) => {
@@ -1294,7 +1393,7 @@ exports.adminRemoveParentFromStudent = onCall(async (request) => {
     const studentRef = db.collection("users").doc(studentUid);
     const parentRef = db.collection("users").doc(parentUid);
 
-    return db.runTransaction(async (tx) => {
+    const result = await db.runTransaction(async (tx) => {
         const [studentSnap, parentSnap] = await Promise.all([tx.get(studentRef), tx.get(parentRef)]);
         if (!studentSnap.exists) {
             throw new HttpsError("not-found", "Elev inexistent");
@@ -1313,6 +1412,9 @@ exports.adminRemoveParentFromStudent = onCall(async (request) => {
         });
         return { ok: true, changed: true };
     });
+
+    await rebuildParentChildrenClassIds(parentUid);
+    return result;
 });
 exports.generateQrToken = onCall(async (request) => {
 
@@ -1590,10 +1692,10 @@ exports.sendVerificationEmail = onCall(async (request) => {
     const smtpUser = String(process.env.SMTP_USER || "").trim();
     const smtpPass = String(process.env.SMTP_PASS || "").trim();
     const smtpFromEmail = String(process.env.SMTP_FROM || smtpUser).trim();
-    const smtpFromName = String(process.env.SMTP_FROM_NAME || "MyStudentApp").trim();
+    const smtpFromName = String(process.env.SMTP_FROM_NAME || "SchoolMate").trim();
     const smtpFrom = `"${smtpFromName}" <${smtpFromEmail}>`;
 
-    console.log(`[sendVerificationEmail] SMTP config: host=${smtpHost} port=${smtpPort} user=${smtpUser} from=${smtpFrom} to=${email}`);
+    console.log("[sendVerificationEmail] SMTP config present; sending verification email");
 
     if (!smtpHost || !smtpUser || !smtpPass || !smtpFromEmail) {
         console.error("[sendVerificationEmail] SMTP neconfigurat");
@@ -1618,22 +1720,22 @@ exports.sendVerificationEmail = onCall(async (request) => {
         const info = await transporter.sendMail({
             from: smtpFrom,
             to: email,
-            subject: "Verify your email — MyStudentApp",
+            subject: "Verify your email — SchoolMate",
             text: `Your verification code is ${code}. It expires in 60 minutes.`,
             html: buildEmailHtml({
-                preheader: `Your MyStudentApp verification code is ${code}. Expires in 60 minutes.`,
+                preheader: `Your SchoolMate verification code is ${code}. Expires in 60 minutes.`,
                 title: "Verify your email address",
-                subtitle: "Welcome to MyStudentApp! Enter the code below in the app to confirm your email address.",
+                subtitle: "Welcome to SchoolMate! Enter the code below in the app to confirm your email address.",
                 code,
                 expiryText: "This code expires in <strong style=\"color:#1A2340;\">60 minutes</strong>.",
-                footerNote: "If you didn't create a MyStudentApp account, you can safely ignore this email.<br>Your email address will not be registered.",
+                footerNote: "If you didn't create a SchoolMate account, you can safely ignore this email.<br>Your email address will not be registered.",
                 iconEmoji: "✉️",
             }),
         });
-        console.log(`[sendVerificationEmail] Email trimis OK: messageId=${info.messageId} response=${info.response}`);
+        console.log("[sendVerificationEmail] Verification email sent");
     } catch (smtpErr) {
-        console.error(`[sendVerificationEmail] SMTP error: ${smtpErr.message}`, smtpErr);
-        throw new HttpsError("internal", `Nu am putut trimite emailul: ${smtpErr.message}`);
+        console.error("[sendVerificationEmail] SMTP error", smtpErr);
+        throw new HttpsError("internal", "Nu am putut trimite emailul. Verifica setarile SMTP.");
     }
 
     return { success: true };
@@ -1816,10 +1918,10 @@ async function sendTwoFactorEmail(to, code) {
     await transporter.sendMail({
         from: smtpFrom,
         to,
-        subject: "Your sign-in code — MyStudentApp",
+        subject: "Your sign-in code — SchoolMate",
         text: `Your two-factor authentication code is ${code}. It expires in 10 minutes.`,
         html: buildEmailHtml({
-            preheader: `Your MyStudentApp 2FA code is ${code}. Expires in 10 minutes.`,
+            preheader: `Your SchoolMate 2FA code is ${code}. Expires in 10 minutes.`,
             title: "Two-Factor Authentication",
             subtitle: "Someone is signing in to your account. Enter the code below to confirm it's you.",
             code,
@@ -2072,27 +2174,43 @@ function buildClaims(data) {
     return claims;
 }
 
-async function syncUserMirrors(uid, data) {
-    const publicRef = admin.firestore()
+async function syncUserMirrors(uid, data, beforeData = null) {
+    const db = admin.firestore();
+    const publicRef = db
         .collection("users").doc(uid)
         .collection("publicProfile").doc("main");
+    const beforeUsername = String(beforeData?.username || "").trim().toLowerCase();
 
     if (!data) {
         // User doc deleted: clear mirror and claims.
-        await Promise.all([
+        const deletes = [
             publicRef.delete().catch(() => null),
             admin.auth().setCustomUserClaims(uid, null).catch((e) => {
                 console.warn(`[syncUserMirrors] clear claims failed for ${uid}: ${e?.message}`);
             }),
-        ]);
+        ];
+        if (beforeUsername) {
+            deletes.push(db.collection("publicProfilesByUsername").doc(beforeUsername).delete().catch(() => null));
+        }
+        await Promise.all(deletes);
         return;
     }
 
     const publicProfile = buildPublicProfile(data);
+    publicProfile.uid = uid;
     const claims = buildClaims(data);
+    const username = String(data?.username || "").trim().toLowerCase();
+    const writes = [publicRef.set(publicProfile, { merge: false })];
+
+    if (beforeUsername && beforeUsername !== username) {
+        writes.push(db.collection("publicProfilesByUsername").doc(beforeUsername).delete().catch(() => null));
+    }
+    if (username) {
+        writes.push(db.collection("publicProfilesByUsername").doc(username).set(publicProfile, { merge: false }));
+    }
 
     await Promise.all([
-        publicRef.set(publicProfile, { merge: false }),
+        ...writes,
         admin.auth().setCustomUserClaims(uid, claims).catch((e) => {
             // Setting claims for a uid without an Auth account fails; log
             // but do not crash the trigger.
@@ -2106,15 +2224,30 @@ exports.onUserDocWrite = onDocumentWritten("users/{uid}", async (event) => {
     const after = event.data?.after?.data() || null;
     const before = event.data?.before?.data() || null;
 
+    const beforeRole = String(before?.role || "").trim();
+    const afterRole = String(after?.role || "").trim();
+    const wasOrIsStudent = beforeRole === "student" || afterRole === "student";
+    const classChanged = String(before?.classId || "") !== String(after?.classId || "");
+    const parentsChanged =
+        JSON.stringify(before?.parents || []) !== JSON.stringify(after?.parents || []);
+
     // Skip if neither publicProfile fields nor claim-driving fields changed.
     if (after && before) {
         const fieldsToWatch = [...PUBLIC_PROFILE_FIELDS];
         const changed = fieldsToWatch.some((f) => before[f] !== after[f]);
-        if (!changed) return;
+        if (!changed) {
+            if (wasOrIsStudent && (classChanged || parentsChanged)) {
+                await refreshParentsForStudent(uid);
+            }
+            return;
+        }
     }
 
     try {
-        await syncUserMirrors(uid, after);
+        await syncUserMirrors(uid, after, before);
+        if (wasOrIsStudent && (classChanged || parentsChanged)) {
+            await refreshParentsForStudent(uid);
+        }
     } catch (err) {
         console.error(`[onUserDocWrite] sync failed for ${uid}:`, err);
     }
@@ -2210,6 +2343,33 @@ exports.adminBackfillEmailLowerFields = onCall(async (request) => {
         ok: true,
         scanned,
         updated,
+        errors: errors.slice(0, 20),
+    };
+});
+
+exports.adminBackfillParentClassIds = onCall(async (request) => {
+    await assertAdmin(request);
+
+    const snap = await admin.firestore()
+        .collection("users")
+        .where("role", "==", "parent")
+        .get();
+
+    let processed = 0;
+    const errors = [];
+    for (const doc of snap.docs) {
+        try {
+            await rebuildParentChildrenClassIds(doc.id);
+            processed++;
+        } catch (e) {
+            errors.push({ uid: doc.id, error: String(e?.message || e) });
+        }
+    }
+
+    return {
+        ok: true,
+        total: snap.size,
+        processed,
         errors: errors.slice(0, 20),
     };
 });
