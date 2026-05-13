@@ -52,18 +52,24 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final routeArgs = ModalRoute.of(context)?.settings.arguments;
-    if (routeArgs is! GateScanResultPageArguments || _timetableFuture != null) return;
+    if (routeArgs is! GateScanResultPageArguments || _timetableFuture != null)
+      return;
     final args = routeArgs;
 
     if (args.classId != null && args.classId!.isNotEmpty) {
-      _timetableFuture = FirebaseFirestore.instance.collection('timetables').doc(args.classId!).get();
-      _timetableFuture!.then((doc) {
-        final isFinished = _calculateIsDayFinished(doc?.data());
-        _logAccessEvent(args, isFinished);
-      }).catchError((_) {
-        // Ensure we still log the attempt even if the timetable fetch fails
-        _logAccessEvent(args, false);
-      });
+      _timetableFuture = FirebaseFirestore.instance
+          .collection('timetables')
+          .doc(args.classId!)
+          .get();
+      _timetableFuture!
+          .then((doc) {
+            final isFinished = _calculateIsDayFinished(doc?.data());
+            _logAccessEvent(args, isFinished);
+          })
+          .catchError((_) {
+            // Ensure we still log the attempt even if the timetable fetch fails
+            _logAccessEvent(args, false);
+          });
     } else {
       _timetableFuture = Future.value(null);
       _logAccessEvent(args, false);
@@ -87,19 +93,23 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
       }
     }
 
-    FirebaseFirestore.instance.collection('accessEvents').add({
-      'classId': args.classId,
-      'fullName': args.fullName,
-      'gateUid': gateUid,
-      'reason': logReason,
-      'scanResult': finalOk ? 'allowed' : 'denied',
-      'timestamp': FieldValue.serverTimestamp(),
-      'tokenId': args.tokenId,
-      'userId': args.userId ?? args.studentId, // Ensure an ID is captured
-      if (args.errorMessage != null) 'error': args.errorMessage,
-    }).then<void>((_) {}).catchError((Object e) {
-      debugPrint('[GateScanResult] Firestore log failed: $e');
-    });
+    FirebaseFirestore.instance
+        .collection('accessEvents')
+        .add({
+          'classId': args.classId,
+          'fullName': args.fullName,
+          'gateUid': gateUid,
+          'reason': logReason,
+          'scanResult': finalOk ? 'allowed' : 'denied',
+          'timestamp': FieldValue.serverTimestamp(),
+          'tokenId': args.tokenId,
+          'userId': args.userId ?? args.studentId, // Ensure an ID is captured
+          if (args.errorMessage != null) 'error': args.errorMessage,
+        })
+        .then<void>((_) {})
+        .catchError((Object e) {
+          debugPrint('[GateScanResult] Firestore log failed: $e');
+        });
   }
 
   @override
@@ -152,7 +162,9 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
               children: [
                 PageBlueHeader(
                   title: 'Scan result',
-                  subtitle: (args.isAllowed || isDayFinished) ? 'Exit recorded' : 'Access denied',
+                  subtitle: (args.isAllowed || isDayFinished)
+                      ? 'Exit recorded'
+                      : 'Access denied',
                   onBack: () => Navigator.of(context).pop(),
                   trailing: _GatePill(),
                 ),
@@ -173,7 +185,9 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
                         const SizedBox(height: 14),
                         _ScheduleCard(
                           timetableData: timetableData,
-                          isLoading: snapshot.connectionState == ConnectionState.waiting,
+                          isLoading:
+                              snapshot.connectionState ==
+                              ConnectionState.waiting,
                         ),
                       ],
                     ),
@@ -202,7 +216,8 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
       final now = DateTime.now();
       final days = data['days'] as Map?;
       // Handle potential integer/string key mismatch for weekday
-      final dayData = (days?[now.weekday.toString()] ?? days?[now.weekday]) as Map?;
+      final dayData =
+          (days?[now.weekday.toString()] ?? days?[now.weekday]) as Map?;
 
       final parts = startStr.split(':');
       if (parts.length < 2) return false;
@@ -215,8 +230,8 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
         int.parse(parts[1]),
       );
 
-      DateTime actualLastLessonEnd = current; 
-      bool hasAnyAssignedLesson = false; 
+      DateTime actualLastLessonEnd = current;
+      bool hasAnyAssignedLesson = false;
 
       int lessonIndex = 0;
 
@@ -224,8 +239,10 @@ class _GateScanResultPageState extends State<GateScanResultPage> {
         final duration = (slot['duration'] as num? ?? 0).toInt();
         if (slot['type'] == 'lesson') {
           // Robust check for lesson presence at this index
-          final hasLesson = dayData != null && 
-              (dayData.containsKey(lessonIndex.toString()) || dayData.containsKey(lessonIndex));
+          final hasLesson =
+              dayData != null &&
+              (dayData.containsKey(lessonIndex.toString()) ||
+                  dayData.containsKey(lessonIndex));
           if (hasLesson) {
             actualLastLessonEnd = current.add(Duration(minutes: duration));
             hasAnyAssignedLesson = true;
@@ -493,10 +510,7 @@ class _ScheduleCard extends StatelessWidget {
         child: Center(
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: _primary,
-            ),
+            child: CircularProgressIndicator(strokeWidth: 2, color: _primary),
           ),
         ),
       );
@@ -526,8 +540,7 @@ class _ScheduleCard extends StatelessWidget {
     final now = DateTime.now();
     final days = timetableData!['days'] as Map?;
     final dayData =
-        (days?[now.weekday.toString()] ?? days?[now.weekday])
-            as Map? ??
+        (days?[now.weekday.toString()] ?? days?[now.weekday]) as Map? ??
         const <String, dynamic>{};
 
     final parts = startStr.split(':');
@@ -549,8 +562,8 @@ class _ScheduleCard extends StatelessWidget {
 
       if (type == 'lesson') {
         // Handle potential integer/string key mismatch for lesson index
-        final daySlotInfo = (dayData[lessonIndex.toString()] ?? dayData[lessonIndex]) 
-            as Map?;
+        final daySlotInfo =
+            (dayData[lessonIndex.toString()] ?? dayData[lessonIndex]) as Map?;
         final subjectId = daySlotInfo?['subjectId'] as String?;
 
         if (subjectId != null) {
@@ -559,8 +572,7 @@ class _ScheduleCard extends StatelessWidget {
               '${current.hour.toString().padLeft(2, '0')}:${current.minute.toString().padLeft(2, '0')}';
           final endFmt =
               '${lessonEnd.hour.toString().padLeft(2, '0')}:${lessonEnd.minute.toString().padLeft(2, '0')}';
-          final bool isNow =
-              now.isAfter(current) && now.isBefore(lessonEnd);
+          final bool isNow = now.isAfter(current) && now.isBefore(lessonEnd);
           final bool isCompleted = now.isAfter(lessonEnd);
           final bool isFuture = now.isBefore(current);
 
@@ -655,7 +667,10 @@ class _ScheduleItem extends StatelessWidget {
           Expanded(
             child: FutureBuilder<DocumentSnapshot>(
               future: subjectId != null
-                  ? FirebaseFirestore.instance.collection('subjects').doc(subjectId).get()
+                  ? FirebaseFirestore.instance
+                        .collection('subjects')
+                        .doc(subjectId)
+                        .get()
                   : null,
               builder: (context, snapshot) {
                 String label = '...';
@@ -723,11 +738,7 @@ class _DottedLinePainter extends CustomPainter {
       ..color = _hairline
       ..strokeWidth = 1;
     while (startX < size.width) {
-      canvas.drawLine(
-        Offset(startX, 0),
-        Offset(startX + dashWidth, 0),
-        paint,
-      );
+      canvas.drawLine(Offset(startX, 0), Offset(startX + dashWidth, 0), paint);
       startX += dashWidth + dashSpace;
     }
   }
@@ -765,11 +776,7 @@ class _ResultFooter extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _StatusBanner(
-            args: args,
-            isDayFinished: isDayFinished,
-            ok: ok,
-          ),
+          _StatusBanner(args: args, isDayFinished: isDayFinished, ok: ok),
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
@@ -791,10 +798,7 @@ class _ResultFooter extends StatelessWidget {
                   SizedBox(width: 8),
                   Text(
                     'Back to scanner',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
@@ -827,7 +831,9 @@ class _StatusBanner extends StatelessWidget {
     if (ok) {
       desc = args.hasActiveLeave
           ? 'Approved leave request.'
-          : (isDayFinished ? 'Classes for today are finished.' : 'Student access verified.');
+          : (isDayFinished
+                ? 'Classes for today are finished.'
+                : 'Student access verified.');
     } else {
       final rawReason = (args.reason == 'NO_ACTIVE_LEAVE')
           ? 'no_active_leave_request'
@@ -843,8 +849,8 @@ class _StatusBanner extends StatelessWidget {
       desc = (args.errorMessage?.isNotEmpty ?? false)
           ? args.errorMessage!
           : reasonText.isNotEmpty
-              ? '$reasonText.'
-              : 'No active leave request found.';
+          ? '$reasonText.'
+          : 'No active leave request found.';
     }
     icon = ok ? Icons.check_circle_rounded : Icons.cancel_rounded;
 
@@ -936,10 +942,7 @@ class _ThemedCard extends StatelessWidget {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: child,
-          ),
+          Padding(padding: const EdgeInsets.all(16), child: child),
         ],
       ),
     );

@@ -10,16 +10,6 @@ import 'package:school_mate/student/widgets/qr_bottom_sheet.dart';
 import 'package:school_mate/student/widgets/school_decor.dart';
 import 'package:flutter/material.dart';
 
-class _DampedScrollPhysics extends ScrollPhysics {
-  const _DampedScrollPhysics({super.parent});
-  @override
-  _DampedScrollPhysics applyTo(ScrollPhysics? ancestor) =>
-      _DampedScrollPhysics(parent: buildParent(ancestor));
-  @override
-  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) =>
-      super.applyPhysicsToUserOffset(position, offset) * 0.55;
-}
-
 const _primary = Color(0xFF2848B0);
 const _surface = Color(0xFFF2F4F8);
 const _surfaceLowest = Color(0xFFFFFFFF);
@@ -246,22 +236,28 @@ class _MeniuScreenState extends State<MeniuScreen> {
                           subtitle: dateStr,
                         ),
                         Expanded(
-                          child: SingleChildScrollView(
-                            physics: const _DampedScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              16,
+                              16,
+                              16,
+                              16,
+                            ),
                             child: Column(
                               children: [
                                 _AziHeroCard(schedule: todaySchedule),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 14),
                                 _QuickActionsRow(
                                   onQr: () => _showQrSheet(context),
                                   onLeaveRequests: _openCereri,
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 14),
                                 _InboxPreviewCard(
-                                  studentUid:
-                                      FirebaseAuth.instance.currentUser?.uid ??
-                                          '',
+                                  studentUid: FirebaseAuth
+                                          .instance
+                                          .currentUser
+                                          ?.uid ??
+                                      '',
                                   inboxLastOpenedAt: inboxLastOpenedAt,
                                   onTap: _openInbox,
                                 ),
@@ -343,7 +339,7 @@ class _AziHeroCard extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+            padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -417,7 +413,7 @@ class _AziHeroCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
                 Text(
                   'Current day',
                   style: TextStyle(
@@ -427,17 +423,17 @@ class _AziHeroCard extends StatelessWidget {
                     letterSpacing: 0.3,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   dayName,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 24,
                     fontWeight: FontWeight.w900,
                     height: 1.15,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 7),
                 Container(
                   width: 32,
                   height: 2.5,
@@ -446,13 +442,13 @@ class _AziHeroCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 13),
                 Container(
                   width: double.infinity,
                   height: 1,
                   color: Colors.white.withValues(alpha: 0.12),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 15),
                 Text(
                   'Class interval',
                   style: TextStyle(
@@ -462,12 +458,12 @@ class _AziHeroCard extends StatelessWidget {
                     letterSpacing: 0.3,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   intervalText,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 24,
                     fontWeight: FontWeight.w900,
                     height: 1.15,
                   ),
@@ -929,13 +925,13 @@ class _QuickActionTile extends StatelessWidget {
               child: CustomPaint(painter: _QuickTileDecorPainter()),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: const EdgeInsets.symmetric(vertical: 18),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 42,
-                    height: 42,
+                    width: 45,
+                    height: 45,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -944,9 +940,9 @@ class _QuickActionTile extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(13),
                     ),
-                    child: Icon(icon, color: Colors.white, size: 20),
+                    child: Icon(icon, color: Colors.white, size: 22),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 9),
                   Text(
                     label,
                     style: const TextStyle(
@@ -957,7 +953,7 @@ class _QuickActionTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Container(
-                    width: 16,
+                    width: 17,
                     height: 2,
                     decoration: BoxDecoration(
                       color: _pencilYellow,
