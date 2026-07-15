@@ -18,7 +18,12 @@ Acest folder conține livrabilele cerute de regulamentul concursului.
 1. Pe un telefon Android (≥ 8.0), descarcă `app-release.apk`.
 2. Activează „Instalare din surse necunoscute" în Setări → Securitate.
 3. Instalează APK-ul.
-4. Conturile partajate folosite în timpul jurizării au fost retrase după
-   încheierea concursului. Pentru o prezentare sigură a tuturor rolurilor,
-   consultați videoclipul demo de mai sus. Accesul temporar la o instanță demo
-   poate fi oferit la cerere; credențialele nu sunt publicate în repository.
+4. La prima rulare, folosește unul din conturile demo:
+
+| Rol | Username | Parolă |
+|-----|----------|--------|
+| Elev | `student1894` | `12345678` |
+| Diriginte | `teacher571` | `12345678` |
+| Secretariat | `Daniel` | `12345678` |
+| Părinte | `parent111` | `12345678` |
+| Portar (scanner) | `guardian147` | `iP8mzkpVic` |
