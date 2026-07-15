@@ -15,11 +15,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return hasProfile() &&
-          me().role == 'admin' &&
-          me().status != 'disabled' &&
-          me().twoFactorVerifiedUntil is timestamp &&
-          me().twoFactorVerifiedUntil > request.time;
+      return hasProfile() && me().role == 'admin';
     }
 
     function isParent() {

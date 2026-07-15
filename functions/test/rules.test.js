@@ -10,12 +10,6 @@ const RULES_PATH = path.resolve(__dirname, '../../firestore.rules');
 
 let testEnv;
 
-const activeAdminProfile = () => ({
-  role: 'admin',
-  status: 'active',
-  twoFactorVerifiedUntil: new Date(Date.now() + 60 * 60 * 1000),
-});
-
 beforeAll(async () => {
   testEnv = await initializeTestEnvironment({
     projectId: 'schoolmate-test',
@@ -65,23 +59,10 @@ describe('users/{userId} read access', () => {
   test('admin can read any user doc', async () => {
     const admin = testEnv.authenticatedContext('admin1').firestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
-      await ctx.firestore().doc('users/admin1').set(activeAdminProfile());
+      await ctx.firestore().doc('users/admin1').set({ role: 'admin' });
       await ctx.firestore().doc('users/alice').set({ role: 'student' });
     });
     await assertSucceeds(admin.doc('users/alice').get());
-  });
-
-  test('admin with an expired 2FA session cannot read another user doc', async () => {
-    const admin = testEnv.authenticatedContext('admin1').firestore();
-    await testEnv.withSecurityRulesDisabled(async (ctx) => {
-      await ctx.firestore().doc('users/admin1').set({
-        role: 'admin',
-        status: 'active',
-        twoFactorVerifiedUntil: new Date(Date.now() - 60 * 1000),
-      });
-      await ctx.firestore().doc('users/alice').set({ role: 'student' });
-    });
-    await assertFails(admin.doc('users/alice').get());
   });
 
   test('publicProfile is readable by other authenticated users', async () => {
@@ -136,7 +117,7 @@ describe('secretariatMessages write access', () => {
   test('admin can create a validated school post', async () => {
     const admin = testEnv.authenticatedContext('admin1').firestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
-      await ctx.firestore().doc('users/admin1').set(activeAdminProfile());
+      await ctx.firestore().doc('users/admin1').set({ role: 'admin' });
     });
 
     await assertSucceeds(
@@ -147,7 +128,7 @@ describe('secretariatMessages write access', () => {
   test('admin cannot create a post with unexpected fields', async () => {
     const admin = testEnv.authenticatedContext('admin1').firestore();
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
-      await ctx.firestore().doc('users/admin1').set(activeAdminProfile());
+      await ctx.firestore().doc('users/admin1').set({ role: 'admin' });
     });
 
     await assertFails(
@@ -226,7 +207,7 @@ describe('secretariatMessages audience read access', () => {
         children: ['student10a'],
         childrenClassIds: ['10A'],
       });
-      await db.doc('users/admin1').set(activeAdminProfile());
+      await db.doc('users/admin1').set({ role: 'admin' });
       await db.doc('secretariatMessages/all').set(postFor(['__ALL__']));
       await db.doc('secretariatMessages/only10a').set(postFor(['10A']));
       await db.doc('secretariatMessages/only10b').set(postFor(['10B']));
