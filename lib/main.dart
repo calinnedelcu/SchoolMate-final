@@ -354,16 +354,15 @@ class _MyAppState extends State<MyApp> {
                 builder: (context, settingsSnap) {
                   final flags = settingsSnap.data ?? SecurityFlags.defaults;
 
-                  final requiresOnboarding =
-                      role == 'admin' ||
-                      (role != 'gate' && flags.onboardingEnabled);
-                  if (requiresOnboarding && !effectivelyOnboarded) {
+                  if (role != 'gate' &&
+                      flags.onboardingEnabled &&
+                      !effectivelyOnboarded) {
                     return OnboardingPage(user: user, userData: data);
                   }
 
                   final requiresTwoFactor =
                       role != 'gate' &&
-                      (role == 'admin' || flags.twoFactorEnabled) &&
+                      flags.twoFactorEnabled &&
                       effectivelyOnboarded &&
                       !hasRemoteTwoFactorSession;
 
