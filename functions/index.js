@@ -166,11 +166,24 @@ async function assertAdmin(request) {
 
     const callerUid = request.auth.uid;
     const callerDoc = await admin.firestore().collection("users").doc(callerUid).get();
-    if (!callerDoc.exists || callerDoc.data()?.role !== "admin") {
+    const callerData = callerDoc.data() || {};
+    if (!callerDoc.exists || callerData.role !== "admin") {
         throw new HttpsError("permission-denied", "Doar adminul poate executa aceasta actiune");
     }
 
-    return { callerUid, callerData: callerDoc.data() || {} };
+    if (String(callerData.status || "active") === "disabled") {
+        throw new HttpsError("permission-denied", "Contul de administrator este dezactivat");
+    }
+
+    const verifiedUntilMs = callerData.twoFactorVerifiedUntil?.toMillis?.() || 0;
+    if (verifiedUntilMs <= Date.now()) {
+        throw new HttpsError(
+            "permission-denied",
+            "Este necesara o verificare 2FA recenta pentru aceasta actiune"
+        );
+    }
+
+    return { callerUid, callerData };
 }
 
 async function getActiveAdminCount() {
@@ -1424,7 +1437,18 @@ exports.generateQrToken = onCall(async (request) => {
 
     const uid = request.auth.uid;
 
-    const rand = Math.random().toString().slice(2, 18);
+    const userSnap = await admin.firestore().collection("users").doc(uid).get();
+    const userData = userSnap.data() || {};
+    if (!userSnap.exists || userData.role !== "student") {
+        throw new HttpsError("permission-denied", "Only students can generate QR credentials");
+    }
+    if (String(userData.status || "active") === "disabled") {
+        throw new HttpsError("permission-denied", "Account disabled");
+    }
+
+    // 256 bits from a cryptographically secure generator. Math.random() is
+    // predictable and must not be used for a bearer credential.
+    const rand = randomBytes(32).toString("base64url");
 
     const expiresAt = new Date(Date.now() + 20000); // 20 sec
 
@@ -1455,6 +1479,18 @@ exports.redeemQrToken = onCall(async (request) => {
     const callerData = callerDoc.data();
     if (callerData.role !== "gate" && callerData.role !== "admin") {
         throw new HttpsError("permission-denied", "Only gate or admin can validate QR codes");
+    }
+    if (String(callerData.status || "active") === "disabled") {
+        throw new HttpsError("permission-denied", "Account disabled");
+    }
+    if (callerData.role === "admin") {
+        const verifiedUntilMs = callerData.twoFactorVerifiedUntil?.toMillis?.() || 0;
+        if (verifiedUntilMs <= Date.now()) {
+            throw new HttpsError(
+                "permission-denied",
+                "Recent 2FA verification required for administrator QR validation"
+            );
+        }
     }
 
     const tokenId = String(request.data.token || "").trim();
